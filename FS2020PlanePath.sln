@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FS2020PlanePath", "FS2020PlanePath\FS2020PlanePath.csproj", "{54B895DB-E959-49ED-A9C4-4CBE00CCA227}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E03F3804-CC1C-4F3C-B6A8-8A7B8936DC50}
+	EndGlobalSection
+EndGlobal
