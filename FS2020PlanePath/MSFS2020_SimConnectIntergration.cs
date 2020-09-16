@@ -194,8 +194,8 @@ namespace FS2020PlanePath
                     FForm.UseData(s1.latitude, s1.longitude, s1.altitude, s1.altitude_above_ground, s1.engine1rpm, s1.engine2rpm, s1.engine3rpm, s1.engine4rpm, s1.lightsmask,
                                   s1.ground_velocity, s1.plane_pitch, s1.plane_bank, s1.plane_heading_true, s1.plane_heading_magnetic, s1.plane_airspeed_indicated, 
                                   s1.airspeed_true, s1.vertical_speed, s1.heading_indicator, s1.flaps_handle_position, s1.spoilers_handle_position,
-                                  Convert.ToBoolean(s1.gear_handle_position), s1.ambient_wind_velocity, s1.ambient_wind_direction, s1.ambient_temperature, 
-                                  Convert.ToBoolean(s1.stall_warning), Convert.ToBoolean(s1.overspeed_warning), Convert.ToBoolean(s1.is_gear_retractable), Convert.ToBoolean(s1.spoiler_avaialable));
+                                  s1.gear_handle_position, s1.ambient_wind_velocity, s1.ambient_wind_direction, s1.ambient_temperature, 
+                                  s1.stall_warning, s1.overspeed_warning, s1.is_gear_retractable, s1.spoiler_avaialable);
                     break;
 
 

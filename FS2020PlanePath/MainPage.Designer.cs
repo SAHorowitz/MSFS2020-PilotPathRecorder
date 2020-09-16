@@ -281,7 +281,7 @@
             this.Controls.Add(this.ThresholdLogWriteFreqTB);
             this.Controls.Add(this.label2);
             this.Name = "MainPage";
-            this.Text = "Pilot Path Recorder v1.0";
+            this.Text = "Pilot Path Recorder v1.0.1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainPage_FormClosing);
             this.Shown += new System.EventHandler(this.MainPage_Shown);
             this.ResumeLayout(false);

@@ -167,17 +167,17 @@ namespace FS2020PlanePath
                 string insertsql;
 
                 sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', {1})", "Flights", TblVersion_Flights);
+                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', '{1}')", "Flights", TblVersion_Flights);
                 sqlite_cmd.CommandText = insertsql;
                 sqlite_cmd.ExecuteNonQuery();
 
                 sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', {1})", "FlightSamples", TblVersion_FlightSamples);
+                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', '{1}')", "FlightSamples", TblVersion_FlightSamples);
                 sqlite_cmd.CommandText = insertsql;
                 sqlite_cmd.ExecuteNonQuery();
 
                 sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', {1})", "FlightSampleDetails", TblVersion_FlightOptions);
+                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', '{1}')", "FlightSampleDetails", TblVersion_FlightOptions);
                 sqlite_cmd.CommandText = insertsql;
                 sqlite_cmd.ExecuteNonQuery();
             }
@@ -271,7 +271,7 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            sqlStr = String.Format("Insert into Flights (aircraft, start_datetimestamp) VALUES ('{0}', {1})", aircraft, DateTime.Now.Ticks);
+            sqlStr = String.Format("Insert into Flights (aircraft, start_datetimestamp) VALUES ('{0}', '{1}')", aircraft, DateTime.Now.Ticks);
             sqlite_cmd.CommandText = sqlStr;
             sqlite_cmd.ExecuteNonQuery();
             FlightID = sqlite_conn.LastInsertRowId;
@@ -289,7 +289,7 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            Insertsql = String.Format("Insert into FlightSamples (FlightID, latitude, longitude, altitude, sample_datetimestamp) VALUES ({0}, {1}, {2}, {3}, {4})", pk, latitude, longitude, altitude, DateTime.Now.Ticks);
+            Insertsql = String.Format("Insert into FlightSamples (FlightID, latitude, longitude, altitude, sample_datetimestamp) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')", pk, latitude, longitude, altitude, DateTime.Now.Ticks);
             sqlite_cmd.CommandText = Insertsql;
             sqlite_cmd.ExecuteNonQuery();
             FlightSampleID = sqlite_conn.LastInsertRowId;
@@ -301,9 +301,9 @@ namespace FS2020PlanePath
         public void WriteFlightPointDetails(long pk, Int32 altitude_above_ground, Int32 engine1rpm, Int32 engine2rpm, Int32 engine3rpm, Int32 engine4rpm, Int32 lightsmask, double ground_velocity,
                                             double plane_pitch, double plane_bank, double plane_heading_true, double plane_heading_magnetic,
                                             double plane_airspeed_indicated, double airspeed_true, double vertical_speed, double heading_indicator,
-                                            Int32 flaps_handle_position, Int32 spoilers_handle_position, bool gear_handle_position,
-                                            double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, bool stall_warning,
-                                            bool overspeed_warning, bool is_gear_retractable, bool spoiler_available)
+                                            Int32 flaps_handle_position, Int32 spoilers_handle_position, Int32 gear_handle_position,
+                                            double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, Int32 stall_warning,
+                                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available)
         {
             SQLiteCommand sqlite_cmd;
             string Insertsql;
@@ -312,7 +312,7 @@ namespace FS2020PlanePath
             Insertsql = "Insert into FlightSampleDetails (FlightSamplesID, alitutdeaboveground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true, ";
             Insertsql += "plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed, heading_indicator, flaps_handle_position, spoilers_handle_position, gear_handle_position, ambient_wind_velocity, ";
             Insertsql += "ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available) VALUES (";
-            Insertsql += String.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, {24}, {25})", 
+            Insertsql += String.Format("'{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}')", 
                                       pk, altitude_above_ground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true,
                                       plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed, heading_indicator, flaps_handle_position, spoilers_handle_position,
                                       gear_handle_position, ambient_wind_velocity, ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available);

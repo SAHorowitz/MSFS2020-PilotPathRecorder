@@ -143,9 +143,9 @@ namespace FS2020PlanePath
                             Int32 engine2rpm, Int32 engine3rpm, Int32 engine4rpm, Int32 lightsmask, double ground_velocity,
                             double plane_pitch, double plane_bank, double plane_heading_true, double plane_heading_magnetic,
                             double plane_airspeed_indicated, double airspeed_true, double vertical_speed, double heading_indicator,
-                            Int32 flaps_handle_position, Int32 spoilers_handle_position, bool gear_handle_position, 
-                            double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, bool stall_warning,
-                            bool overspeed_warning, bool is_gear_retractable, bool spoiler_available)
+                            Int32 flaps_handle_position, Int32 spoilers_handle_position, Int32 gear_handle_position, 
+                            double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, Int32 stall_warning,
+                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available)
         {
             if (bLoggingEnabled == true)
             {
