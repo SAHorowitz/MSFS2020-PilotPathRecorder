@@ -30,7 +30,7 @@ At this point you should see the path and pins from your flight.  With either to
 ![latest](docs/images/GoogleEarthWeb2.jpg)
 
 ## Instructions for install
-1.Install .NET 4.7.2 - download can be found at https://dotnet.microsoft.com/download/dotnet-framework/net472
+1. Install .NET 4.7.2 - download can be found at https://dotnet.microsoft.com/download/dotnet-framework/net472
 
 2. Download Pilot Path Recorder from https://drive.google.com/file/d/1uwWdiYp8cn8gCH4td9Wpy74tUflQURoU/view?usp=sharing
 
