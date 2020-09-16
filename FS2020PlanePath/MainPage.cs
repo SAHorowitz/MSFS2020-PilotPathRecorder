@@ -429,7 +429,9 @@ namespace FS2020PlanePath
             FlightPickerLV.Columns.Clear();
 
             FlightList = FlightPathDB.GetFlightList();
-            foreach (FlightListData flist in FlightList)
+
+            // reverse order guarantees newest on top since they come from the database in order of creation (oldest first)
+            foreach (FlightListData flist in Enumerable.Reverse(FlightList))
             {
                 ListViewItem lvi = new ListViewItem();
                 lvi.Text = new DateTime(flist.Start_flight_timestamp).ToString();
@@ -437,8 +439,6 @@ namespace FS2020PlanePath
                 lvi.Tag = flist.FlightID1;
                 FlightPickerLV.Items.Add(lvi);
             }
-            FlightPickerLV.Sorting = SortOrder.Descending;
-            FlightPickerLV.Sort();
 
             FlightPickerLV.Columns.Add("Flight Start Date/Time", -1, HorizontalAlignment.Left);
             FlightPickerLV.Columns.Add("Aircraft", -1, HorizontalAlignment.Left);

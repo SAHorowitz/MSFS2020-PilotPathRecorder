@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainPage));
             this.label2 = new System.Windows.Forms.Label();
             this.ThresholdLogWriteFreqTB = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -280,8 +281,9 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.ThresholdLogWriteFreqTB);
             this.Controls.Add(this.label2);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainPage";
-            this.Text = "Pilot Path Recorder v1.0.1";
+            this.Text = "Pilot Path Recorder v1.0.2";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainPage_FormClosing);
             this.Shown += new System.EventHandler(this.MainPage_Shown);
             this.ResumeLayout(false);

@@ -378,7 +378,7 @@ namespace FS2020PlanePath
             SQLiteCommand sqlite_cmd;
             string Selectsql;
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Selectsql = "SELECT FlightID, aircraft, start_datetimestamp FROM Flights";
+            Selectsql = "SELECT FlightID, aircraft, start_datetimestamp FROM Flights ORDER BY FlightID ASC";
             sqlite_cmd.CommandText = Selectsql;
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
             int n = 0;
