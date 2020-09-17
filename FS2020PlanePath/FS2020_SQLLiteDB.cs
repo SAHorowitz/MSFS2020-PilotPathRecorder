@@ -167,18 +167,20 @@ namespace FS2020PlanePath
                 string insertsql;
 
                 sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', '{1}')", "Flights", TblVersion_Flights);
+                insertsql = "INSERT INTO TblVersions (tblname, tblversion) VALUES (@tblname, @tblversion)";
                 sqlite_cmd.CommandText = insertsql;
+                sqlite_cmd.Parameters.AddWithValue("@tblname", "Flights");
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_Flights);
                 sqlite_cmd.ExecuteNonQuery();
 
-                sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', '{1}')", "FlightSamples", TblVersion_FlightSamples);
-                sqlite_cmd.CommandText = insertsql;
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightSamples");
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightSamples);
                 sqlite_cmd.ExecuteNonQuery();
 
-                sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO TblVersions (tblname, tblversion) VALUES ('{0}', '{1}')", "FlightSampleDetails", TblVersion_FlightOptions);
-                sqlite_cmd.CommandText = insertsql;
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightSampleDetails");
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightOptions);
                 sqlite_cmd.ExecuteNonQuery();
             }
         }
@@ -198,18 +200,20 @@ namespace FS2020PlanePath
                 string insertsql;
 
                 sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO FlightPathOptions (optionname, optionvalue) VALUES ('{0}', '{1}')", "AboveThresholdWriteFreq", "5");
+                insertsql = "INSERT INTO FlightPathOptions (optionname, optionvalue) VALUES (@optionname, @optionvalue)";
                 sqlite_cmd.CommandText = insertsql;
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "AboveThresholdWriteFreq");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "5");
                 sqlite_cmd.ExecuteNonQuery();
 
-                sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO FlightPathOptions (optionname, optionvalue) VALUES ('{0}', '{1}')", "ThresholdMinAltitude", "500");
-                sqlite_cmd.CommandText = insertsql;
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "ThresholdMinAltitude");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "500");
                 sqlite_cmd.ExecuteNonQuery();
 
-                sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = String.Format("INSERT INTO FlightPathOptions (optionname, optionvalue) VALUES ('{0}', '{1}')", "KMLFilePath", "");
-                sqlite_cmd.CommandText = insertsql;
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "KMLFilePath");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "");
                 sqlite_cmd.ExecuteNonQuery();
             }
         }
@@ -221,8 +225,9 @@ namespace FS2020PlanePath
             string sRetval = "";
 
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Selectsql = String.Format("SELECT optionvalue FROM FlightPathOptions WHERE optionname  = '{0}'", optionname);
+            Selectsql = "SELECT optionvalue FROM FlightPathOptions WHERE optionname  = @optionname";
             sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.AddWithValue("@optionname", optionname);
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
             while (r.Read())
                 sRetval = r.GetString(0);
@@ -237,8 +242,10 @@ namespace FS2020PlanePath
             string sRetval = "";
 
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Updatesql = String.Format("Update FlightPathOptions SET optionvalue = '{0}' WHERE optionname  = '{1}'", optionvalue, optionname);
+            Updatesql = "Update FlightPathOptions SET optionvalue = @optionvalue WHERE optionname  = @optionname";
             sqlite_cmd.CommandText = Updatesql;
+            sqlite_cmd.Parameters.AddWithValue("@optionname", optionname);
+            sqlite_cmd.Parameters.AddWithValue("@optionvalue", optionvalue);
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
             while (r.Read())
                 sRetval = r.GetString(0);
@@ -253,8 +260,9 @@ namespace FS2020PlanePath
 
             string Selectsql;
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Selectsql = String.Format("SELECT name FROM sqlite_master WHERE type ='table' and name = '{0}'", tblName);
+            Selectsql = "SELECT name FROM sqlite_master WHERE type ='table' and name = @tblName";
             sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.AddWithValue("@tblName", tblName);
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
             while (r.Read())
                 bRetVal = true;
@@ -271,8 +279,10 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            sqlStr = String.Format("Insert into Flights (aircraft, start_datetimestamp) VALUES ('{0}', '{1}')", aircraft, DateTime.Now.Ticks);
+            sqlStr = "Insert into Flights (aircraft, start_datetimestamp) VALUES (@aircraft, @start_datetimestamp)";
             sqlite_cmd.CommandText = sqlStr;
+            sqlite_cmd.Parameters.AddWithValue("@aircraft", aircraft);
+            sqlite_cmd.Parameters.AddWithValue("@start_datetimestamp", DateTime.Now.Ticks);
             sqlite_cmd.ExecuteNonQuery();
             FlightID = sqlite_conn.LastInsertRowId;
             transaction.Commit();
@@ -289,8 +299,13 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            Insertsql = String.Format("Insert into FlightSamples (FlightID, latitude, longitude, altitude, sample_datetimestamp) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')", pk, latitude, longitude, altitude, DateTime.Now.Ticks);
+            Insertsql = "Insert into FlightSamples (FlightID, latitude, longitude, altitude, sample_datetimestamp) VALUES (@FlightID, @latitude, @longitude, @altitude, @sample_datetimestamp)";
             sqlite_cmd.CommandText = Insertsql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+            sqlite_cmd.Parameters.AddWithValue("@latitude", latitude);
+            sqlite_cmd.Parameters.AddWithValue("@longitude", longitude);
+            sqlite_cmd.Parameters.AddWithValue("@altitude", altitude);
+            sqlite_cmd.Parameters.AddWithValue("@sample_datetimestamp", DateTime.Now.Ticks);
             sqlite_cmd.ExecuteNonQuery();
             FlightSampleID = sqlite_conn.LastInsertRowId;
             transaction.Commit();
@@ -311,12 +326,37 @@ namespace FS2020PlanePath
             sqlite_cmd = sqlite_conn.CreateCommand();
             Insertsql = "Insert into FlightSampleDetails (FlightSamplesID, alitutdeaboveground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true, ";
             Insertsql += "plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed, heading_indicator, flaps_handle_position, spoilers_handle_position, gear_handle_position, ambient_wind_velocity, ";
-            Insertsql += "ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available) VALUES (";
-            Insertsql += String.Format("'{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}', '{14}', '{15}', '{16}', '{17}', '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}')", 
-                                      pk, altitude_above_ground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true,
-                                      plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed, heading_indicator, flaps_handle_position, spoilers_handle_position,
-                                      gear_handle_position, ambient_wind_velocity, ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available);
+            Insertsql += "ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available) VALUES (@FlightSamplesID, @alitutdeaboveground, @engine1rpm, @engine2rpm, ";
+            Insertsql += "@engine3rpm, @engine4rpm, @lightsmask, @ground_velocity, @plane_pitch, @plane_bank, @plane_heading_true, @plane_heading_magnetic, @plane_airspeed_indicated, @airspeed_true, @vertical_speed, ";
+            Insertsql += "@heading_indicator, @flaps_handle_position, @spoilers_handle_position, @gear_handle_position, @ambient_wind_velocity, @ambient_wind_direction, @ambient_temperature, @stall_warning, ";
+            Insertsql += "@overspeed_warning, @is_gear_retractable, @spoiler_available)";
             sqlite_cmd.CommandText = Insertsql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightSamplesID", pk);
+            sqlite_cmd.Parameters.AddWithValue("@alitutdeaboveground", altitude_above_ground);
+            sqlite_cmd.Parameters.AddWithValue("@engine1rpm", engine1rpm);
+            sqlite_cmd.Parameters.AddWithValue("@engine2rpm", engine2rpm);
+            sqlite_cmd.Parameters.AddWithValue("@engine3rpm", engine3rpm);
+            sqlite_cmd.Parameters.AddWithValue("@engine4rpm", engine4rpm);
+            sqlite_cmd.Parameters.AddWithValue("@lightsmask", lightsmask);
+            sqlite_cmd.Parameters.AddWithValue("@ground_velocity", ground_velocity);
+            sqlite_cmd.Parameters.AddWithValue("@plane_pitch", plane_pitch);
+            sqlite_cmd.Parameters.AddWithValue("@plane_bank", plane_bank);
+            sqlite_cmd.Parameters.AddWithValue("@plane_heading_true", plane_heading_true);
+            sqlite_cmd.Parameters.AddWithValue("@plane_heading_magnetic", plane_heading_magnetic);
+            sqlite_cmd.Parameters.AddWithValue("@plane_airspeed_indicated", plane_airspeed_indicated);
+            sqlite_cmd.Parameters.AddWithValue("@airspeed_true", airspeed_true);
+            sqlite_cmd.Parameters.AddWithValue("@vertical_speed", vertical_speed);
+            sqlite_cmd.Parameters.AddWithValue("@heading_indicator", heading_indicator);
+            sqlite_cmd.Parameters.AddWithValue("@flaps_handle_position", flaps_handle_position);
+            sqlite_cmd.Parameters.AddWithValue("@spoilers_handle_position", spoilers_handle_position);
+            sqlite_cmd.Parameters.AddWithValue("@gear_handle_position", gear_handle_position);
+            sqlite_cmd.Parameters.AddWithValue("@ambient_wind_velocity", ambient_wind_velocity);
+            sqlite_cmd.Parameters.AddWithValue("@ambient_wind_direction", ambient_wind_direction);
+            sqlite_cmd.Parameters.AddWithValue("@ambient_temperature", ambient_temperature);
+            sqlite_cmd.Parameters.AddWithValue("@stall_warning", stall_warning);
+            sqlite_cmd.Parameters.AddWithValue("@overspeed_warning", overspeed_warning);
+            sqlite_cmd.Parameters.AddWithValue("@is_gear_retractable", is_gear_retractable);
+            sqlite_cmd.Parameters.AddWithValue("@spoiler_available", spoiler_available);
             sqlite_cmd.ExecuteNonQuery();
         }
 
@@ -326,11 +366,14 @@ namespace FS2020PlanePath
             SQLiteCommand sqlite_cmd;
             string Selectsql;
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Selectsql = "SELECT latitude, longitude, altitude, sample_datetimestamp, alitutdeaboveground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ";
-            Selectsql += "ground_velocity, plane_pitch, plane_bank, plane_heading_true, plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed, heading_indicator, flaps_handle_position, ";
-            Selectsql += "spoilers_handle_position, gear_handle_position, ambient_wind_velocity, ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available ";
-            Selectsql += string.Format("FROM FlightSamples, FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID = FlightSamples.FlightSamplesID AND FlightID = {0}", pk);
+            Selectsql = "SELECT cast(latitude as double), cast (longitude as double), altitude, sample_datetimestamp, alitutdeaboveground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ";
+            Selectsql += "cast (ground_velocity as double), cast (plane_pitch as double), cast (plane_bank as double), cast (plane_heading_true as double), cast (plane_heading_magnetic as double), ";
+            Selectsql += "cast (plane_airspeed_indicated as double), cast (airspeed_true as double), cast (vertical_speed as double), cast (heading_indicator as double), flaps_handle_position, ";
+            Selectsql += "spoilers_handle_position, gear_handle_position, cast (ambient_wind_velocity as double), cast (ambient_wind_direction as double), cast (ambient_temperature as double),";
+            Selectsql += "stall_warning, overspeed_warning, is_gear_retractable, spoiler_available ";
+            Selectsql += "FROM FlightSamples, FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID = FlightSamples.FlightSamplesID AND FlightID = @FlightID";
             sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
             int n = 0;
             while (r.Read())
@@ -402,16 +445,19 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            Deletesql = String.Format("Delete from FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID IN (select FlightSamplesID From FlightSamples WHERE FlightID = {0})", nFlightID);
+            Deletesql = "Delete from FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID IN (select FlightSamplesID From FlightSamples WHERE FlightID = @FlightID)";
             sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
             sqlite_cmd.ExecuteNonQuery();
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Deletesql = String.Format("Delete from FlightSamples WHERE FlightID = {0}", nFlightID);
+            Deletesql = "Delete from FlightSamples WHERE FlightID = @FlightID";
             sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
             sqlite_cmd.ExecuteNonQuery();
             sqlite_cmd = sqlite_conn.CreateCommand();
-            Deletesql = String.Format("Delete from Flights WHERE FlightID = {0}", nFlightID);
+            Deletesql = "Delete from Flights WHERE FlightID = @FlightID";
             sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
             sqlite_cmd.ExecuteNonQuery();
             transaction.Commit();
         }
