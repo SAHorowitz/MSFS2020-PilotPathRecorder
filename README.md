@@ -37,7 +37,7 @@ Click on First Person View to review your flight from the first person perspecti
 ## Instructions for install
 1. Install .NET 4.7.2 - download can be found at https://dotnet.microsoft.com/download/dotnet-framework/net472
 
-2. Download Pilot Path Recorder from https://drive.google.com/file/d/1uwWdiYp8cn8gCH4td9Wpy74tUflQURoU/view?usp=sharing
+2. Download Pilot Path Recorder zip file from the releases area of this project: https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder/releases
 
 3. Unzip contents of Pilot Path Recorder to a directory
 
