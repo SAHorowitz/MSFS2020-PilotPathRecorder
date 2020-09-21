@@ -31,7 +31,7 @@ At this point you should see the path and flight plan if your flight involved on
 
 ![latest](docs/images/GoogleEarthWebv11x_Pushpins.jpg)
 
-Click on First Person View to review your flight from the first person perspective.
+Click on First Person View to review your flight from the first person perspective. You can use first person view with any of the other layers turned on or off.
 ![latest](docs/images/GoogleEarthWebv11x_FPV.jpg)
 
 ## Instructions for install
