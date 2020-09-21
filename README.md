@@ -10,7 +10,9 @@ Note that the Flight Simluator should be up and running before launching Pilot P
 
 Before start a logging session, start a flight in the simulator and click 'Start Logging' when you are ready to start the recording.  You may pause at anytime using the pause function and continue logging when ready.  'Stop Logging' ends the recording for that flight.
 
-When ready, choose a flight (newest are on the top) and if needed pick a directory to store the KML file.  Click 'Create KML File' to export the data to a KML file in the location chosen.  You may also keep your database clean and tidy by deleting a flight from the database.
+When ready, choose a flight (newest are on the top) and if needed pick a directory to store the KML file.  Click 'Create KML File' to export the data to a KML file in the location chosen. Be sure to choose whether you will be using Google Earth application or Google Earth Web to view your KML. There are a few differences between the applications that will hamper your experience if you use the application different than you chose when the KML file was exported. 
+
+You may also keep your database clean and tidy by deleting a flight from the database.  
 
 Once you have a KML file, you may either use Google Earth on the web (earth.google.com) or download and install Google Earth (https://www.google.com/earth/) for your computer.
 
@@ -25,10 +27,11 @@ If using Google Earth application:
 
 ![latest](docs/images/GoogleEarthWebv11x_Default.jpg)
 
-At this point you should see the path and flight plan if your flight involved one..  With either tool expand the 'Flight Data' line and either click the eye icon (web version) or checkbox (Google Earth computer version) to turn on or off any layer or particular pin from your flight.  To see detailed information of the various flight paramters, click a pin to see what was going on at that particular moment of your flight. Click on First Person View to review your flight from the first person perspective.
+At this point you should see the path and flight plan if your flight involved one..  With either tool expand the 'Flight Data' line and either click the eye icon (web version) or checkbox (Google Earth computer version) to turn on or off any layer or particular pin from your flight.  To see detailed information of the various flight paramters, click a pin to see what was going on at that particular moment of your flight. 
 
 ![latest](docs/images/GoogleEarthWebv11x_Pushpins.jpg)
 
+Click on First Person View to review your flight from the first person perspective.
 ![latest](docs/images/GoogleEarthWebv11x_FPV.jpg)
 
 ## Instructions for install
