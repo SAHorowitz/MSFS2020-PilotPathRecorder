@@ -320,7 +320,9 @@ namespace FS2020PlanePath
                 bool bAnyLightsOn = false;
 
                 nCount++;
-                placemarkPoint.Visibility = false;
+                // if Google Earth App then you need to turn off visibility on each data point also
+                if (GoogleEarthAppRB.Checked == true)
+                    placemarkPoint.Visibility = false;
                 placemarkPoint.Name = String.Concat("Flight Data Point ", nCount.ToString());
                 descriptioncard = String.Concat("<br>Timestamp = ", new DateTime(fpd.timestamp).ToString());
                 
