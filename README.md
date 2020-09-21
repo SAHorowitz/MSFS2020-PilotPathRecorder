@@ -1,9 +1,9 @@
 # MSFS2020-PilotPathRecorder
-Record your flight path with key flight information archived during the trip.  Then export that data to a KML file to use with Google Earth for 3 dimensional flight analysis
+Record your flight path with key flight information archived during the trip.  Then export that data to a KML file to use with Google Earth for 3 dimensional flight analysis, flight plan information and a chance to review your flight from the first person perspective.
 
 This is a stand-alone application that must be run outside of Microsft Flight Simulator 2020.  Once run, this application allows the user to set various settings to control the recording and exporting experience.  A database is used to store your flights so feel free to fly during one session and export in another.
 
-![latest](docs/images/PPR.jpg)
+![latest](docs/images/PPRv11x.jpg)
 
 ## Instructions for use
 Note that the Flight Simluator should be up and running before launching Pilot Path Recorder.  If not, then click Retry Sim Connection until you get the "SimConnect Connected" message.  Next choose the write frequency of how often to write to the database when above the minimum altitude threshold. Adjust the minimum altitude threshold as well.  For example if you want to write every 30 seconds when above ground by 5000 feet use the values 30 and 5000 respectfully.
@@ -23,11 +23,13 @@ Note to look at another KML file, you may want to click the trash icon on the cu
 If using Google Earth application:
 1.  Find the KML file on your computer and double-click or press enter to automatically start Google Earth and use this KML file
 
-![latest](docs/images/GoogleEarthWeb.jpg)
+![latest](docs/images/GoogleEarthWebv11x_Default.jpg)
 
-At this point you should see the path and pins from your flight.  With either tool expand the 'Flight Data' line and either click the eye icon (web version) or checkbox (Google Earth computer version) to turn on or off any layer or particular pin from your flight.  To see detailed information of the various flight paramters, click a pin to see what was going on at that particular moment of your flight.
+At this point you should see the path and flight plan if your flight involved one..  With either tool expand the 'Flight Data' line and either click the eye icon (web version) or checkbox (Google Earth computer version) to turn on or off any layer or particular pin from your flight.  To see detailed information of the various flight paramters, click a pin to see what was going on at that particular moment of your flight. Click on First Person View to review your flight from the first person perspective.
 
-![latest](docs/images/GoogleEarthWeb2.jpg)
+![latest](docs/images/GoogleEarthWebv11x_Pushpins.jpg)
+
+![latest](docs/images/GoogleEarthWebv11x_FPV.jpg)
 
 ## Instructions for install
 1. Install .NET 4.7.2 - download can be found at https://dotnet.microsoft.com/download/dotnet-framework/net472
