@@ -22,17 +22,29 @@ namespace FS2020PlanePath
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
         FS2020_SQLLiteDB FlightPathDB;
-        long lCurrentFlightID;
+        int nCurrentFlightID;
         DateTime dtLastDataRecord;
+        FlightPlan flightPlan;
 
         public MainPage()
         {
             InitializeComponent();
             FlightPathDB = new FS2020_SQLLiteDB();
             FlightPathDB.CreateTables();
+            flightPlan = new FlightPlan();
             ThresholdLogWriteFreqTB.Text = FlightPathDB.GetTableOption("AboveThresholdWriteFreq");
             ThresholdMinAltTB.Text = FlightPathDB.GetTableOption("ThresholdMinAltitude");
             KMLFilePathTBRO.Text = FlightPathDB.GetTableOption("KMLFilePath");
+            if (string.Compare(FlightPathDB.GetTableOption("GoolgeEarthChoice"), "Application") == 0)
+                GoogleEarthAppRB.Checked = true;
+            else
+                GoogleEarthWebRB.Checked = true;
+
+            if (string.Compare(FlightPathDB.GetTableOption("SpeedUpVideoPlayback"), "true") == 0)
+                SpeedUpVideoPlaybackCB.Checked = true;
+            else
+                SpeedUpVideoPlaybackCB.Checked = false;
+
             LoadFlightList();
         }
 
@@ -145,7 +157,10 @@ namespace FS2020PlanePath
                             double plane_airspeed_indicated, double airspeed_true, double vertical_speed, double heading_indicator,
                             Int32 flaps_handle_position, Int32 spoilers_handle_position, Int32 gear_handle_position, 
                             double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, Int32 stall_warning,
-                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available)
+                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available, double gps_wp_prev_latitude,
+                            double gps_wp_prev_longitude, Int32 gps_wp_prev_altitude, string gps_wp_prev_id, double gps_wp_next_latitude,
+                            double gps_wp_next_longitude, Int32 gps_wp_next_altitude, string gps_wp_next_id, Int32 gps_flight_plan_wp_index,
+                            Int32 gps_flight_plan_wp_count)
         {
             if (bLoggingEnabled == true)
             {
@@ -157,9 +172,9 @@ namespace FS2020PlanePath
                      (tsDiffRecords.TotalSeconds >= Convert.ToDouble(ThresholdLogWriteFreqTB.Text))) ||
                     (altitude_above_ground < Convert.ToInt32(ThresholdMinAltTB.Text)))
                 {
-                    long FlightSampleID;
+                    int FlightSampleID;
 
-                    FlightSampleID = FlightPathDB.WriteFlightPoint(lCurrentFlightID, latitude, longitude, altitude);
+                    FlightSampleID = FlightPathDB.WriteFlightPoint(nCurrentFlightID, latitude, longitude, altitude);
                     FlightPathDB.WriteFlightPointDetails(FlightSampleID, altitude_above_ground, engine1rpm, engine2rpm, engine3rpm, 
                                                          engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true,
                                                          plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed,
@@ -168,6 +183,9 @@ namespace FS2020PlanePath
                                                          stall_warning, overspeed_warning, is_gear_retractable, spoiler_available);
                     dtLastDataRecord = DateTime.Now;
                 }
+                flightPlan.AddFlightPlanWaypoint(new FlightWaypointData(gps_wp_prev_latitude, gps_wp_prev_longitude, gps_wp_prev_altitude, gps_wp_prev_id),
+                                                 new FlightWaypointData(gps_wp_next_latitude, gps_wp_next_longitude, gps_wp_next_altitude, gps_wp_next_id),
+                                                 gps_flight_plan_wp_index, gps_flight_plan_wp_count);
             }
         }
 
@@ -176,16 +194,17 @@ namespace FS2020PlanePath
         {
             if (bLoggingEnabled == true)
             {
-                lCurrentFlightID = FlightPathDB.WriteFlight(aircraft);
+                nCurrentFlightID = FlightPathDB.WriteFlight(aircraft);
             }
         }
 
-        // function that writes out KML file based on the flight chosen by the user
+         // function that writes out KML file based on the flight chosen by the user
         private void CreateKMLButton_Click(object sender, EventArgs e)
         {
             int nCount;
             int nFlightID;
             string sfilename;
+            long lprevTimestamp;
 
             bLoggingEnabled = false;
 
@@ -206,13 +225,15 @@ namespace FS2020PlanePath
             // This is the root element of the file
             var kml = new Kml();
             Folder mainFolder = new Folder();
-            mainFolder.Name = "Flight Data";
+            mainFolder.Name = String.Format("{0} {1}", FlightPickerLV.SelectedItems[0].SubItems[1].Text, FlightPickerLV.SelectedItems[0].SubItems[0].Text);
             mainFolder.Description = new Description
             {
                 Text = "Overall Data for the flight"
             };
 
             kml.Feature = mainFolder;
+
+            // start of Flight Path Line
             var placemarkLine = new Placemark();
             mainFolder.AddFeature(placemarkLine);
             placemarkLine.Name = "Flight Path Line";
@@ -220,13 +241,28 @@ namespace FS2020PlanePath
             {
                 Text = "Line of the flight"
             };
-            placemarkLine.StyleUrl = new Uri("#transPurpleLineGreenPoly", UriKind.Relative);
-
             var linestring = new LineString();
             var coordinatecollection = new CoordinateCollection();
 
             linestring.Coordinates = coordinatecollection;
             linestring.AltitudeMode = AltitudeMode.Absolute;
+            
+            SharpKml.Dom.LineStyle lineStyle = new SharpKml.Dom.LineStyle();
+            lineStyle.Color = Color32.Parse("ff0000ff");
+            lineStyle.Width = 5;
+            Style flightStyle = new Style();
+            flightStyle.Id = "FlightStyle";
+            flightStyle.Line = lineStyle;
+            linestring.Extrude = false;
+            mainFolder.AddStyle(flightStyle);
+
+            SharpKml.Dom.Style waypointStyle = new SharpKml.Dom.Style();
+            waypointStyle.Id = "WaypointStyle";
+            waypointStyle.Icon = new SharpKml.Dom.IconStyle();
+            waypointStyle.Icon.Icon = new SharpKml.Dom.IconStyle.IconLink(new System.Uri("https://maps.google.com/mapfiles/kml/paddle/grn-square.png"));
+            mainFolder.AddStyle(waypointStyle);
+
+            placemarkLine.StyleUrl = new Uri("#FlightStyle", UriKind.Relative);
 
             List<FlightPathData> FlightPath = new List<FlightPathData>();
             FlightPath = FlightPathDB.GetFlightPathData(nFlightID);
@@ -234,13 +270,47 @@ namespace FS2020PlanePath
                 coordinatecollection.Add(new Vector(fpd.latitude, fpd.longitude, fpd.altitude * 0.3048));
             placemarkLine.Geometry = linestring;
 
-            Folder folder = new Folder();
-            folder.Name = "Flight Path Data Points";
-            folder.Description = new Description
+            // start of Flight Plan Waypoints
+            List<FlightWaypointData> FlightWaypoints = new List<FlightWaypointData>();
+            FlightWaypoints = FlightPathDB.GetFlightWaypoints(nFlightID);
+            if (FlightWaypoints.Count > 0)
+            {
+                Folder FlightPlanFolder = new Folder();
+
+                FlightPlanFolder.Name = "Flight Plan";
+                FlightPlanFolder.Description = new Description
+                {
+                    Text = "Waypoints along the flight plan"
+                };
+                mainFolder.AddFeature(FlightPlanFolder);
+                foreach (FlightWaypointData waypointData in FlightWaypoints)
+                {
+                    var placemarkPoint = new Placemark();
+
+                    placemarkPoint.Name = waypointData.gps_wp_name;
+                    placemarkPoint.StyleUrl = new System.Uri("#WaypointStyle", UriKind.Relative);
+                    placemarkPoint.Geometry = new SharpKml.Dom.Point
+                    {
+                        Coordinate = new Vector(waypointData.gps_wp_latitude, waypointData.gps_wp_longitude, (double)waypointData.gps_wp_altitude * 0.3048),
+                        AltitudeMode = AltitudeMode.Absolute
+                    };
+                    placemarkPoint.Description = new Description
+                    {
+                        Text = String.Concat(String.Format("Coordinates ({0:0.0000}, {1:0.0000}, {2} feet)", waypointData.gps_wp_longitude, waypointData.gps_wp_latitude, waypointData.gps_wp_altitude))
+                };
+                    FlightPlanFolder.AddFeature(placemarkPoint);
+                }
+            }
+
+            // start of Flight Data Points
+            Folder DataPointsfolder = new Folder();
+            DataPointsfolder.Name = "Flight Path Data Points";
+            DataPointsfolder.Visibility = false;
+            DataPointsfolder.Description = new Description
             {
                 Text = "Data Points along the flight path"
             };
-            mainFolder.AddFeature(folder);
+            mainFolder.AddFeature(DataPointsfolder);
 
             nCount = 0;
             foreach (FlightPathData fpd in FlightPath)
@@ -250,6 +320,7 @@ namespace FS2020PlanePath
                 bool bAnyLightsOn = false;
 
                 nCount++;
+                placemarkPoint.Visibility = false;
                 placemarkPoint.Name = String.Concat("Flight Data Point ", nCount.ToString());
                 descriptioncard = String.Concat("<br>Timestamp = ", new DateTime(fpd.timestamp).ToString());
                 
@@ -353,18 +424,65 @@ namespace FS2020PlanePath
                     Text = descriptioncard
                 };
 
-                placemarkPoint.Time = new SharpKml.Dom.Timestamp
+                // turned off showing time with data points as it caused issues of not showing in Google Earth 
+                // if user turned them off and then back on
+/*                placemarkPoint.Time = new SharpKml.Dom.Timestamp
                 {
                     When = new DateTime(fpd.timestamp)
-                };
+                };*/
                 placemarkPoint.Geometry = new SharpKml.Dom.Point
                 {
                     Coordinate = new Vector(fpd.latitude, fpd.longitude, (double) fpd.altitude * 0.3048),
                     AltitudeMode = AltitudeMode.Absolute
                 };
-                folder.AddFeature(placemarkPoint);
+                DataPointsfolder.AddFeature(placemarkPoint);
             }
 
+            // add 1st person feature
+            SharpKml.Dom.GX.Tour tour = new SharpKml.Dom.GX.Tour();
+            tour.Name = "First Person View of Flight";
+            kml.AddNamespacePrefix("gx", "http://www.google.com/kml/ext/2.2");
+            SharpKml.Dom.GX.Playlist playlist = new SharpKml.Dom.GX.Playlist();
+            tour.Playlist = playlist;
+            mainFolder.AddFeature(tour);
+            lprevTimestamp = 0;
+            foreach (FlightPathData fpd in FlightPath)
+            {
+                SharpKml.Dom.GX.FlyTo flyto = new SharpKml.Dom.GX.FlyTo();
+
+                // if first time thru loop and don't have old time or
+                // user wants to speed up video playback above threshold
+                // then set duration to 1 else base it on previous timestamp
+                if ((lprevTimestamp == 0) ||
+                    (SpeedUpVideoPlaybackCB.Checked == true))
+                    flyto.Duration = 1;
+                else
+                    flyto.Duration = (new DateTime(fpd.timestamp) - new DateTime(lprevTimestamp)).TotalMilliseconds / 1000;
+
+                lprevTimestamp = fpd.timestamp;
+                flyto.Mode = SharpKml.Dom.GX.FlyToMode.Smooth;
+                SharpKml.Dom.Camera cam = new SharpKml.Dom.Camera();
+                cam.AltitudeMode = SharpKml.Dom.AltitudeMode.Absolute;
+                cam.Latitude = fpd.latitude;
+                cam.Longitude = fpd.longitude;
+                cam.Altitude = fpd.altitude * 0.3048;
+                cam.Heading = fpd.plane_heading_true;
+                if (GoogleEarthAppRB.Checked == true)
+                    cam.Roll = fpd.plane_bank;
+                else
+                    cam.Roll = fpd.plane_bank * -1;
+                cam.Tilt = (90 - fpd.plane_pitch);
+
+                SharpKml.Dom.Timestamp tstamp = new SharpKml.Dom.Timestamp();
+                tstamp.When = new DateTime(fpd.timestamp);
+
+                cam.GXTimePrimitive = tstamp;
+
+                flyto.View = cam;
+                playlist.AddTourPrimitive(flyto);
+            }
+
+            // write out KML file
             char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
             sfilename = String.Format("{0}_{1}.kml", FlightPickerLV.SelectedItems[0].SubItems[1].Text, FlightPickerLV.SelectedItems[0].SubItems[0].Text);
             var validfilename = new string(sfilename.Select(ch => invalidFileNameChars.Contains(ch) ? '_' : ch).ToArray());
@@ -386,6 +504,7 @@ namespace FS2020PlanePath
         {
             bLoggingEnabled = false;
             simConnectIntegration.Disconnect();
+            FlightPathDB.WriteFlightPlan(nCurrentFlightID, flightPlan.flight_waypoints);
 
             StartLoggingBtn.Enabled = true;
             PauseLoggingBtn.Enabled = false;
@@ -434,9 +553,9 @@ namespace FS2020PlanePath
             foreach (FlightListData flist in Enumerable.Reverse(FlightList))
             {
                 ListViewItem lvi = new ListViewItem();
-                lvi.Text = new DateTime(flist.Start_flight_timestamp).ToString();
-                lvi.SubItems.Add(flist.Aircraft);
-                lvi.Tag = flist.FlightID1;
+                lvi.Text = new DateTime(flist.start_flight_timestamp).ToString();
+                lvi.SubItems.Add(flist.aircraft);
+                lvi.Tag = flist.FlightID;
                 FlightPickerLV.Items.Add(lvi);
             }
 
@@ -467,6 +586,14 @@ namespace FS2020PlanePath
             FlightPathDB.WriteTableOption("AboveThresholdWriteFreq", ThresholdLogWriteFreqTB.Text);
             FlightPathDB.WriteTableOption("ThresholdMinAltitude", ThresholdMinAltTB.Text);
             FlightPathDB.WriteTableOption("KMLFilePath", KMLFilePathTBRO.Text);
+            if (GoogleEarthAppRB.Checked == true)
+                FlightPathDB.WriteTableOption("GoolgeEarthChoice", "Application");
+            else
+                FlightPathDB.WriteTableOption("GoolgeEarthChoice", "Web");
+            if (SpeedUpVideoPlaybackCB.Checked == true)
+                FlightPathDB.WriteTableOption("SpeedUpVideoPlayback", "true");
+            else
+                FlightPathDB.WriteTableOption("SpeedUpVideoPlayback", "false");
         }
     }
 }

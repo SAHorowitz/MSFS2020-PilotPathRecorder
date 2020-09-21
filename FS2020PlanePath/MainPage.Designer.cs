@@ -50,6 +50,10 @@
             this.label7 = new System.Windows.Forms.Label();
             this.FlightPickerLV = new System.Windows.Forms.ListView();
             this.DeleteFlight = new System.Windows.Forms.Button();
+            this.GoogleEarthAppRB = new System.Windows.Forms.RadioButton();
+            this.GoogleEarthWebRB = new System.Windows.Forms.RadioButton();
+            this.GoogleEarthGB = new System.Windows.Forms.GroupBox();
+            this.SpeedUpVideoPlaybackCB = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label2
@@ -72,7 +76,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 366);
+            this.label3.Location = new System.Drawing.Point(12, 328);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(76, 13);
             this.label3.TabIndex = 16;
@@ -80,7 +84,7 @@
             // 
             // KMLFolderBrowser
             // 
-            this.KMLFolderBrowser.Location = new System.Drawing.Point(422, 360);
+            this.KMLFolderBrowser.Location = new System.Drawing.Point(422, 323);
             this.KMLFolderBrowser.Name = "KMLFolderBrowser";
             this.KMLFolderBrowser.Size = new System.Drawing.Size(117, 23);
             this.KMLFolderBrowser.TabIndex = 18;
@@ -90,7 +94,7 @@
             // 
             // KMLFilePathTBRO
             // 
-            this.KMLFilePathTBRO.Location = new System.Drawing.Point(125, 362);
+            this.KMLFilePathTBRO.Location = new System.Drawing.Point(125, 325);
             this.KMLFilePathTBRO.Name = "KMLFilePathTBRO";
             this.KMLFilePathTBRO.ReadOnly = true;
             this.KMLFilePathTBRO.Size = new System.Drawing.Size(272, 20);
@@ -138,10 +142,10 @@
             // 
             // CreateKMLButton
             // 
-            this.CreateKMLButton.Location = new System.Drawing.Point(139, 417);
+            this.CreateKMLButton.Location = new System.Drawing.Point(125, 441);
             this.CreateKMLButton.Name = "CreateKMLButton";
             this.CreateKMLButton.Size = new System.Drawing.Size(97, 23);
-            this.CreateKMLButton.TabIndex = 19;
+            this.CreateKMLButton.TabIndex = 23;
             this.CreateKMLButton.Text = "Create KML File";
             this.CreateKMLButton.UseVisualStyleBackColor = true;
             this.CreateKMLButton.Click += new System.EventHandler(this.CreateKMLButton_Click);
@@ -238,7 +242,7 @@
             this.FlightPickerLV.GridLines = true;
             this.FlightPickerLV.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.FlightPickerLV.HideSelection = false;
-            this.FlightPickerLV.Location = new System.Drawing.Point(125, 236);
+            this.FlightPickerLV.Location = new System.Drawing.Point(125, 211);
             this.FlightPickerLV.Name = "FlightPickerLV";
             this.FlightPickerLV.Size = new System.Drawing.Size(370, 97);
             this.FlightPickerLV.TabIndex = 15;
@@ -247,19 +251,63 @@
             // 
             // DeleteFlight
             // 
-            this.DeleteFlight.Location = new System.Drawing.Point(289, 417);
+            this.DeleteFlight.Location = new System.Drawing.Point(284, 441);
             this.DeleteFlight.Name = "DeleteFlight";
             this.DeleteFlight.Size = new System.Drawing.Size(152, 23);
-            this.DeleteFlight.TabIndex = 20;
+            this.DeleteFlight.TabIndex = 24;
             this.DeleteFlight.Text = "Delete Flight from Database";
             this.DeleteFlight.UseVisualStyleBackColor = true;
             this.DeleteFlight.Click += new System.EventHandler(this.DeleteFlight_Click);
+            // 
+            // GoogleEarthAppRB
+            // 
+            this.GoogleEarthAppRB.AutoSize = true;
+            this.GoogleEarthAppRB.Location = new System.Drawing.Point(132, 369);
+            this.GoogleEarthAppRB.Name = "GoogleEarthAppRB";
+            this.GoogleEarthAppRB.Size = new System.Drawing.Size(142, 17);
+            this.GoogleEarthAppRB.TabIndex = 20;
+            this.GoogleEarthAppRB.TabStop = true;
+            this.GoogleEarthAppRB.Text = "Google Earth Application";
+            this.GoogleEarthAppRB.UseVisualStyleBackColor = true;
+            // 
+            // GoogleEarthWebRB
+            // 
+            this.GoogleEarthWebRB.AutoSize = true;
+            this.GoogleEarthWebRB.Location = new System.Drawing.Point(284, 369);
+            this.GoogleEarthWebRB.Name = "GoogleEarthWebRB";
+            this.GoogleEarthWebRB.Size = new System.Drawing.Size(113, 17);
+            this.GoogleEarthWebRB.TabIndex = 21;
+            this.GoogleEarthWebRB.TabStop = true;
+            this.GoogleEarthWebRB.Text = "Google Earth Web";
+            this.GoogleEarthWebRB.UseVisualStyleBackColor = true;
+            // 
+            // GoogleEarthGB
+            // 
+            this.GoogleEarthGB.Location = new System.Drawing.Point(122, 351);
+            this.GoogleEarthGB.Name = "GoogleEarthGB";
+            this.GoogleEarthGB.Size = new System.Drawing.Size(282, 46);
+            this.GoogleEarthGB.TabIndex = 19;
+            this.GoogleEarthGB.TabStop = false;
+            this.GoogleEarthGB.Text = "Export KML For Use In:";
+            // 
+            // SpeedUpVideoPlaybackCB
+            // 
+            this.SpeedUpVideoPlaybackCB.AutoSize = true;
+            this.SpeedUpVideoPlaybackCB.Location = new System.Drawing.Point(125, 403);
+            this.SpeedUpVideoPlaybackCB.Name = "SpeedUpVideoPlaybackCB";
+            this.SpeedUpVideoPlaybackCB.Size = new System.Drawing.Size(361, 17);
+            this.SpeedUpVideoPlaybackCB.TabIndex = 22;
+            this.SpeedUpVideoPlaybackCB.Text = "Speed Up First Person Flight Playback When Above Threshold Altitude";
+            this.SpeedUpVideoPlaybackCB.UseVisualStyleBackColor = true;
             // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(557, 455);
+            this.ClientSize = new System.Drawing.Size(557, 476);
+            this.Controls.Add(this.SpeedUpVideoPlaybackCB);
+            this.Controls.Add(this.GoogleEarthWebRB);
+            this.Controls.Add(this.GoogleEarthAppRB);
             this.Controls.Add(this.DeleteFlight);
             this.Controls.Add(this.FlightPickerLV);
             this.Controls.Add(this.label7);
@@ -281,9 +329,10 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.ThresholdLogWriteFreqTB);
             this.Controls.Add(this.label2);
+            this.Controls.Add(this.GoogleEarthGB);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainPage";
-            this.Text = "Pilot Path Recorder v1.0.3";
+            this.Text = "Pilot Path Recorder v1.1.0";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainPage_FormClosing);
             this.Shown += new System.EventHandler(this.MainPage_Shown);
             this.ResumeLayout(false);
@@ -313,6 +362,10 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.ListView FlightPickerLV;
         private System.Windows.Forms.Button DeleteFlight;
+        private System.Windows.Forms.RadioButton GoogleEarthAppRB;
+        private System.Windows.Forms.RadioButton GoogleEarthWebRB;
+        private System.Windows.Forms.GroupBox GoogleEarthGB;
+        private System.Windows.Forms.CheckBox SpeedUpVideoPlaybackCB;
     }
 }
 

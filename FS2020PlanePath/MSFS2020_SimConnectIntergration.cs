@@ -27,13 +27,14 @@ namespace FS2020PlanePath
         {
             DataRequest,
             SimEnvironmentReq,
-            SUBSCRIBE_REQ,
-            NONSUBSCRIBE_REQ,
         }
 
         enum EVENTS
         {
-            ID0,
+            FlightPlanActivated,
+            FlightPlanDeactivated,
+            SimStop,
+            SimStart,
         };
 
         enum DEFINITIONS
@@ -75,6 +76,18 @@ namespace FS2020PlanePath
             public Int32 overspeed_warning;
             public Int32 is_gear_retractable;
             public Int32 spoiler_avaialable;
+            public double gps_wp_prev_latitude;
+            public double gps_wp_prev_longitude;
+            public Int32 gps_wp_prev_altitude;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string gps_wp_prev_id;
+            public double gps_wp_next_latitude;
+            public double gps_wp_next_longitude;
+            public Int32 gps_wp_next_altitude;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string gps_wp_next_id;
+            public Int32 gps_flight_plan_wp_index;
+            public Int32 gps_flight_plan_wp_count;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -84,7 +97,7 @@ namespace FS2020PlanePath
             public string title;
         }
 
-        public /*static*/ void CloseConnection()
+        public void CloseConnection()
         {
             if (simConnect != null)
             {
@@ -108,7 +121,7 @@ namespace FS2020PlanePath
             }
         }
 
-        private /*static*/ void SetupEvents()
+        private void SetupEvents()
         {
             try
             {
@@ -116,6 +129,10 @@ namespace FS2020PlanePath
                 simConnect.OnRecvQuit += new SimConnect.RecvQuitEventHandler(SimConnect_OnRecvQuit);
 
                 simConnect.OnRecvException += new SimConnect.RecvExceptionEventHandler(SimConnect_OnRecvException);
+
+                // for future use
+/*                SimConnect.OnRecvEvent += new SimConnect.RecvEventEventHandler(SimConnect_OnRecvEvent);
+                SimConnect.OnRecvEventFilename += new SimConnect.RecvEventFilenameEventHandler(SimConnect_OnRecvFilename);*/
 
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "Plane Latitude", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "Plane Longitude", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
@@ -145,6 +162,16 @@ namespace FS2020PlanePath
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "Overspeed Warning", "bool", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "Is Gear Retractable", "bool", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "Spoiler Available", "bool", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Prev Lat", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Prev Lon", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Prev ALT", "feet", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Prev ID", null, SIMCONNECT_DATATYPE.STRING256, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Next Lat", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Next Lon", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP Next ALT", "feet", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP NEXT ID", null, SIMCONNECT_DATATYPE.STRING256, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS Flight Plan WP Index", "number", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS Flight Plan WP Count", "number", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
                 SimConnect.AddToDataDefinition(DEFINITIONS.SimEnvironmentDataStructure, "TITLE", null, SIMCONNECT_DATATYPE.STRING256, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
@@ -155,9 +182,15 @@ namespace FS2020PlanePath
 
                 simConnect.OnRecvSimobjectData += new SimConnect.RecvSimobjectDataEventHandler(SimConnect_OnRecvSimobjectData);
                 simConnect.RequestDataOnSimObject(DATA_REQUESTS.SimEnvironmentReq, DEFINITIONS.SimEnvironmentDataStructure, SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
-                simConnect.RequestFacilitiesList(SIMCONNECT_FACILITY_LIST_TYPE.AIRPORT, DATA_REQUESTS.NONSUBSCRIBE_REQ);
-                simConnect.RequestFacilitiesList(SIMCONNECT_FACILITY_LIST_TYPE.VOR, DATA_REQUESTS.NONSUBSCRIBE_REQ);
 
+                // for future use
+/*              simConnect.SubscribeToSystemEvent(EVENTS.FlightPlanActivated, "FlightPlanActivated");
+                simConnect.SubscribeToSystemEvent(EVENTS.FlightPlanDeactivated, "FlightPlanDeactivated");
+                simConnect.SubscribeToSystemEvent(EVENTS.SimStop, "SimStop");
+                simConnect.SubscribeToSystemEvent(EVENTS.SimStart, "SimStart");
+                simConnect.MapClientEventToSimEvent(EVENTS.FlightPlanActivated, "");
+                SimConnect.SetSystemEventState(EVENTS.FlightPlanActivated, SIMCONNECT_STATE.OFF);
+ */
             }
             catch (COMException ex)
             {
@@ -182,6 +215,48 @@ namespace FS2020PlanePath
             CloseConnection();
         }
 
+        // for future use
+/*        void SimConnect_OnRecvEvent(SimConnect sender, SIMCONNECT_RECV_EVENT data)
+        {
+            switch ((EVENTS)(data.uEventID))
+            {
+                case EVENTS.FlightPlanActivated:
+                    int n = 5;
+                    break;
+
+                case EVENTS.FlightPlanDeactivated:
+                    int aa = 7;
+                    break;
+
+                case EVENTS.SimStop:
+                    int x = 6;
+                    break;
+
+                case EVENTS.SimStart:
+                    int z = 7;
+                    break;
+
+           
+                default:
+                    break;
+            }
+
+        }*/
+
+        // for future use
+/*        void SimConnect_OnRecvFilename(SimConnect sender, SIMCONNECT_RECV_EVENT_FILENAME data)
+        {
+            switch ((EVENTS)(data.uEventID))
+            {
+                case EVENTS.FlightPlanActivated:
+                    int n = 5;
+                    break;
+
+                default:
+                    break;
+            }
+        }*/
+
         // when receiving object data first asked for simenvironment info to get aircraft title one time
         // once that is received then ask once a second for aircraft info
         void SimConnect_OnRecvSimobjectData(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
@@ -195,9 +270,10 @@ namespace FS2020PlanePath
                                   s1.ground_velocity, s1.plane_pitch, s1.plane_bank, s1.plane_heading_true, s1.plane_heading_magnetic, s1.plane_airspeed_indicated, 
                                   s1.airspeed_true, s1.vertical_speed, s1.heading_indicator, s1.flaps_handle_position, s1.spoilers_handle_position,
                                   s1.gear_handle_position, s1.ambient_wind_velocity, s1.ambient_wind_direction, s1.ambient_temperature, 
-                                  s1.stall_warning, s1.overspeed_warning, s1.is_gear_retractable, s1.spoiler_avaialable);
+                                  s1.stall_warning, s1.overspeed_warning, s1.is_gear_retractable, s1.spoiler_avaialable, s1.gps_wp_prev_latitude, s1.gps_wp_prev_longitude,
+                                  s1.gps_wp_prev_altitude, s1.gps_wp_prev_id, s1.gps_wp_next_latitude, s1.gps_wp_next_longitude, s1.gps_wp_next_altitude, s1.gps_wp_next_id,
+                                  s1.gps_flight_plan_wp_index, s1.gps_flight_plan_wp_count);
                     break;
-
 
                 case DATA_REQUESTS.SimEnvironmentReq:
                     SimEnvironmentDataStructure s2 = (SimEnvironmentDataStructure)data.dwData[0];

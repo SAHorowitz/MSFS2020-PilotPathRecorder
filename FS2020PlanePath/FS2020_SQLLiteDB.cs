@@ -59,13 +59,112 @@ namespace FS2020PlanePath
 
     class FlightListData
     {
-        Int32 FlightID;
-        string aircraft;
-        long start_flight_timestamp;
+        public Int32 FlightID;
+        public string aircraft;
+        public long start_flight_timestamp;
+    }
 
-        public int FlightID1 { get => FlightID; set => FlightID = value; }
-        public string Aircraft { get => aircraft; set => aircraft = value; }
-        public long Start_flight_timestamp { get => start_flight_timestamp; set => start_flight_timestamp = value; }
+    class FlightWaypointData
+    {
+        public double gps_wp_latitude;
+        public double gps_wp_longitude;
+        public Int32 gps_wp_altitude;
+        public string gps_wp_name;
+
+        public FlightWaypointData()
+        {
+        }
+
+        public FlightWaypointData(double gps_wp_lat, double gps_wp_long, Int32 gps_wp_alt, string gps_wp_id)
+        {
+            gps_wp_latitude = gps_wp_lat;
+            gps_wp_longitude = gps_wp_long;
+            gps_wp_altitude = gps_wp_alt;
+            gps_wp_name = gps_wp_id;
+        }
+    }
+
+    class FlightPlan
+    {
+        public List<FlightWaypointData> flight_waypoints;
+        private int flightplan_index;
+        private int flightplan_count;
+
+        public FlightPlan()
+        {
+            flight_waypoints = new List<FlightWaypointData>();
+        }
+
+        public bool IsWaypointValid(FlightWaypointData waypointData)
+        {
+            if ((waypointData.gps_wp_altitude > 0) &&
+                (waypointData.gps_wp_latitude != 0) &&
+                (waypointData.gps_wp_longitude != 0) &&
+                (waypointData.gps_wp_name.Length > 0))
+                return true;
+            else
+                return false;
+        }
+
+        public void AddFlightPlanWaypoint(FlightWaypointData prevWaypoint, FlightWaypointData nextWaypoint, int iflightplan_index, int iflightplan_count)
+        {
+            // if there is already at least one item in the list then compare last item to see if it matches
+            if (flight_waypoints.Count > 0)
+            {
+                FlightWaypointData fwdLastWaypointinList;
+
+                fwdLastWaypointinList = flight_waypoints[flight_waypoints.Count - 1];
+
+                // if the next waypoint is not equal to last in the list then something has changed
+                if (String.Compare(fwdLastWaypointinList.gps_wp_name, nextWaypoint.gps_wp_name) != 0)
+                    // if last waypoint in list is equal to the prev waypoint then we can add next waypoint to the list
+                    // because it means user crossed the waypoint and possibly heading to next or is done with flightplan
+                    if (String.Compare(fwdLastWaypointinList.gps_wp_name, prevWaypoint.gps_wp_name) == 0)
+                    {
+                        if (IsWaypointValid(nextWaypoint) == true)
+                            flight_waypoints.Add(nextWaypoint);
+                        flightplan_index = iflightplan_index;
+                        flightplan_count = iflightplan_count;
+                    }
+                    else
+                    {
+                        FlightWaypointData fwdSecondToLastWaypointinList;
+
+                        fwdSecondToLastWaypointinList = flight_waypoints[flight_waypoints.Count - 2];
+
+                        // if second to last is same as previous then user just changed next waypoint so just replace it
+                        if (String.Compare(fwdSecondToLastWaypointinList.gps_wp_name, prevWaypoint.gps_wp_name) == 0)
+                        {
+                            flight_waypoints.RemoveAt(flight_waypoints.Count - 1);
+                            if (IsWaypointValid(nextWaypoint) == true)
+                                flight_waypoints.Add(nextWaypoint);
+                        }
+                        else
+                        {
+                            // these new waypoints don't match anything we have so user changed flightplan?
+                            flight_waypoints.Clear();
+                            if (IsWaypointValid(prevWaypoint) == true)
+                                flight_waypoints.Add(prevWaypoint);
+                            if (iflightplan_index < iflightplan_count)
+                                if (IsWaypointValid(nextWaypoint) == true)
+                                    flight_waypoints.Add(nextWaypoint);
+                        }
+                        flightplan_index = iflightplan_index;
+                        flightplan_count = iflightplan_count;
+                    }
+            }
+            else // add new items that are valid
+            {
+                if (IsWaypointValid(prevWaypoint) == true)
+                    flight_waypoints.Add(prevWaypoint);
+                // if not at end of flightplan then there should be a next waypoint
+                if (iflightplan_index < iflightplan_count)
+                    if (IsWaypointValid(nextWaypoint) == true)
+                        flight_waypoints.Add(nextWaypoint);
+                flightplan_index = iflightplan_index;
+                flightplan_count = iflightplan_count;
+            }
+        }
     }
 
     class FS2020_SQLLiteDB
@@ -74,6 +173,7 @@ namespace FS2020PlanePath
         private const int TblVersion_Flights = 1;
         private const int TblVersion_FlightSamples = 1;
         private const int TblVersion_FlightSampleDetails = 1;
+        private const int TblVersion_FlightWaypoints = 1;
         private const int TblVersion_FlightOptions = 1;
 
         public FS2020_SQLLiteDB()
@@ -145,6 +245,16 @@ namespace FS2020PlanePath
                 sqlite_cmd.CommandText = Createsql;
                 sqlite_cmd.ExecuteNonQuery();
             }
+
+            if (CheckTableExists("FlightWaypoints") == false)
+            {
+                sqlite_cmd = sqlite_conn.CreateCommand();
+                Createsql = "CREATE TABLE FlightWaypoints (FlightWaypointsID INTEGER PRIMARY KEY, FlightID integer NOT NULL, latitude double, longitude double, altitude int32, name varchar(256),  ";
+                Createsql += "FOREIGN KEY (FlightID) REFERENCES Flight(FlightID) )";
+                sqlite_cmd.CommandText = Createsql;
+                sqlite_cmd.ExecuteNonQuery();
+            }
+
             // Fill in Table Versions if needed
             LoadUpTableVersions();
 
@@ -156,32 +266,60 @@ namespace FS2020PlanePath
         {
             SQLiteCommand sqlite_cmd;
             string selectsql;
+            int nNumVersionRows;
+            string insertsql;
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             selectsql = "SELECT COUNT(tblVersionID) from TblVersions";
             sqlite_cmd.CommandText = selectsql;
-            
-            // if there are no table rows then we need to fill them
-            if (Convert.ToInt32(sqlite_cmd.ExecuteScalar()) == 0)
-            {
-                string insertsql;
+            nNumVersionRows = Convert.ToInt32(sqlite_cmd.ExecuteScalar());
 
-                sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = "INSERT INTO TblVersions (tblname, tblversion) VALUES (@tblname, @tblversion)";
-                sqlite_cmd.CommandText = insertsql;
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            insertsql = "INSERT INTO TblVersions (tblname, tblversion) VALUES (@tblname, @tblversion)";
+            sqlite_cmd.CommandText = insertsql;
+
+            // since we know the tables and the order we have added them to the program over time
+            // then we can use the number of rows to know what table versions we should add
+            // adding one afterwards ensures we catch all the missing from them on to the end
+            if (nNumVersionRows == 0)
+            {
+                sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@tblname", "Flights");
                 sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_Flights);
                 sqlite_cmd.ExecuteNonQuery();
-
+                nNumVersionRows++;
+            }
+            if (nNumVersionRows == 1)
+            {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightSamples");
                 sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightSamples);
                 sqlite_cmd.ExecuteNonQuery();
-
+                nNumVersionRows++;
+            }
+            if (nNumVersionRows == 2)
+            { 
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightSampleDetails");
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightSampleDetails);
+                sqlite_cmd.ExecuteNonQuery();
+                nNumVersionRows++;
+            }
+            if (nNumVersionRows == 3)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightPathOptions");
                 sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightOptions);
                 sqlite_cmd.ExecuteNonQuery();
+                nNumVersionRows++;
+            }
+            if (nNumVersionRows == 4)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightWaypoints");
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightWaypoints);
+                sqlite_cmd.ExecuteNonQuery();
+                nNumVersionRows++;
             }
         }
 
@@ -189,32 +327,60 @@ namespace FS2020PlanePath
         {
             SQLiteCommand sqlite_cmd;
             string selectsql;
+            int nNumOptionRows;
+            string insertsql;
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             selectsql = "SELECT COUNT(OptionsID) from FlightPathOptions";
             sqlite_cmd.CommandText = selectsql;
 
-            // if there are no table rows then we need to fill them
-            if (Convert.ToInt32(sqlite_cmd.ExecuteScalar()) == 0)
-            {
-                string insertsql;
+            nNumOptionRows = Convert.ToInt32(sqlite_cmd.ExecuteScalar());
 
-                sqlite_cmd = sqlite_conn.CreateCommand();
-                insertsql = "INSERT INTO FlightPathOptions (optionname, optionvalue) VALUES (@optionname, @optionvalue)";
-                sqlite_cmd.CommandText = insertsql;
+            // since we know the options and the order we have added them to the program over time
+            // then we can use the number of rows to know what options we should add
+            // adding one afterwards ensures we catch all the missing from them on to the end
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            insertsql = "INSERT INTO FlightPathOptions (optionname, optionvalue) VALUES (@optionname, @optionvalue)";
+            sqlite_cmd.CommandText = insertsql;
+            if (nNumOptionRows == 0)
+            {
+                sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@optionname", "AboveThresholdWriteFreq");
                 sqlite_cmd.Parameters.AddWithValue("@optionvalue", "5");
                 sqlite_cmd.ExecuteNonQuery();
-
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 1)
+            {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@optionname", "ThresholdMinAltitude");
                 sqlite_cmd.Parameters.AddWithValue("@optionvalue", "500");
                 sqlite_cmd.ExecuteNonQuery();
-
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 2)
+            {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@optionname", "KMLFilePath");
                 sqlite_cmd.Parameters.AddWithValue("@optionvalue", "");
                 sqlite_cmd.ExecuteNonQuery();
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 3)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "GoolgeEarthChoice");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "Application");
+                sqlite_cmd.ExecuteNonQuery();
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 4)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "SpeedUpVideoPlayback");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "true");
+                sqlite_cmd.ExecuteNonQuery();
+                nNumOptionRows++;
             }
         }
 
@@ -270,7 +436,7 @@ namespace FS2020PlanePath
             return (bRetVal);
         }
 
-        public long WriteFlight(string aircraft)
+        public int WriteFlight(string aircraft)
         {
             SQLiteCommand sqlite_cmd;
             string sqlStr;
@@ -287,10 +453,10 @@ namespace FS2020PlanePath
             FlightID = sqlite_conn.LastInsertRowId;
             transaction.Commit();
 
-            return FlightID;
+            return Convert.ToInt32(FlightID);
         }
 
-        public long WriteFlightPoint(long pk, double latitude, double longitude, Int32 altitude)
+        public int WriteFlightPoint(long pk, double latitude, double longitude, Int32 altitude)
         {
             SQLiteCommand sqlite_cmd;
             string Insertsql;
@@ -310,7 +476,7 @@ namespace FS2020PlanePath
             FlightSampleID = sqlite_conn.LastInsertRowId;
             transaction.Commit();
 
-            return FlightSampleID;
+            return Convert.ToInt32(FlightSampleID);
         }
 
         public void WriteFlightPointDetails(long pk, Int32 altitude_above_ground, Int32 engine1rpm, Int32 engine2rpm, Int32 engine3rpm, Int32 engine4rpm, Int32 lightsmask, double ground_velocity,
@@ -360,6 +526,53 @@ namespace FS2020PlanePath
             sqlite_cmd.ExecuteNonQuery();
         }
 
+        public void WriteFlightPlan(int pk, List<FlightWaypointData> flight_waypoints)
+        {
+            SQLiteCommand sqlite_cmd;
+            string Insertsql;
+            SQLiteTransaction transaction = null;
+
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            transaction = sqlite_conn.BeginTransaction();
+            Insertsql = "Insert into FlightWaypoints (FlightID, latitude, longitude, altitude, name) VALUES (@FlightID, @latitude, @longitude, @altitude, @name)";
+            sqlite_cmd.CommandText = Insertsql;
+
+            foreach (FlightWaypointData waypoint in flight_waypoints)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+                sqlite_cmd.Parameters.AddWithValue("@latitude", waypoint.gps_wp_latitude);
+                sqlite_cmd.Parameters.AddWithValue("@longitude", waypoint.gps_wp_longitude);
+                sqlite_cmd.Parameters.AddWithValue("@altitude", waypoint.gps_wp_altitude);
+                sqlite_cmd.Parameters.AddWithValue("@name", waypoint.gps_wp_name);
+                sqlite_cmd.ExecuteNonQuery();
+            }
+            transaction.Commit();
+        }
+
+        public List<FlightWaypointData> GetFlightWaypoints(int pk)
+        {
+            List<FlightWaypointData> FlightWaypoints = new List<FlightWaypointData>();
+            SQLiteCommand sqlite_cmd;
+            string Selectsql;
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            Selectsql = "Select latitude, longitude, altitude, name FROM FlightWaypoints WHERE FlightID = @FlightID";
+            sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+            SQLiteDataReader r = sqlite_cmd.ExecuteReader();
+            while (r.Read())
+            {
+                FlightWaypointData waypointData = new FlightWaypointData();
+                waypointData.gps_wp_latitude = r.GetDouble(0);
+                waypointData.gps_wp_longitude = r.GetDouble(1);
+                waypointData.gps_wp_altitude = r.GetInt32(2);
+                waypointData.gps_wp_name = r.GetString(3);
+
+                FlightWaypoints.Add(waypointData);
+            }
+            return FlightWaypoints;
+        }
+
         public List<FlightPathData> GetFlightPathData(int pk)
         {
             List<FlightPathData> FlightPath = new List<FlightPathData>();
@@ -375,10 +588,8 @@ namespace FS2020PlanePath
             sqlite_cmd.CommandText = Selectsql;
             sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
-            int n = 0;
             while (r.Read())
             {
-                n++;
                 FlightPathData data = new FlightPathData();
                 data.latitude = r.GetDouble(0);
                 data.longitude = r.GetDouble(1);
@@ -424,14 +635,12 @@ namespace FS2020PlanePath
             Selectsql = "SELECT FlightID, aircraft, start_datetimestamp FROM Flights ORDER BY FlightID ASC";
             sqlite_cmd.CommandText = Selectsql;
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
-            int n = 0;
             while (r.Read())
             {
-                n++;
                 FlightListData data = new FlightListData();
-                data.FlightID1 = r.GetInt32(0);
-                data.Aircraft = r.GetString(1);
-                data.Start_flight_timestamp = r.GetInt64(2);
+                data.FlightID = r.GetInt32(0);
+                data.aircraft = r.GetString(1);
+                data.start_flight_timestamp = r.GetInt64(2);
                 FlightList.Add(data);
             }
             return FlightList;
@@ -445,20 +654,33 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            Deletesql = "Delete from FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID IN (select FlightSamplesID From FlightSamples WHERE FlightID = @FlightID)";
+            
+            Deletesql = "Delete from FlightWaypoints WHERE FlightID = @FlightID";
             sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.Clear();
             sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
             sqlite_cmd.ExecuteNonQuery();
+
+            Deletesql = "Delete from FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID IN (select FlightSamplesID From FlightSamples WHERE FlightID = @FlightID)";
+            sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.Clear();
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
+            sqlite_cmd.ExecuteNonQuery();
+
             sqlite_cmd = sqlite_conn.CreateCommand();
             Deletesql = "Delete from FlightSamples WHERE FlightID = @FlightID";
             sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.Clear();
             sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
             sqlite_cmd.ExecuteNonQuery();
+
             sqlite_cmd = sqlite_conn.CreateCommand();
             Deletesql = "Delete from Flights WHERE FlightID = @FlightID";
             sqlite_cmd.CommandText = Deletesql;
+            sqlite_cmd.Parameters.Clear();
             sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
             sqlite_cmd.ExecuteNonQuery();
+
             transaction.Commit();
         }
     }
