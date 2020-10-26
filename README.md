@@ -1,3 +1,6 @@
+# Version History
+v1.2.0 - Added
+
 # MSFS2020-PilotPathRecorder
 Record your flight path with key flight information archived during the trip.  Then export that data to a KML file to use with Google Earth for 3 dimensional flight analysis, flight plan information and a chance to review your flight from the first person perspective.
 
