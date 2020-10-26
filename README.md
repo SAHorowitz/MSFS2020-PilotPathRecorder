@@ -1,5 +1,21 @@
 # Version History
-v1.2.0 - Added
+v1.2.0 - Added the ability to know if your plane is on the ground or in the air. Changed yellow push-pins on Flight Path Data Points to green meaning plane is on the ground or blue meaning plane is the air. This way people can zoom in on when their plane landed or took off and look at detail easier.
+
+Note that previous flights recorded in the database assume plane is in the air the entire flight. Only new flights recorded will distinguish whether the plane is on the ground or in the air.
+
+v1.1.1 - Fixed issue with pushpins where user would have to turn on every pushpin individually to show in Google Web application
+
+Added First Person Flight View (fly your flight again in 1st person)
+
+Thickened flight line
+
+Added fight plan waypoints
+
+turned off data points showing in Google Earth by default
+
+Turned on High DPI support for Windows 10.
+
+v1.03 - Fixed all issues related to international use of the program
 
 # MSFS2020-PilotPathRecorder
 Record your flight path with key flight information archived during the trip.  Then export that data to a KML file to use with Google Earth for 3 dimensional flight analysis, flight plan information and a chance to review your flight from the first person perspective.
