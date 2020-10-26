@@ -5,17 +5,20 @@ Note that previous flights recorded in the database assume plane is in the air t
 
 v1.1.1 - Fixed issue with pushpins where user would have to turn on every pushpin individually to show in Google Web application
 
-Added First Person Flight View (fly your flight again in 1st person)
+ - Added First Person Flight View (fly your flight again in 1st person)
+ - Thickened flight line
+ - Added fight plan waypoints
+ - Turned off data points showing in Google Earth by default
+ - Turned on High DPI support for Windows 10.
 
-Thickened flight line
+v1.1.0
+ - Added First Person Flight View
+ - Thickened flight line
+ - Added fight plan waypoints
+ - turned off data points showing in Google Earth by default
+ - General code cleanup
 
-Added fight plan waypoints
-
-turned off data points showing in Google Earth by default
-
-Turned on High DPI support for Windows 10.
-
-v1.03 - Fixed all issues related to international use of the program
+v1.0.3 - Fixed all issues related to international use of the program
 
 
 # MSFS2020-PilotPathRecorder
