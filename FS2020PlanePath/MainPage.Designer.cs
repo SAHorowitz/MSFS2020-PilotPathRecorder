@@ -332,7 +332,7 @@
             this.Controls.Add(this.GoogleEarthGB);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainPage";
-            this.Text = "Pilot Path Recorder v1.1.1";
+            this.Text = "Pilot Path Recorder v1.2.0";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainPage_FormClosing);
             this.Shown += new System.EventHandler(this.MainPage_Shown);
             this.ResumeLayout(false);

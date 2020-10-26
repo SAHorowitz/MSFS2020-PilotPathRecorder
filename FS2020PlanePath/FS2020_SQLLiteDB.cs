@@ -40,6 +40,7 @@ namespace FS2020PlanePath
         public Int32 overspeed_warning;
         public Int32 is_gear_retractable;
         public Int32 spoiler_available;
+        public Int32 sim_on_ground;
 
         [Flags]
         public enum LightStates
@@ -172,7 +173,7 @@ namespace FS2020PlanePath
         SQLiteConnection sqlite_conn;
         private const int TblVersion_Flights = 1;
         private const int TblVersion_FlightSamples = 1;
-        private const int TblVersion_FlightSampleDetails = 1;
+        private const int TblVersion_FlightSampleDetails = 2;
         private const int TblVersion_FlightWaypoints = 1;
         private const int TblVersion_FlightOptions = 1;
 
@@ -258,6 +259,9 @@ namespace FS2020PlanePath
             // Fill in Table Versions if needed
             LoadUpTableVersions();
 
+            // Check Table versions and update as needed
+            UpdateTablesAsNeeded();
+
             // Load Up Table Options if needed
             LoadUpTableOptions();
         }
@@ -320,6 +324,59 @@ namespace FS2020PlanePath
                 sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightWaypoints);
                 sqlite_cmd.ExecuteNonQuery();
                 nNumVersionRows++;
+            }
+        }
+
+        private void UpdateTablesAsNeeded()
+        {
+            int nCurTableVersion = 0;
+
+            nCurTableVersion = GetCurrentTableVersion("FlightSampleDetails");
+
+            if (nCurTableVersion < TblVersion_FlightSampleDetails)
+                UpdateFlightSampleDetailsTable(nCurTableVersion);
+        }
+
+        private int GetCurrentTableVersion(string sTable)
+        {
+            SQLiteCommand sqlite_cmd;
+            string Selectsql;
+            int nRetval = 0;
+
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            Selectsql = "SELECT tblVersion FROM TblVersions WHERE tblName  = @tblname";
+            sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.AddWithValue("@tblname", sTable);
+            SQLiteDataReader r = sqlite_cmd.ExecuteReader();
+            while (r.Read())
+                nRetval = r.GetInt32(0);
+
+            return (nRetval);
+        }
+
+        private void UpdateFlightSampleDetailsTable(int nCurTableVersion)
+        {
+            SQLiteCommand sqlite_cmd;
+            string Updatesql;
+
+            sqlite_cmd = sqlite_conn.CreateCommand();
+
+            if (nCurTableVersion == 1)
+            {
+                Updatesql = "ALTER TABLE FlightSampleDetails ADD sim_on_ground int32";
+                sqlite_cmd.CommandText = Updatesql;
+                sqlite_cmd.ExecuteNonQuery();
+
+                sqlite_cmd.Parameters.Clear();
+                Updatesql = "Update FlightSampleDetails SET sim_on_ground = 0";
+                sqlite_cmd.CommandText = Updatesql;
+                sqlite_cmd.ExecuteNonQuery();
+
+                sqlite_cmd.Parameters.Clear();
+                Updatesql = "Update TblVersions SET tblVersion = @tblversion WHERE tblName = 'FlightSampleDetails'";
+                sqlite_cmd.CommandText = Updatesql;
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", nCurTableVersion + 1);
+                sqlite_cmd.ExecuteNonQuery();
             }
         }
 
@@ -401,11 +458,10 @@ namespace FS2020PlanePath
             return (sRetval);
         }
 
-        public String WriteTableOption(String optionname, String optionvalue)
+        public void WriteTableOption(String optionname, String optionvalue)
         {
             SQLiteCommand sqlite_cmd;
             string Updatesql;
-            string sRetval = "";
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             Updatesql = "Update FlightPathOptions SET optionvalue = @optionvalue WHERE optionname  = @optionname";
@@ -413,10 +469,6 @@ namespace FS2020PlanePath
             sqlite_cmd.Parameters.AddWithValue("@optionname", optionname);
             sqlite_cmd.Parameters.AddWithValue("@optionvalue", optionvalue);
             SQLiteDataReader r = sqlite_cmd.ExecuteReader();
-            while (r.Read())
-                sRetval = r.GetString(0);
-
-            return (sRetval);
         }
 
         private bool CheckTableExists(String tblName)
@@ -484,7 +536,7 @@ namespace FS2020PlanePath
                                             double plane_airspeed_indicated, double airspeed_true, double vertical_speed, double heading_indicator,
                                             Int32 flaps_handle_position, Int32 spoilers_handle_position, Int32 gear_handle_position,
                                             double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, Int32 stall_warning,
-                                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available)
+                                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available, Int32 sim_on_ground)
         {
             SQLiteCommand sqlite_cmd;
             string Insertsql;
@@ -492,10 +544,10 @@ namespace FS2020PlanePath
             sqlite_cmd = sqlite_conn.CreateCommand();
             Insertsql = "Insert into FlightSampleDetails (FlightSamplesID, alitutdeaboveground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true, ";
             Insertsql += "plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed, heading_indicator, flaps_handle_position, spoilers_handle_position, gear_handle_position, ambient_wind_velocity, ";
-            Insertsql += "ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available) VALUES (@FlightSamplesID, @alitutdeaboveground, @engine1rpm, @engine2rpm, ";
-            Insertsql += "@engine3rpm, @engine4rpm, @lightsmask, @ground_velocity, @plane_pitch, @plane_bank, @plane_heading_true, @plane_heading_magnetic, @plane_airspeed_indicated, @airspeed_true, @vertical_speed, ";
-            Insertsql += "@heading_indicator, @flaps_handle_position, @spoilers_handle_position, @gear_handle_position, @ambient_wind_velocity, @ambient_wind_direction, @ambient_temperature, @stall_warning, ";
-            Insertsql += "@overspeed_warning, @is_gear_retractable, @spoiler_available)";
+            Insertsql += "ambient_wind_direction, ambient_temperature, stall_warning, overspeed_warning, is_gear_retractable, spoiler_available, sim_on_ground) VALUES (@FlightSamplesID, @alitutdeaboveground, @engine1rpm, ";
+            Insertsql += "@engine2rpm, @engine3rpm, @engine4rpm, @lightsmask, @ground_velocity, @plane_pitch, @plane_bank, @plane_heading_true, @plane_heading_magnetic, @plane_airspeed_indicated, @airspeed_true, ";
+            Insertsql += "@vertical_speed, @heading_indicator, @flaps_handle_position, @spoilers_handle_position, @gear_handle_position, @ambient_wind_velocity, @ambient_wind_direction, @ambient_temperature, @stall_warning, ";
+            Insertsql += "@overspeed_warning, @is_gear_retractable, @spoiler_available, @sim_on_ground)";
             sqlite_cmd.CommandText = Insertsql;
             sqlite_cmd.Parameters.AddWithValue("@FlightSamplesID", pk);
             sqlite_cmd.Parameters.AddWithValue("@alitutdeaboveground", altitude_above_ground);
@@ -523,6 +575,7 @@ namespace FS2020PlanePath
             sqlite_cmd.Parameters.AddWithValue("@overspeed_warning", overspeed_warning);
             sqlite_cmd.Parameters.AddWithValue("@is_gear_retractable", is_gear_retractable);
             sqlite_cmd.Parameters.AddWithValue("@spoiler_available", spoiler_available);
+            sqlite_cmd.Parameters.AddWithValue("@sim_on_ground", sim_on_ground);
             sqlite_cmd.ExecuteNonQuery();
         }
 
@@ -583,7 +636,7 @@ namespace FS2020PlanePath
             Selectsql += "cast (ground_velocity as double), cast (plane_pitch as double), cast (plane_bank as double), cast (plane_heading_true as double), cast (plane_heading_magnetic as double), ";
             Selectsql += "cast (plane_airspeed_indicated as double), cast (airspeed_true as double), cast (vertical_speed as double), cast (heading_indicator as double), flaps_handle_position, ";
             Selectsql += "spoilers_handle_position, gear_handle_position, cast (ambient_wind_velocity as double), cast (ambient_wind_direction as double), cast (ambient_temperature as double),";
-            Selectsql += "stall_warning, overspeed_warning, is_gear_retractable, spoiler_available ";
+            Selectsql += "stall_warning, overspeed_warning, is_gear_retractable, spoiler_available, sim_on_ground ";
             Selectsql += "FROM FlightSamples, FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID = FlightSamples.FlightSamplesID AND FlightID = @FlightID";
             sqlite_cmd.CommandText = Selectsql;
             sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
@@ -620,6 +673,7 @@ namespace FS2020PlanePath
                 data.overspeed_warning = r.GetInt32(26);
                 data.is_gear_retractable = r.GetInt32(27);
                 data.spoiler_available = r.GetInt32(28);
+                data.sim_on_ground = r.GetInt32(29);
 
                 FlightPath.Add(data);
             }

@@ -160,7 +160,7 @@ namespace FS2020PlanePath
                             Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available, double gps_wp_prev_latitude,
                             double gps_wp_prev_longitude, Int32 gps_wp_prev_altitude, string gps_wp_prev_id, double gps_wp_next_latitude,
                             double gps_wp_next_longitude, Int32 gps_wp_next_altitude, string gps_wp_next_id, Int32 gps_flight_plan_wp_index,
-                            Int32 gps_flight_plan_wp_count)
+                            Int32 gps_flight_plan_wp_count, Int32 sim_on_ground)
         {
             if (bLoggingEnabled == true)
             {
@@ -180,7 +180,7 @@ namespace FS2020PlanePath
                                                          plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed,
                                                          heading_indicator, flaps_handle_position, spoilers_handle_position,
                                                          gear_handle_position, ambient_wind_velocity, ambient_wind_direction, ambient_temperature, 
-                                                         stall_warning, overspeed_warning, is_gear_retractable, spoiler_available);
+                                                         stall_warning, overspeed_warning, is_gear_retractable, spoiler_available, sim_on_ground);
                     dtLastDataRecord = DateTime.Now;
                 }
                 flightPlan.AddFlightPlanWaypoint(new FlightWaypointData(gps_wp_prev_latitude, gps_wp_prev_longitude, gps_wp_prev_altitude, gps_wp_prev_id),
@@ -255,12 +255,24 @@ namespace FS2020PlanePath
             flightStyle.Line = lineStyle;
             linestring.Extrude = false;
             mainFolder.AddStyle(flightStyle);
-
+            
             SharpKml.Dom.Style waypointStyle = new SharpKml.Dom.Style();
             waypointStyle.Id = "WaypointStyle";
             waypointStyle.Icon = new SharpKml.Dom.IconStyle();
             waypointStyle.Icon.Icon = new SharpKml.Dom.IconStyle.IconLink(new System.Uri("https://maps.google.com/mapfiles/kml/paddle/grn-square.png"));
             mainFolder.AddStyle(waypointStyle);
+
+            SharpKml.Dom.Style pushpinblueStyle = new SharpKml.Dom.Style();
+            pushpinblueStyle.Id = "PushPinBlueStyle";
+            pushpinblueStyle.Icon = new SharpKml.Dom.IconStyle();
+            pushpinblueStyle.Icon.Icon = new SharpKml.Dom.IconStyle.IconLink(new System.Uri("https://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png"));
+            mainFolder.AddStyle(pushpinblueStyle);
+
+            SharpKml.Dom.Style pushpingreenStyle = new SharpKml.Dom.Style();
+            pushpingreenStyle.Id = "PushPinGreenStyle";
+            pushpingreenStyle.Icon = new SharpKml.Dom.IconStyle();
+            pushpingreenStyle.Icon.Icon = new SharpKml.Dom.IconStyle.IconLink(new System.Uri("https://maps.google.com/mapfiles/kml/pushpin/grn-pushpin.png"));
+            mainFolder.AddStyle(pushpingreenStyle);
 
             placemarkLine.StyleUrl = new Uri("#FlightStyle", UriKind.Relative);
 
@@ -330,7 +342,9 @@ namespace FS2020PlanePath
                 descriptioncard += String.Format("<br>Temperature: {0:0.00}C / {1:0.00}F", fpd.ambient_temperature, fpd.ambient_temperature * 9 / 5 + 32);
                 descriptioncard += String.Format("<br>Wind: {0:0.00} knts from {1:0.00} degrees", fpd.ambient_wind_velocity, fpd.ambient_wind_direction);
                 descriptioncard += String.Format("<br>Altitude Above Ground: {0} feet", fpd.altitudeaboveground);
-                
+                if (fpd.sim_on_ground == 1)
+                    descriptioncard += String.Format("<br>Plane Is On The Ground");
+
                 descriptioncard += String.Format("<br><br>Heading Indicator: {0:0.00} degrees", fpd.heading_indicator);
                 descriptioncard += String.Format("<br>True Heading: {0:0.00} degrees", fpd.plane_heading_true);
                 descriptioncard += String.Format("<br>Magnetic Heading {0:0.00} degrees", fpd.plane_heading_magnetic);
@@ -432,6 +446,11 @@ namespace FS2020PlanePath
                 {
                     When = new DateTime(fpd.timestamp)
                 };*/
+                if (fpd.sim_on_ground == 1)
+                    placemarkPoint.StyleUrl = new System.Uri("#PushPinGreenStyle", UriKind.Relative);
+                else
+                    placemarkPoint.StyleUrl = new System.Uri("#PushPinBlueStyle", UriKind.Relative);
+
                 placemarkPoint.Geometry = new SharpKml.Dom.Point
                 {
                     Coordinate = new Vector(fpd.latitude, fpd.longitude, (double) fpd.altitude * 0.3048),
@@ -452,14 +471,16 @@ namespace FS2020PlanePath
             {
                 SharpKml.Dom.GX.FlyTo flyto = new SharpKml.Dom.GX.FlyTo();
 
-                // if first time thru loop and don't have old time or
-                // user wants to speed up video playback above threshold
-                // then set duration to 1 else base it on previous timestamp
+                // assume duration will be based on difference between timestamps
+                // if first time thru loop and don't have old time or user wants to speed up video playback above threshold
+                // then set duration to 1 if it is greater than 1 else leave as-is
+                flyto.Duration = (new DateTime(fpd.timestamp) - new DateTime(lprevTimestamp)).TotalMilliseconds / 1000;
                 if ((lprevTimestamp == 0) ||
                     (SpeedUpVideoPlaybackCB.Checked == true))
-                    flyto.Duration = 1;
-                else
-                    flyto.Duration = (new DateTime(fpd.timestamp) - new DateTime(lprevTimestamp)).TotalMilliseconds / 1000;
+                {
+                    if (flyto.Duration > 1)
+                        flyto.Duration = 1;
+                }
 
                 lprevTimestamp = fpd.timestamp;
                 flyto.Mode = SharpKml.Dom.GX.FlyToMode.Smooth;

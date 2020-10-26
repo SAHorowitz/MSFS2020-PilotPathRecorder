@@ -88,6 +88,7 @@ namespace FS2020PlanePath
             public string gps_wp_next_id;
             public Int32 gps_flight_plan_wp_index;
             public Int32 gps_flight_plan_wp_count;
+            public Int32 sim_on_ground;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -172,6 +173,7 @@ namespace FS2020PlanePath
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS WP NEXT ID", null, SIMCONNECT_DATATYPE.STRING256, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS Flight Plan WP Index", "number", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
                 simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "GPS Flight Plan WP Count", "number", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+                simConnect.AddToDataDefinition(DEFINITIONS.DataStructure, "Sim On Ground", "bool", SIMCONNECT_DATATYPE.INT32, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
                 SimConnect.AddToDataDefinition(DEFINITIONS.SimEnvironmentDataStructure, "TITLE", null, SIMCONNECT_DATATYPE.STRING256, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
@@ -272,7 +274,7 @@ namespace FS2020PlanePath
                                   s1.gear_handle_position, s1.ambient_wind_velocity, s1.ambient_wind_direction, s1.ambient_temperature, 
                                   s1.stall_warning, s1.overspeed_warning, s1.is_gear_retractable, s1.spoiler_avaialable, s1.gps_wp_prev_latitude, s1.gps_wp_prev_longitude,
                                   s1.gps_wp_prev_altitude, s1.gps_wp_prev_id, s1.gps_wp_next_latitude, s1.gps_wp_next_longitude, s1.gps_wp_next_altitude, s1.gps_wp_next_id,
-                                  s1.gps_flight_plan_wp_index, s1.gps_flight_plan_wp_count);
+                                  s1.gps_flight_plan_wp_index, s1.gps_flight_plan_wp_count, s1.sim_on_ground);
                     break;
 
                 case DATA_REQUESTS.SimEnvironmentReq:
