@@ -47,7 +47,7 @@ If using Google Earth application:
 
 ![latest](docs/images/GoogleEarthWebv11x_Default.jpg)
 
-At this point you should see the path and flight plan if your flight involved one..  With either tool expand the 'Flight Data' line and either click the eye icon (web version) or checkbox (Google Earth computer version) to turn on or off any layer or particular pin from your flight.  To see detailed information of the various flight paramters, click a pin to see what was going on at that particular moment of your flight.  With version 1.2.0 and beyond, the yellow pins are replaced with green pins meaning the plane is on the ground and blue pins meaning the plane is in the air. Note only flights recorded with version 1.2.0 or newer can distinguish a plane on the ground or in the air.  Earlier version recording will always assume the plane is in the air.
+At this point you should see the path and flight plan if your flight involved one..  With either tool expand the 'Flight Data' line and either click the eye icon (web version) or checkbox (Google Earth computer version) to turn on or off any layer or particular pin from your flight.  To see detailed information of the various flight paramters, click a pin to see what was going on at that particular moment of your flight.  With version 1.2.0 and beyond, the yellow pins are replaced with green pins meaning the plane is on the ground and blue pins meaning the plane is in the air. Note only flights recorded with version 1.2.0 or newer can distinguish a plane on the ground or in the air.  Earlier version recordings will always assume the plane is in the air.
 
 ![latest](docs/images/GoogleEarthWebv11x_Pushpins.jpg)
 
