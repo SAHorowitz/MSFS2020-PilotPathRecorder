@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Media;
+using System.Net;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,10 +26,12 @@ namespace FS2020PlanePath
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
         FlightPlan flightPlan;
+        string sAppVersion = "1.2.1";
 
         public MainPage()
         {
             InitializeComponent();
+            this.Text += sAppVersion;
             FlightPathDB = new FS2020_SQLLiteDB();
             FlightPathDB.CreateTables();
             flightPlan = new FlightPlan();
@@ -68,7 +71,13 @@ namespace FS2020PlanePath
 
         private void MainPage_Shown(object sender, EventArgs e)
         {
+            string sAppLatestVersion;
+
             simConnectIntegration.FForm = this;
+            sAppLatestVersion = ReadLatestAppVersionFromWeb();
+            if (sAppLatestVersion.Equals(sAppVersion) == false)
+                if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
             AttemptSimConnection();
         }
 
@@ -617,6 +626,53 @@ namespace FS2020PlanePath
                 FlightPathDB.WriteTableOption("SpeedUpVideoPlayback", "true");
             else
                 FlightPathDB.WriteTableOption("SpeedUpVideoPlayback", "false");
+        }
+
+        private string ReadLatestAppVersionFromWeb()
+        {
+            string sRetVal;
+
+            WebClient client = new WebClient();
+            try
+            {
+                Stream stream = client.OpenRead("https://raw.githubusercontent.com/SAHorowitz/MSFS2020-PilotPathRecorder/master/docs/latest_version.txt");
+                StreamReader reader = new StreamReader(stream);
+                sRetVal = reader.ReadToEnd();
+
+                var sb = new StringBuilder(sRetVal.Length);
+                foreach (char i in sRetVal)
+                {
+                    if (i == '\n')
+                    {
+                        sb.Append(Environment.NewLine);
+                    }
+                    else if (i != '\r' && i != '\t')
+                        sb.Append(i);
+                }
+                sRetVal = sb.ToString();
+                if (sRetVal.Contains("general") == true)
+                {
+                    var vals = sRetVal.Split(
+                                                new[] { Environment.NewLine },
+                                                StringSplitOptions.None
+                                            )
+                                .SkipWhile(line => !line.StartsWith("[general]"))
+                                .Skip(1)
+                                .Take(1)
+                                .Select(line => new
+                                {
+                                    Key = line.Substring(0, line.IndexOf('=')),
+                                    Value = line.Substring(line.IndexOf('=') + 1).Replace("\"", "").Replace(" ", "")
+                                });
+                    sRetVal = vals.FirstOrDefault().Value;
+                }
+            }
+            catch (Exception e)
+            {
+                sRetVal = sAppVersion;
+            }
+
+            return sRetVal;
         }
     }
 }
