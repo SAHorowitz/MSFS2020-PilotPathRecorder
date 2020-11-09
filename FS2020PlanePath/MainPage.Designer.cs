@@ -54,6 +54,7 @@
             this.GoogleEarthWebRB = new System.Windows.Forms.RadioButton();
             this.GoogleEarthGB = new System.Windows.Forms.GroupBox();
             this.SpeedUpVideoPlaybackCB = new System.Windows.Forms.CheckBox();
+            this.ErrorTBRO = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label2
@@ -300,11 +301,22 @@
             this.SpeedUpVideoPlaybackCB.Text = "Speed Up First Person Flight Playback When Above Threshold Altitude";
             this.SpeedUpVideoPlaybackCB.UseVisualStyleBackColor = true;
             // 
+            // ErrorTBRO
+            // 
+            this.ErrorTBRO.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ErrorTBRO.Location = new System.Drawing.Point(13, 30);
+            this.ErrorTBRO.Multiline = true;
+            this.ErrorTBRO.Name = "ErrorTBRO";
+            this.ErrorTBRO.ReadOnly = true;
+            this.ErrorTBRO.Size = new System.Drawing.Size(415, 29);
+            this.ErrorTBRO.TabIndex = 25;
+            // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 476);
+            this.Controls.Add(this.ErrorTBRO);
             this.Controls.Add(this.SpeedUpVideoPlaybackCB);
             this.Controls.Add(this.GoogleEarthWebRB);
             this.Controls.Add(this.GoogleEarthAppRB);
@@ -366,6 +378,7 @@
         private System.Windows.Forms.RadioButton GoogleEarthWebRB;
         private System.Windows.Forms.GroupBox GoogleEarthGB;
         private System.Windows.Forms.CheckBox SpeedUpVideoPlaybackCB;
+        private System.Windows.Forms.TextBox ErrorTBRO;
     }
 }
 

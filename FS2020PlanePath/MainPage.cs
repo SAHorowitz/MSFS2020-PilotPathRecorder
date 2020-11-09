@@ -26,12 +26,11 @@ namespace FS2020PlanePath
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
         FlightPlan flightPlan;
-        string sAppVersion = "1.2.1";
-
+        
         public MainPage()
         {
             InitializeComponent();
-            this.Text += sAppVersion;
+            this.Text += Program.sAppVersion;
             FlightPathDB = new FS2020_SQLLiteDB();
             FlightPathDB.CreateTables();
             flightPlan = new FlightPlan();
@@ -75,7 +74,7 @@ namespace FS2020PlanePath
 
             simConnectIntegration.FForm = this;
             sAppLatestVersion = ReadLatestAppVersionFromWeb();
-            if (sAppLatestVersion.Equals(sAppVersion) == false)
+            if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
                 if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
             AttemptSimConnection();
@@ -107,11 +106,11 @@ namespace FS2020PlanePath
                     {
                         simConnectIntegration.SimConnect.ReceiveMessage();
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         SimConnectStatusLabel.Text = "Connection lost to SimConnect";
+                        StopLoggingBtn.PerformClick();
                     }
-
                 }
             }
             else
@@ -543,6 +542,10 @@ namespace FS2020PlanePath
             StopLoggingBtn.Enabled = false;
             ContinueLogginBtn.Enabled = false;
             LoadFlightList();
+            if (Program.bLogErrorsWritten == true)
+                ErrorTBRO.Text = "Errors detected.  Please see " + Program.ErrorLogFile() + " for more details";
+            else
+                ErrorTBRO.Text = "";
         }
 
         // pause and continue logging are as simple as button visibility and setting logging flag
@@ -630,7 +633,7 @@ namespace FS2020PlanePath
 
         private string ReadLatestAppVersionFromWeb()
         {
-            string sRetVal;
+            string sRetVal ="";
 
             WebClient client = new WebClient();
             try
@@ -669,7 +672,7 @@ namespace FS2020PlanePath
             }
             catch (Exception e)
             {
-                sRetVal = sAppVersion;
+                sRetVal = Program.sAppVersion;
             }
 
             return sRetVal;
