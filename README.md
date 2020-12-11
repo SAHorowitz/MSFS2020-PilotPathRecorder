@@ -1,3 +1,5 @@
+See farther down in this document for instructions on how to use the program.
+
 # Version History
 v1.3.0
 - Added ability to automatically start and stop the recorder based on flight ground speed. This way you will never forget to log your flight.
@@ -45,9 +47,11 @@ This is a stand-alone application that must be run outside of Microsft Flight Si
 ## Instructions for use
 Note that the Flight Simluator should be up and running before launching Pilot Path Recorder.  If not, then click Retry Sim Connection until you get the "SimConnect Connected" message.  Next choose the write frequency of how often to write to the database when above the minimum altitude threshold. Adjust the minimum altitude threshold as well.  For example if you want to write every 30 seconds when above ground by 5000 feet use the values 30 and 5000 respectfully.
 
-Before start a logging session, start a flight in the simulator and click 'Start Logging' when you are ready to start the recording.  You may pause at anytime using the pause function and continue logging when ready.  'Stop Logging' ends the recording for that flight.
+There are two ways to log a fligth.  Automatic and manual.  For automatic ensure the "Automatic Logging is checked and set the appropriate ground speed.  Once the plane is above that speed logging will begin.  When it is below that speed logging will end and the flight will be recorded.  For manual logging, click 'Start Logging' when you are ready to start the recording.  You may pause at anytime using the pause function and continue logging when ready.  'Stop Logging' ends the recording for that flight.
 
-When ready, choose a flight (newest are on the top) and if needed pick a directory to store the KML file.  Click 'Create KML File' to export the data to a KML file in the location chosen. Be sure to choose whether you will be using Google Earth application or Google Earth Web to view your KML. There are a few differences between the applications that will hamper your experience if you use the application different than you chose when the KML file was exported. 
+Note for automatic logging you can still pause, continue and stop your loggging if you so desire.
+
+When ready to export you flight, choose a flight (newest are on the top) and if needed pick a directory to store the KML file.  Click 'Create KML File' to export the data to a KML file in the location chosen. Be sure to choose whether you will be using Google Earth application or Google Earth Web to view your KML. There are a few differences between the applications that will hamper your experience if you use the application different than you chose when the KML file was exported. 
 
 You may also keep your database clean and tidy by deleting a flight from the database.  
 
