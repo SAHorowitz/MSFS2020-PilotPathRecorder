@@ -42,7 +42,7 @@ Record your flight path with key flight information archived during the trip.  T
 
 This is a stand-alone application that must be run outside of Microsft Flight Simulator 2020.  Once run, this application allows the user to set various settings to control the recording and exporting experience.  A database is used to store your flights so feel free to fly during one session and export in another.
 
-![latest](docs/images/PPRv11x.jpg)
+![latest](docs/images/PPRv13x.jpg)
 
 ## Instructions for use
 Note that the Flight Simluator should be up and running before launching Pilot Path Recorder.  If not, then click Retry Sim Connection until you get the "SimConnect Connected" message.  Next choose the write frequency of how often to write to the database when above the minimum altitude threshold. Adjust the minimum altitude threshold as well.  For example if you want to write every 30 seconds when above ground by 5000 feet use the values 30 and 5000 respectfully.
