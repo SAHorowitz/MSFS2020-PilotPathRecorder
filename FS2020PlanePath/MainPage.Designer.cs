@@ -55,23 +55,25 @@
             this.GoogleEarthGB = new System.Windows.Forms.GroupBox();
             this.SpeedUpVideoPlaybackCB = new System.Windows.Forms.CheckBox();
             this.ErrorTBRO = new System.Windows.Forms.TextBox();
+            this.AutomaticLoggingCB = new System.Windows.Forms.CheckBox();
+            this.LoggingThresholdGroundVelTB = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 93);
+            this.label2.Location = new System.Drawing.Point(10, 82);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(242, 13);
-            this.label2.TabIndex = 4;
+            this.label2.TabIndex = 5;
             this.label2.Text = "Above Threshold Frequency to Write Entry (secs):";
             // 
             // ThresholdLogWriteFreqTB
             // 
-            this.ThresholdLogWriteFreqTB.Location = new System.Drawing.Point(256, 90);
+            this.ThresholdLogWriteFreqTB.Location = new System.Drawing.Point(256, 79);
             this.ThresholdLogWriteFreqTB.Name = "ThresholdLogWriteFreqTB";
             this.ThresholdLogWriteFreqTB.Size = new System.Drawing.Size(48, 20);
-            this.ThresholdLogWriteFreqTB.TabIndex = 5;
+            this.ThresholdLogWriteFreqTB.TabIndex = 6;
             this.ThresholdLogWriteFreqTB.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LogWriteFreqTB_KeyPress);
             // 
             // label3
@@ -80,7 +82,7 @@
             this.label3.Location = new System.Drawing.Point(12, 328);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(76, 13);
-            this.label3.TabIndex = 16;
+            this.label3.TabIndex = 19;
             this.label3.Text = "KML File Path:";
             // 
             // KMLFolderBrowser
@@ -88,7 +90,7 @@
             this.KMLFolderBrowser.Location = new System.Drawing.Point(422, 323);
             this.KMLFolderBrowser.Name = "KMLFolderBrowser";
             this.KMLFolderBrowser.Size = new System.Drawing.Size(117, 23);
-            this.KMLFolderBrowser.TabIndex = 18;
+            this.KMLFolderBrowser.TabIndex = 21;
             this.KMLFolderBrowser.Text = "KML Path Browse...";
             this.KMLFolderBrowser.UseVisualStyleBackColor = true;
             this.KMLFolderBrowser.Click += new System.EventHandler(this.LogFolderBrowser_Click);
@@ -99,7 +101,7 @@
             this.KMLFilePathTBRO.Name = "KMLFilePathTBRO";
             this.KMLFilePathTBRO.ReadOnly = true;
             this.KMLFilePathTBRO.Size = new System.Drawing.Size(272, 20);
-            this.KMLFilePathTBRO.TabIndex = 17;
+            this.KMLFilePathTBRO.TabIndex = 20;
             // 
             // SimConnectStatusLabel
             // 
@@ -125,7 +127,7 @@
             this.StartLoggingBtn.Location = new System.Drawing.Point(13, 157);
             this.StartLoggingBtn.Name = "StartLoggingBtn";
             this.StartLoggingBtn.Size = new System.Drawing.Size(98, 23);
-            this.StartLoggingBtn.TabIndex = 8;
+            this.StartLoggingBtn.TabIndex = 11;
             this.StartLoggingBtn.Text = "Start Logging";
             this.StartLoggingBtn.UseVisualStyleBackColor = true;
             this.StartLoggingBtn.Click += new System.EventHandler(this.StartLoggingBtn_Click);
@@ -136,7 +138,7 @@
             this.StopLoggingBtn.Location = new System.Drawing.Point(442, 157);
             this.StopLoggingBtn.Name = "StopLoggingBtn";
             this.StopLoggingBtn.Size = new System.Drawing.Size(98, 23);
-            this.StopLoggingBtn.TabIndex = 11;
+            this.StopLoggingBtn.TabIndex = 14;
             this.StopLoggingBtn.Text = "Stop Logging";
             this.StopLoggingBtn.UseVisualStyleBackColor = true;
             this.StopLoggingBtn.Click += new System.EventHandler(this.StopLoggingBtn_Click);
@@ -146,7 +148,7 @@
             this.CreateKMLButton.Location = new System.Drawing.Point(125, 441);
             this.CreateKMLButton.Name = "CreateKMLButton";
             this.CreateKMLButton.Size = new System.Drawing.Size(97, 23);
-            this.CreateKMLButton.TabIndex = 23;
+            this.CreateKMLButton.TabIndex = 26;
             this.CreateKMLButton.Text = "Create KML File";
             this.CreateKMLButton.UseVisualStyleBackColor = true;
             this.CreateKMLButton.Click += new System.EventHandler(this.CreateKMLButton_Click);
@@ -157,7 +159,7 @@
             this.PauseLoggingBtn.Location = new System.Drawing.Point(156, 157);
             this.PauseLoggingBtn.Name = "PauseLoggingBtn";
             this.PauseLoggingBtn.Size = new System.Drawing.Size(98, 23);
-            this.PauseLoggingBtn.TabIndex = 9;
+            this.PauseLoggingBtn.TabIndex = 12;
             this.PauseLoggingBtn.Text = "Pause Logging";
             this.PauseLoggingBtn.UseVisualStyleBackColor = true;
             this.PauseLoggingBtn.Click += new System.EventHandler(this.PauseLoggingBtn_Click);
@@ -168,7 +170,7 @@
             this.ContinueLogginBtn.Location = new System.Drawing.Point(299, 157);
             this.ContinueLogginBtn.Name = "ContinueLogginBtn";
             this.ContinueLogginBtn.Size = new System.Drawing.Size(98, 23);
-            this.ContinueLogginBtn.TabIndex = 10;
+            this.ContinueLogginBtn.TabIndex = 13;
             this.ContinueLogginBtn.Text = "Continue Logging";
             this.ContinueLogginBtn.UseVisualStyleBackColor = true;
             this.ContinueLogginBtn.Click += new System.EventHandler(this.ContinueLogginBtn_Click);
@@ -190,25 +192,25 @@
             this.label1.Location = new System.Drawing.Point(10, 63);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(455, 13);
-            this.label1.TabIndex = 3;
+            this.label1.TabIndex = 4;
             this.label1.Text = "Logs will be written once a second below alitude threshold.  Above threshold set " +
     "options below.";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 123);
+            this.label4.Location = new System.Drawing.Point(9, 104);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(238, 13);
-            this.label4.TabIndex = 6;
+            this.label4.TabIndex = 7;
             this.label4.Text = "Threshold Minimum Altitude Above Ground (feet):";
             // 
             // ThresholdMinAltTB
             // 
-            this.ThresholdMinAltTB.Location = new System.Drawing.Point(256, 121);
+            this.ThresholdMinAltTB.Location = new System.Drawing.Point(256, 102);
             this.ThresholdMinAltTB.Name = "ThresholdMinAltTB";
             this.ThresholdMinAltTB.Size = new System.Drawing.Size(48, 20);
-            this.ThresholdMinAltTB.TabIndex = 7;
+            this.ThresholdMinAltTB.TabIndex = 8;
             // 
             // label5
             // 
@@ -216,7 +218,7 @@
             this.label5.Location = new System.Drawing.Point(12, 196);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(530, 2);
-            this.label5.TabIndex = 12;
+            this.label5.TabIndex = 15;
             this.label5.Text = "label5";
             // 
             // label6
@@ -225,7 +227,7 @@
             this.label6.Location = new System.Drawing.Point(9, 211);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(62, 13);
-            this.label6.TabIndex = 13;
+            this.label6.TabIndex = 16;
             this.label6.Text = "KML Export";
             // 
             // label7
@@ -234,7 +236,7 @@
             this.label7.Location = new System.Drawing.Point(12, 246);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(71, 13);
-            this.label7.TabIndex = 14;
+            this.label7.TabIndex = 17;
             this.label7.Text = "Choose Flight";
             // 
             // FlightPickerLV
@@ -246,7 +248,7 @@
             this.FlightPickerLV.Location = new System.Drawing.Point(125, 211);
             this.FlightPickerLV.Name = "FlightPickerLV";
             this.FlightPickerLV.Size = new System.Drawing.Size(370, 97);
-            this.FlightPickerLV.TabIndex = 15;
+            this.FlightPickerLV.TabIndex = 18;
             this.FlightPickerLV.UseCompatibleStateImageBehavior = false;
             this.FlightPickerLV.View = System.Windows.Forms.View.Details;
             // 
@@ -255,7 +257,7 @@
             this.DeleteFlight.Location = new System.Drawing.Point(284, 441);
             this.DeleteFlight.Name = "DeleteFlight";
             this.DeleteFlight.Size = new System.Drawing.Size(152, 23);
-            this.DeleteFlight.TabIndex = 24;
+            this.DeleteFlight.TabIndex = 27;
             this.DeleteFlight.Text = "Delete Flight from Database";
             this.DeleteFlight.UseVisualStyleBackColor = true;
             this.DeleteFlight.Click += new System.EventHandler(this.DeleteFlight_Click);
@@ -266,7 +268,7 @@
             this.GoogleEarthAppRB.Location = new System.Drawing.Point(132, 369);
             this.GoogleEarthAppRB.Name = "GoogleEarthAppRB";
             this.GoogleEarthAppRB.Size = new System.Drawing.Size(142, 17);
-            this.GoogleEarthAppRB.TabIndex = 20;
+            this.GoogleEarthAppRB.TabIndex = 23;
             this.GoogleEarthAppRB.TabStop = true;
             this.GoogleEarthAppRB.Text = "Google Earth Application";
             this.GoogleEarthAppRB.UseVisualStyleBackColor = true;
@@ -277,7 +279,7 @@
             this.GoogleEarthWebRB.Location = new System.Drawing.Point(284, 369);
             this.GoogleEarthWebRB.Name = "GoogleEarthWebRB";
             this.GoogleEarthWebRB.Size = new System.Drawing.Size(113, 17);
-            this.GoogleEarthWebRB.TabIndex = 21;
+            this.GoogleEarthWebRB.TabIndex = 24;
             this.GoogleEarthWebRB.TabStop = true;
             this.GoogleEarthWebRB.Text = "Google Earth Web";
             this.GoogleEarthWebRB.UseVisualStyleBackColor = true;
@@ -287,7 +289,7 @@
             this.GoogleEarthGB.Location = new System.Drawing.Point(122, 351);
             this.GoogleEarthGB.Name = "GoogleEarthGB";
             this.GoogleEarthGB.Size = new System.Drawing.Size(282, 46);
-            this.GoogleEarthGB.TabIndex = 19;
+            this.GoogleEarthGB.TabIndex = 22;
             this.GoogleEarthGB.TabStop = false;
             this.GoogleEarthGB.Text = "Export KML For Use In:";
             // 
@@ -297,7 +299,7 @@
             this.SpeedUpVideoPlaybackCB.Location = new System.Drawing.Point(125, 403);
             this.SpeedUpVideoPlaybackCB.Name = "SpeedUpVideoPlaybackCB";
             this.SpeedUpVideoPlaybackCB.Size = new System.Drawing.Size(361, 17);
-            this.SpeedUpVideoPlaybackCB.TabIndex = 22;
+            this.SpeedUpVideoPlaybackCB.TabIndex = 25;
             this.SpeedUpVideoPlaybackCB.Text = "Speed Up First Person Flight Playback When Above Threshold Altitude";
             this.SpeedUpVideoPlaybackCB.UseVisualStyleBackColor = true;
             // 
@@ -309,13 +311,34 @@
             this.ErrorTBRO.Name = "ErrorTBRO";
             this.ErrorTBRO.ReadOnly = true;
             this.ErrorTBRO.Size = new System.Drawing.Size(415, 29);
-            this.ErrorTBRO.TabIndex = 25;
+            this.ErrorTBRO.TabIndex = 3;
+            this.ErrorTBRO.TabStop = false;
+            // 
+            // AutomaticLoggingCB
+            // 
+            this.AutomaticLoggingCB.AutoSize = true;
+            this.AutomaticLoggingCB.Location = new System.Drawing.Point(13, 131);
+            this.AutomaticLoggingCB.Name = "AutomaticLoggingCB";
+            this.AutomaticLoggingCB.Size = new System.Drawing.Size(327, 17);
+            this.AutomaticLoggingCB.TabIndex = 9;
+            this.AutomaticLoggingCB.Text = "Automatic Logging - Logging Threshold Ground Velocity (knots):";
+            this.AutomaticLoggingCB.UseVisualStyleBackColor = true;
+            this.AutomaticLoggingCB.Click += new System.EventHandler(this.AutomaticLoggingCB_Click);
+            // 
+            // LoggingThresholdGroundVelTB
+            // 
+            this.LoggingThresholdGroundVelTB.Location = new System.Drawing.Point(346, 128);
+            this.LoggingThresholdGroundVelTB.Name = "LoggingThresholdGroundVelTB";
+            this.LoggingThresholdGroundVelTB.Size = new System.Drawing.Size(48, 20);
+            this.LoggingThresholdGroundVelTB.TabIndex = 10;
             // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 476);
+            this.Controls.Add(this.LoggingThresholdGroundVelTB);
+            this.Controls.Add(this.AutomaticLoggingCB);
             this.Controls.Add(this.ErrorTBRO);
             this.Controls.Add(this.SpeedUpVideoPlaybackCB);
             this.Controls.Add(this.GoogleEarthWebRB);
@@ -379,6 +402,8 @@
         private System.Windows.Forms.GroupBox GoogleEarthGB;
         private System.Windows.Forms.CheckBox SpeedUpVideoPlaybackCB;
         private System.Windows.Forms.TextBox ErrorTBRO;
+        private System.Windows.Forms.CheckBox AutomaticLoggingCB;
+        private System.Windows.Forms.TextBox LoggingThresholdGroundVelTB;
     }
 }
 

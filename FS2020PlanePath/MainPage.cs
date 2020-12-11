@@ -26,7 +26,9 @@ namespace FS2020PlanePath
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
         FlightPlan flightPlan;
-        
+        bool bStartedLoggingDueToSpeed;
+        bool bStoppedLoggingDueToSpeed;
+
         public MainPage()
         {
             InitializeComponent();
@@ -46,6 +48,14 @@ namespace FS2020PlanePath
                 SpeedUpVideoPlaybackCB.Checked = true;
             else
                 SpeedUpVideoPlaybackCB.Checked = false;
+
+            if (string.Compare(FlightPathDB.GetTableOption("AutomaticLogging"), "true") == 0)
+                AutomaticLoggingCB.Checked = true;
+            else
+                AutomaticLoggingCB.Checked = false;
+
+            LoggingThresholdGroundVelTB.Text = FlightPathDB.GetTableOption("AutomaticLoggingThreshold");
+            LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
 
             LoadFlightList();
         }
@@ -78,12 +88,16 @@ namespace FS2020PlanePath
                 if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
             AttemptSimConnection();
+            nCurrentFlightID = 0;
+            bStartedLoggingDueToSpeed = false;
+            bStoppedLoggingDueToSpeed = true;
         }
 
         private void AttemptSimConnection()
         {
             if (simConnectIntegration.Connect() == true)
             {
+                simConnectIntegration.Initialize();
                 SimConnectStatusLabel.Text = "SimConnect Connected";
                 StartLoggingBtn.Enabled = true;
                 RetrySimConnectionBtn.Enabled = false;
@@ -132,8 +146,7 @@ namespace FS2020PlanePath
             if (simConnectIntegration.IsSimConnected() == false)
                 return;
 
-            // if sim is connected then initialize the data flow or throw up an error
-            if (simConnectIntegration.Initialize() == true)
+            if (simConnectIntegration.IsSimInitialized() == true)
                 bLoggingEnabled = true;
             else
                 SimConnectStatusLabel.Text = "Unable to connect to FS2020";
@@ -159,41 +172,63 @@ namespace FS2020PlanePath
 
         // function is called from the retrieval of information from the simconnect and in this case stores it in the database based 
         // on prefrences
-        public void UseData(double latitude, double longitude, Int32 altitude, Int32 altitude_above_ground, Int32 engine1rpm,
-                            Int32 engine2rpm, Int32 engine3rpm, Int32 engine4rpm, Int32 lightsmask, double ground_velocity,
-                            double plane_pitch, double plane_bank, double plane_heading_true, double plane_heading_magnetic,
-                            double plane_airspeed_indicated, double airspeed_true, double vertical_speed, double heading_indicator,
-                            Int32 flaps_handle_position, Int32 spoilers_handle_position, Int32 gear_handle_position, 
-                            double ambient_wind_velocity, double ambient_wind_direction, double ambient_temperature, Int32 stall_warning,
-                            Int32 overspeed_warning, Int32 is_gear_retractable, Int32 spoiler_available, double gps_wp_prev_latitude,
-                            double gps_wp_prev_longitude, Int32 gps_wp_prev_altitude, string gps_wp_prev_id, double gps_wp_next_latitude,
-                            double gps_wp_next_longitude, Int32 gps_wp_next_altitude, string gps_wp_next_id, Int32 gps_flight_plan_wp_index,
-                            Int32 gps_flight_plan_wp_count, Int32 sim_on_ground)
+        public void UseData(MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneData)
         {
+            if (AutomaticLoggingCB.Checked == true)
+            {
+                // if user wanted automatic logging and ground speed is > LoggingThresholdGroundVelTB and they hadn't stoppeed logging before manaually then turn logging on and write aircraft to start flight
+                if (simPlaneData.ground_velocity >= Convert.ToInt32(LoggingThresholdGroundVelTB.Text))
+                {
+                    if ((bLoggingEnabled == false) && (bStoppedLoggingDueToSpeed == true))
+                    {
+                        StartLoggingBtn.PerformClick();
+                        bStartedLoggingDueToSpeed = true;
+                    }
+                }
+                else
+                {
+                    if (bLoggingEnabled == true)
+                    {
+                        // if ground speed is < LoggingThresholdGroundVelTB and user wanted automatic logging and logging was on due to speed then turn it off
+                        if (bStartedLoggingDueToSpeed == true)
+                            StopLoggingAction();
+                    }
+                    bStoppedLoggingDueToSpeed = true;
+                }
+            }
+
             if (bLoggingEnabled == true)
             {
-                System.TimeSpan tsDiffRecords = DateTime.Now - dtLastDataRecord;
-
-                // if altitude above ground is greater or equal threshold and it has been threshold amount of time or
-                //    altitude is below threshold
-                if (((altitude_above_ground >= Convert.ToInt32(ThresholdMinAltTB.Text)) &&
-                     (tsDiffRecords.TotalSeconds >= Convert.ToDouble(ThresholdLogWriteFreqTB.Text))) ||
-                    (altitude_above_ground < Convert.ToInt32(ThresholdMinAltTB.Text)))
+                // if we don't have flight header information then ask for it and don't write out this data point
+                if (nCurrentFlightID == 0)
                 {
-                    int FlightSampleID;
-
-                    FlightSampleID = FlightPathDB.WriteFlightPoint(nCurrentFlightID, latitude, longitude, altitude);
-                    FlightPathDB.WriteFlightPointDetails(FlightSampleID, altitude_above_ground, engine1rpm, engine2rpm, engine3rpm, 
-                                                         engine4rpm, lightsmask, ground_velocity, plane_pitch, plane_bank, plane_heading_true,
-                                                         plane_heading_magnetic, plane_airspeed_indicated, airspeed_true, vertical_speed,
-                                                         heading_indicator, flaps_handle_position, spoilers_handle_position,
-                                                         gear_handle_position, ambient_wind_velocity, ambient_wind_direction, ambient_temperature, 
-                                                         stall_warning, overspeed_warning, is_gear_retractable, spoiler_available, sim_on_ground);
-                    dtLastDataRecord = DateTime.Now;
+                    simConnectIntegration.GetSimEnvInfo();
                 }
-                flightPlan.AddFlightPlanWaypoint(new FlightWaypointData(gps_wp_prev_latitude, gps_wp_prev_longitude, gps_wp_prev_altitude, gps_wp_prev_id),
-                                                 new FlightWaypointData(gps_wp_next_latitude, gps_wp_next_longitude, gps_wp_next_altitude, gps_wp_next_id),
-                                                 gps_flight_plan_wp_index, gps_flight_plan_wp_count);
+                else
+                {
+                    System.TimeSpan tsDiffRecords = DateTime.Now - dtLastDataRecord;
+
+                    // if altitude above ground is greater or equal threshold and it has been threshold amount of time or
+                    //    altitude is below threshold
+                    if (((simPlaneData.altitude_above_ground >= Convert.ToInt32(ThresholdMinAltTB.Text)) &&
+                         (tsDiffRecords.TotalSeconds >= Convert.ToDouble(ThresholdLogWriteFreqTB.Text))) ||
+                        (simPlaneData.altitude_above_ground < Convert.ToInt32(ThresholdMinAltTB.Text)))
+                    {
+                        int FlightSampleID;
+
+                        FlightSampleID = FlightPathDB.WriteFlightPoint(nCurrentFlightID, simPlaneData.latitude, simPlaneData.longitude, simPlaneData.altitude);
+                        FlightPathDB.WriteFlightPointDetails(FlightSampleID, simPlaneData.altitude_above_ground, simPlaneData.engine1rpm, simPlaneData.engine2rpm, simPlaneData.engine3rpm,
+                                                             simPlaneData.engine4rpm, simPlaneData.lightsmask, simPlaneData.ground_velocity, simPlaneData.plane_pitch, simPlaneData.plane_bank, simPlaneData.plane_heading_true,
+                                                             simPlaneData.plane_heading_magnetic, simPlaneData.plane_airspeed_indicated, simPlaneData.airspeed_true, simPlaneData.vertical_speed,
+                                                             simPlaneData.heading_indicator, simPlaneData.flaps_handle_position, simPlaneData.spoilers_handle_position,
+                                                             simPlaneData.gear_handle_position, simPlaneData.ambient_wind_velocity, simPlaneData.ambient_wind_direction, simPlaneData.ambient_temperature,
+                                                             simPlaneData.stall_warning, simPlaneData.overspeed_warning, simPlaneData.is_gear_retractable, simPlaneData.spoiler_available, simPlaneData.sim_on_ground);
+                        dtLastDataRecord = DateTime.Now;
+                    }
+                    flightPlan.AddFlightPlanWaypoint(new FlightWaypointData(simPlaneData.gps_wp_prev_latitude, simPlaneData.gps_wp_prev_longitude, simPlaneData.gps_wp_prev_altitude, simPlaneData.gps_wp_prev_id),
+                                                     new FlightWaypointData(simPlaneData.gps_wp_next_latitude, simPlaneData.gps_wp_next_longitude, simPlaneData.gps_wp_next_altitude, simPlaneData.gps_wp_next_id),
+                                                     simPlaneData.gps_flight_plan_wp_index, simPlaneData.gps_flight_plan_wp_count);
+                }
             }
         }
 
@@ -206,7 +241,7 @@ namespace FS2020PlanePath
             }
         }
 
-         // function that writes out KML file based on the flight chosen by the user
+        // function that writes out KML file based on the flight chosen by the user
         private void CreateKMLButton_Click(object sender, EventArgs e)
         {
             int nCount;
@@ -228,8 +263,8 @@ namespace FS2020PlanePath
                 return;
             }
 
-            nFlightID = (int) FlightPickerLV.SelectedItems[0].Tag;
-            
+            nFlightID = (int)FlightPickerLV.SelectedItems[0].Tag;
+
             // This is the root element of the file
             var kml = new Kml();
             Folder mainFolder = new Folder();
@@ -254,7 +289,7 @@ namespace FS2020PlanePath
 
             linestring.Coordinates = coordinatecollection;
             linestring.AltitudeMode = AltitudeMode.Absolute;
-            
+
             SharpKml.Dom.LineStyle lineStyle = new SharpKml.Dom.LineStyle();
             lineStyle.Color = Color32.Parse("ff0000ff");
             lineStyle.Width = 5;
@@ -263,7 +298,7 @@ namespace FS2020PlanePath
             flightStyle.Line = lineStyle;
             linestring.Extrude = false;
             mainFolder.AddStyle(flightStyle);
-            
+
             SharpKml.Dom.Style waypointStyle = new SharpKml.Dom.Style();
             waypointStyle.Id = "WaypointStyle";
             waypointStyle.Icon = new SharpKml.Dom.IconStyle();
@@ -317,7 +352,7 @@ namespace FS2020PlanePath
                     placemarkPoint.Description = new Description
                     {
                         Text = String.Concat(String.Format("Coordinates ({0:0.0000}, {1:0.0000}, {2} feet)", waypointData.gps_wp_longitude, waypointData.gps_wp_latitude, waypointData.gps_wp_altitude))
-                };
+                    };
                     FlightPlanFolder.AddFeature(placemarkPoint);
                 }
             }
@@ -344,8 +379,9 @@ namespace FS2020PlanePath
                 if (GoogleEarthAppRB.Checked == true)
                     placemarkPoint.Visibility = false;
                 placemarkPoint.Name = String.Concat("Flight Data Point ", nCount.ToString());
+                placemarkPoint.Id = nCount.ToString();
                 descriptioncard = String.Concat("<br>Timestamp = ", new DateTime(fpd.timestamp).ToString());
-                
+
                 descriptioncard += String.Concat(String.Format("<br><br>Coordinates ({0:0.0000}, {1:0.0000}, {2} feet)", fpd.latitude, fpd.longitude, fpd.altitude));
                 descriptioncard += String.Format("<br>Temperature: {0:0.00}C / {1:0.00}F", fpd.ambient_temperature, fpd.ambient_temperature * 9 / 5 + 32);
                 descriptioncard += String.Format("<br>Wind: {0:0.00} knts from {1:0.00} degrees", fpd.ambient_wind_velocity, fpd.ambient_wind_direction);
@@ -364,9 +400,9 @@ namespace FS2020PlanePath
                 if (fpd.Eng2Rpm > 0)
                     descriptioncard += string.Format("<br>Engine 2: {0} RPM", fpd.Eng2Rpm);
                 if (fpd.Eng3Rpm > 0)
-                descriptioncard += string.Format("<br>Engine 3: {0} RPM", fpd.Eng3Rpm);
+                    descriptioncard += string.Format("<br>Engine 3: {0} RPM", fpd.Eng3Rpm);
                 if (fpd.Eng4Rpm > 0)
-                descriptioncard += string.Format("<br>Engine 4: {0} RPM", fpd.Eng4Rpm);
+                    descriptioncard += string.Format("<br>Engine 4: {0} RPM", fpd.Eng4Rpm);
 
                 descriptioncard += string.Format("<br><br>Pitch: {0:0.00} degrees {1}", Math.Abs(fpd.plane_pitch), fpd.plane_pitch < 0 ? "Up" : "Down");
                 descriptioncard += string.Format("<br>Bank: {0:0.00} degrees {1}", Math.Abs(fpd.plane_bank), fpd.plane_bank < 0 ? "Right" : "Left");
@@ -407,21 +443,21 @@ namespace FS2020PlanePath
                     bAnyLightsOn = true;
                 }
                 // commented out the following lights because most planes don't use them and it messes up the GA aircraft
-/*                if ((fpd.LightsMask & (int)FlightPathData.LightStates.Recognition) == (int)FlightPathData.LightStates.Recognition)
-                {
-                    descriptioncard += string.Concat("Recognition, ");
-                    bAnyLightsOn = true;
-                }
-                if ((fpd.LightsMask & (int)FlightPathData.LightStates.Wing) == (int)FlightPathData.LightStates.Wing)
-                {
-                    descriptioncard += string.Concat("Wing, ");
-                    bAnyLightsOn = true;
-                }
-                if ((fpd.LightsMask & (int)FlightPathData.LightStates.Logo) == (int)FlightPathData.LightStates.Logo)
-                {
-                    descriptioncard += string.Concat("Logo, ");
-                    bAnyLightsOn = true;
-                }*/
+                /*                if ((fpd.LightsMask & (int)FlightPathData.LightStates.Recognition) == (int)FlightPathData.LightStates.Recognition)
+                                {
+                                    descriptioncard += string.Concat("Recognition, ");
+                                    bAnyLightsOn = true;
+                                }
+                                if ((fpd.LightsMask & (int)FlightPathData.LightStates.Wing) == (int)FlightPathData.LightStates.Wing)
+                                {
+                                    descriptioncard += string.Concat("Wing, ");
+                                    bAnyLightsOn = true;
+                                }
+                                if ((fpd.LightsMask & (int)FlightPathData.LightStates.Logo) == (int)FlightPathData.LightStates.Logo)
+                                {
+                                    descriptioncard += string.Concat("Logo, ");
+                                    bAnyLightsOn = true;
+                                }*/
                 if ((fpd.LightsMask & (int)FlightPathData.LightStates.Cabin) == (int)FlightPathData.LightStates.Cabin)
                 {
                     descriptioncard += string.Concat("Cabin, ");
@@ -450,10 +486,10 @@ namespace FS2020PlanePath
 
                 // turned off showing time with data points as it caused issues of not showing in Google Earth 
                 // if user turned them off and then back on
-/*                placemarkPoint.Time = new SharpKml.Dom.Timestamp
-                {
-                    When = new DateTime(fpd.timestamp)
-                };*/
+                /*                placemarkPoint.Time = new SharpKml.Dom.Timestamp
+                                {
+                                    When = new DateTime(fpd.timestamp)
+                                };*/
                 if (fpd.sim_on_ground == 1)
                     placemarkPoint.StyleUrl = new System.Uri("#PushPinGreenStyle", UriKind.Relative);
                 else
@@ -461,7 +497,7 @@ namespace FS2020PlanePath
 
                 placemarkPoint.Geometry = new SharpKml.Dom.Point
                 {
-                    Coordinate = new Vector(fpd.latitude, fpd.longitude, (double) fpd.altitude * 0.3048),
+                    Coordinate = new Vector(fpd.latitude, fpd.longitude, (double)fpd.altitude * 0.3048),
                     AltitudeMode = AltitudeMode.Absolute
                 };
                 DataPointsfolder.AddFeature(placemarkPoint);
@@ -475,8 +511,10 @@ namespace FS2020PlanePath
             tour.Playlist = playlist;
             mainFolder.AddFeature(tour);
             lprevTimestamp = 0;
+            nCount = 0;
             foreach (FlightPathData fpd in FlightPath)
             {
+                nCount++;
                 SharpKml.Dom.GX.FlyTo flyto = new SharpKml.Dom.GX.FlyTo();
 
                 // assume duration will be based on difference between timestamps
@@ -511,6 +549,17 @@ namespace FS2020PlanePath
 
                 flyto.View = cam;
                 playlist.AddTourPrimitive(flyto);
+
+                // change it so balloons show during first person view (for potential future use)
+                /*
+                var placemarkPoint = new Placemark();
+                placemarkPoint.TargetId = nCount.ToString();
+                placemarkPoint.GXBalloonVisibility = true;
+                SharpKml.Dom.Update update = new SharpKml.Dom.Update();
+                update.AddUpdate(new ChangeCollection() { placemarkPoint });
+                SharpKml.Dom.GX.AnimatedUpdate animatedUpdate = new SharpKml.Dom.GX.AnimatedUpdate();
+                animatedUpdate.Update = update;
+                playlist.AddTourPrimitive(animatedUpdate);*/
             }
 
             // write out KML file
@@ -526,15 +575,20 @@ namespace FS2020PlanePath
             {
                 kmlfile.Save(stream);
             }
-            MessageBox.Show(String.Format("Flight successfully exported to {0}", sfilename), "Export KML File"); 
+            MessageBox.Show(String.Format("Flight successfully exported to {0}", sfilename), "Export KML File");
         }
 
         // stop logging disconnects simconnect, sets buttons correctly and reloads flight list 
         // since a new flight was made
         private void StopLoggingBtn_Click(object sender, EventArgs e)
         {
+            bStoppedLoggingDueToSpeed = false;
+            StopLoggingAction();
+        }
+
+        private void StopLoggingAction()
+        {
             bLoggingEnabled = false;
-            simConnectIntegration.Disconnect();
             FlightPathDB.WriteFlightPlan(nCurrentFlightID, flightPlan.flight_waypoints);
 
             StartLoggingBtn.Enabled = true;
@@ -546,6 +600,9 @@ namespace FS2020PlanePath
                 ErrorTBRO.Text = "Errors detected.  Please see " + Program.ErrorLogFile() + " for more details";
             else
                 ErrorTBRO.Text = "";
+
+            nCurrentFlightID = 0;
+            bStartedLoggingDueToSpeed = false;
         }
 
         // pause and continue logging are as simple as button visibility and setting logging flag
@@ -629,11 +686,17 @@ namespace FS2020PlanePath
                 FlightPathDB.WriteTableOption("SpeedUpVideoPlayback", "true");
             else
                 FlightPathDB.WriteTableOption("SpeedUpVideoPlayback", "false");
+            if (AutomaticLoggingCB.Checked == true)
+                FlightPathDB.WriteTableOption("AutomaticLogging", "true");
+            else
+                FlightPathDB.WriteTableOption("AutomaticLogging", "false");
+            FlightPathDB.WriteTableOption("AutomaticLoggingThreshold", LoggingThresholdGroundVelTB.Text);
+            simConnectIntegration.CloseConnection();
         }
 
         private string ReadLatestAppVersionFromWeb()
         {
-            string sRetVal ="";
+            string sRetVal = "";
 
             WebClient client = new WebClient();
             try
@@ -676,6 +739,11 @@ namespace FS2020PlanePath
             }
 
             return sRetVal;
+        }
+
+        private void AutomaticLoggingCB_Click(object sender, EventArgs e)
+        {
+            LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
         }
     }
 }

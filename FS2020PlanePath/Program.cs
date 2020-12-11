@@ -13,7 +13,7 @@ namespace FS2020PlanePath
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static public string sAppVersion = "1.2.2";
+        static public string sAppVersion = "1.3.0";
         static public bool bLogErrorsWritten = false;
 
         [STAThread]

@@ -696,6 +696,38 @@ namespace FS2020PlanePath
                 }
                 nNumOptionRows++;
             }
+            if (nNumOptionRows == 5)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "AutomaticLogging");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "true");
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 6)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "AutomaticLoggingThreshold");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "30");
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+                nNumOptionRows++;
+            }
         }
 
         public String GetTableOption(String optionname)
