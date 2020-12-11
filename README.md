@@ -1,6 +1,7 @@
 # Version History
 v1.3.0
 - Added ability to automatically start and stop the recorder based on flight ground speed. This way you will never forget to log your flight.
+
 Some more details: There is a new setting on the main page that allows you to turn on and off this feature (default is on) and also set the ground velocity to a specific value to your liking. Above that value, logging starts and below that value, it stops and the flight log is saved. You can still manually start, pause, continue, and stop logging as you did before.
 Some rules about how manual and automatic logging work together. If you manually start logging then you must manually stop it. If you manually stop an automatically started log then once you go below the threshold speed and then above that speed again it will start an automatic log as a new flight. If you pause a log and then go below the threshold speed you must manually stop the log.
 
