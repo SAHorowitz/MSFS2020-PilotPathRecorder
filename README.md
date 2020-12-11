@@ -1,4 +1,4 @@
-See farther down in this document for instructions on how to use the program.
+See farther down in this document for instructions on how to install and use the program.
 
 # MSFS2020-PilotPathRecorder
 PilotPathRecorder is a replay and flight data capture tool that allows you to see your flight information visually using Google Earth. Record your flight path with key flight information archived during the trip.  Then the application will export that data to a KML file to use with Google Earth for 3 dimensional flight analysis, flight plan information and a chance to review your flight from the first person perspective.
