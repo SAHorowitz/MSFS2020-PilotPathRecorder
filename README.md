@@ -11,6 +11,10 @@ This is a stand-alone application that is run outside of Microsft Flight Simulat
 
 
 # Version History
+v1.3.0n2
+- Added ["Live Cam" support](README-kmlcam.md)
+- Added [Developer Notes](README-dev.md) doc
+
 v1.3.0
 - Added ability to automatically start and stop the recorder based on flight ground speed. This way you will never forget to log your flight.
 
@@ -50,7 +54,7 @@ v1.0.3 - Fixed all issues related to international use of the program
 ## Instructions for use
 Note that the Flight Simluator should be up and running before launching Pilot Path Recorder.  If not, then click Retry Sim Connection until you get the "SimConnect Connected" message.  Next choose the write frequency of how often to write to the database when above the minimum altitude threshold. Adjust the minimum altitude threshold as well.  For example if you want to write every 30 seconds when above ground by 5000 feet use the values 30 and 5000 respectfully.
 
-There are two ways to log a fligth.  Automatic and manual.  For automatic ensure the "Automatic Logging is checked and set the appropriate ground speed.  Once the plane is above that speed logging will begin.  When it is below that speed logging will end and the flight will be recorded.  For manual logging, click 'Start Logging' when you are ready to start the recording.  You may pause at anytime using the pause function and continue logging when ready.  'Stop Logging' ends the recording for that flight.
+There are two ways to log a flight.  Automatic and manual.  For automatic ensure the "Automatic Logging is checked and set the appropriate ground speed.  Once the plane is above that speed logging will begin.  When it is below that speed logging will end and the flight will be recorded.  For manual logging, click 'Start Logging' when you are ready to start the recording.  You may pause at anytime using the pause function and continue logging when ready.  'Stop Logging' ends the recording for that flight.
 
 Note for automatic logging you can still pause, continue and stop your loggging if you so desire.
 
