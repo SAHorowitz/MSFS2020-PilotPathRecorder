@@ -22,12 +22,16 @@ namespace FS2020PlanePath
     {
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
+        InternalWebServer internalWebserver = new InternalWebServer();
+        ScKmlAdapter realTimeUpdater = new ScKmlAdapter();
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
         FlightPlan flightPlan;
         bool bStartedLoggingDueToSpeed;
         bool bStoppedLoggingDueToSpeed;
+        string internalWebserverHostName = "localhost";
+        int internalWebserverHostPort = 8000;
 
         public MainPage()
         {
@@ -119,11 +123,17 @@ namespace FS2020PlanePath
                     try
                     {
                         simConnectIntegration.SimConnect.ReceiveMessage();
+                        internalWebserver.Enable(
+                            internalWebserverHostName,
+                            internalWebserverHostPort,
+                            request => internalWebserverResponse(request)
+                        );
                     }
                     catch (Exception ex)
                     {
                         SimConnectStatusLabel.Text = "Connection lost to SimConnect";
                         StopLoggingBtn.PerformClick();
+                        internalWebserver.Disable();
                     }
                 }
             }
@@ -131,6 +141,16 @@ namespace FS2020PlanePath
             {
                 base.DefWndProc(ref m);
             }
+        }
+
+        private string internalWebserverResponse(string requestPath)
+        {
+            // Console.WriteLine($"received path({requestPath})");
+            if (requestPath == "/kmlcam")
+            {
+                return realTimeUpdater.GetCameraKml();
+            }
+            return "Unrecognized request";
         }
 
         private void StartLoggingBtn_Click(object sender, EventArgs e)
@@ -228,6 +248,8 @@ namespace FS2020PlanePath
                     flightPlan.AddFlightPlanWaypoint(new FlightWaypointData(simPlaneData.gps_wp_prev_latitude, simPlaneData.gps_wp_prev_longitude, simPlaneData.gps_wp_prev_altitude, simPlaneData.gps_wp_prev_id),
                                                      new FlightWaypointData(simPlaneData.gps_wp_next_latitude, simPlaneData.gps_wp_next_longitude, simPlaneData.gps_wp_next_altitude, simPlaneData.gps_wp_next_id),
                                                      simPlaneData.gps_flight_plan_wp_index, simPlaneData.gps_flight_plan_wp_count);
+
+                    realTimeUpdater.Update(simPlaneData);
                 }
             }
         }
