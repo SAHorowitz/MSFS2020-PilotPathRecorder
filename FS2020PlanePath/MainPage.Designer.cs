@@ -57,6 +57,8 @@
             this.ErrorTBRO = new System.Windows.Forms.TextBox();
             this.AutomaticLoggingCB = new System.Windows.Forms.CheckBox();
             this.LoggingThresholdGroundVelTB = new System.Windows.Forms.TextBox();
+            this.LiveCameraCB = new System.Windows.Forms.CheckBox();
+            this.LiveCameraHostPortTB = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label2
@@ -79,29 +81,29 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 328);
+            this.label3.Location = new System.Drawing.Point(12, 366);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(76, 13);
-            this.label3.TabIndex = 19;
+            this.label3.TabIndex = 20;
             this.label3.Text = "KML File Path:";
             // 
             // KMLFolderBrowser
             // 
-            this.KMLFolderBrowser.Location = new System.Drawing.Point(422, 323);
+            this.KMLFolderBrowser.Location = new System.Drawing.Point(422, 361);
             this.KMLFolderBrowser.Name = "KMLFolderBrowser";
             this.KMLFolderBrowser.Size = new System.Drawing.Size(117, 23);
-            this.KMLFolderBrowser.TabIndex = 21;
+            this.KMLFolderBrowser.TabIndex = 22;
             this.KMLFolderBrowser.Text = "KML Path Browse...";
             this.KMLFolderBrowser.UseVisualStyleBackColor = true;
             this.KMLFolderBrowser.Click += new System.EventHandler(this.LogFolderBrowser_Click);
             // 
             // KMLFilePathTBRO
             // 
-            this.KMLFilePathTBRO.Location = new System.Drawing.Point(125, 325);
+            this.KMLFilePathTBRO.Location = new System.Drawing.Point(125, 363);
             this.KMLFilePathTBRO.Name = "KMLFilePathTBRO";
             this.KMLFilePathTBRO.ReadOnly = true;
             this.KMLFilePathTBRO.Size = new System.Drawing.Size(272, 20);
-            this.KMLFilePathTBRO.TabIndex = 20;
+            this.KMLFilePathTBRO.TabIndex = 21;
             // 
             // SimConnectStatusLabel
             // 
@@ -145,10 +147,10 @@
             // 
             // CreateKMLButton
             // 
-            this.CreateKMLButton.Location = new System.Drawing.Point(125, 441);
+            this.CreateKMLButton.Location = new System.Drawing.Point(125, 479);
             this.CreateKMLButton.Name = "CreateKMLButton";
             this.CreateKMLButton.Size = new System.Drawing.Size(97, 23);
-            this.CreateKMLButton.TabIndex = 26;
+            this.CreateKMLButton.TabIndex = 27;
             this.CreateKMLButton.Text = "Create KML File";
             this.CreateKMLButton.UseVisualStyleBackColor = true;
             this.CreateKMLButton.Click += new System.EventHandler(this.CreateKMLButton_Click);
@@ -224,19 +226,19 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(9, 211);
+            this.label6.Location = new System.Drawing.Point(9, 249);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(62, 13);
-            this.label6.TabIndex = 16;
+            this.label6.TabIndex = 17;
             this.label6.Text = "KML Export";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 246);
+            this.label7.Location = new System.Drawing.Point(12, 284);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(71, 13);
-            this.label7.TabIndex = 17;
+            this.label7.TabIndex = 19;
             this.label7.Text = "Choose Flight";
             // 
             // FlightPickerLV
@@ -245,7 +247,7 @@
             this.FlightPickerLV.GridLines = true;
             this.FlightPickerLV.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.FlightPickerLV.HideSelection = false;
-            this.FlightPickerLV.Location = new System.Drawing.Point(125, 211);
+            this.FlightPickerLV.Location = new System.Drawing.Point(125, 249);
             this.FlightPickerLV.Name = "FlightPickerLV";
             this.FlightPickerLV.Size = new System.Drawing.Size(370, 97);
             this.FlightPickerLV.TabIndex = 18;
@@ -254,10 +256,10 @@
             // 
             // DeleteFlight
             // 
-            this.DeleteFlight.Location = new System.Drawing.Point(284, 441);
+            this.DeleteFlight.Location = new System.Drawing.Point(284, 479);
             this.DeleteFlight.Name = "DeleteFlight";
             this.DeleteFlight.Size = new System.Drawing.Size(152, 23);
-            this.DeleteFlight.TabIndex = 27;
+            this.DeleteFlight.TabIndex = 28;
             this.DeleteFlight.Text = "Delete Flight from Database";
             this.DeleteFlight.UseVisualStyleBackColor = true;
             this.DeleteFlight.Click += new System.EventHandler(this.DeleteFlight_Click);
@@ -265,10 +267,10 @@
             // GoogleEarthAppRB
             // 
             this.GoogleEarthAppRB.AutoSize = true;
-            this.GoogleEarthAppRB.Location = new System.Drawing.Point(132, 369);
+            this.GoogleEarthAppRB.Location = new System.Drawing.Point(132, 407);
             this.GoogleEarthAppRB.Name = "GoogleEarthAppRB";
             this.GoogleEarthAppRB.Size = new System.Drawing.Size(142, 17);
-            this.GoogleEarthAppRB.TabIndex = 23;
+            this.GoogleEarthAppRB.TabIndex = 24;
             this.GoogleEarthAppRB.TabStop = true;
             this.GoogleEarthAppRB.Text = "Google Earth Application";
             this.GoogleEarthAppRB.UseVisualStyleBackColor = true;
@@ -276,30 +278,30 @@
             // GoogleEarthWebRB
             // 
             this.GoogleEarthWebRB.AutoSize = true;
-            this.GoogleEarthWebRB.Location = new System.Drawing.Point(284, 369);
+            this.GoogleEarthWebRB.Location = new System.Drawing.Point(284, 407);
             this.GoogleEarthWebRB.Name = "GoogleEarthWebRB";
             this.GoogleEarthWebRB.Size = new System.Drawing.Size(113, 17);
-            this.GoogleEarthWebRB.TabIndex = 24;
+            this.GoogleEarthWebRB.TabIndex = 25;
             this.GoogleEarthWebRB.TabStop = true;
             this.GoogleEarthWebRB.Text = "Google Earth Web";
             this.GoogleEarthWebRB.UseVisualStyleBackColor = true;
             // 
             // GoogleEarthGB
             // 
-            this.GoogleEarthGB.Location = new System.Drawing.Point(122, 351);
+            this.GoogleEarthGB.Location = new System.Drawing.Point(122, 389);
             this.GoogleEarthGB.Name = "GoogleEarthGB";
             this.GoogleEarthGB.Size = new System.Drawing.Size(282, 46);
-            this.GoogleEarthGB.TabIndex = 22;
+            this.GoogleEarthGB.TabIndex = 23;
             this.GoogleEarthGB.TabStop = false;
             this.GoogleEarthGB.Text = "Export KML For Use In:";
             // 
             // SpeedUpVideoPlaybackCB
             // 
             this.SpeedUpVideoPlaybackCB.AutoSize = true;
-            this.SpeedUpVideoPlaybackCB.Location = new System.Drawing.Point(125, 403);
+            this.SpeedUpVideoPlaybackCB.Location = new System.Drawing.Point(125, 441);
             this.SpeedUpVideoPlaybackCB.Name = "SpeedUpVideoPlaybackCB";
             this.SpeedUpVideoPlaybackCB.Size = new System.Drawing.Size(361, 17);
-            this.SpeedUpVideoPlaybackCB.TabIndex = 25;
+            this.SpeedUpVideoPlaybackCB.TabIndex = 26;
             this.SpeedUpVideoPlaybackCB.Text = "Speed Up First Person Flight Playback When Above Threshold Altitude";
             this.SpeedUpVideoPlaybackCB.UseVisualStyleBackColor = true;
             // 
@@ -313,6 +315,7 @@
             this.ErrorTBRO.Size = new System.Drawing.Size(415, 29);
             this.ErrorTBRO.TabIndex = 3;
             this.ErrorTBRO.TabStop = false;
+            this.ErrorTBRO.TextChanged += new System.EventHandler(this.ErrorTBRO_TextChanged);
             // 
             // AutomaticLoggingCB
             // 
@@ -332,11 +335,34 @@
             this.LoggingThresholdGroundVelTB.Size = new System.Drawing.Size(48, 20);
             this.LoggingThresholdGroundVelTB.TabIndex = 10;
             // 
+            // LiveCameraCB
+            // 
+            this.LiveCameraCB.AccessibleDescription = "";
+            this.LiveCameraCB.AutoSize = true;
+            this.LiveCameraCB.Location = new System.Drawing.Point(13, 213);
+            this.LiveCameraCB.Name = "LiveCameraCB";
+            this.LiveCameraCB.Size = new System.Drawing.Size(85, 17);
+            this.LiveCameraCB.TabIndex = 15;
+            this.LiveCameraCB.Text = "Live Camera";
+            this.LiveCameraCB.UseVisualStyleBackColor = true;
+            this.LiveCameraCB.CheckedChanged += new System.EventHandler(this.LiveCameraCB_CheckedChanged);
+            // 
+            // LiveCameraHostPortTB
+            // 
+            this.LiveCameraHostPortTB.Location = new System.Drawing.Point(125, 213);
+            this.LiveCameraHostPortTB.Name = "LiveCameraHostPortTB";
+            this.LiveCameraHostPortTB.Size = new System.Drawing.Size(370, 20);
+            this.LiveCameraHostPortTB.TabIndex = 16;
+            this.LiveCameraHostPortTB.Text = "http://localhost:8000/kmlcam";
+            this.LiveCameraHostPortTB.TextChanged += new System.EventHandler(this.LiveCameraHostPortTB_TextChanged);
+            // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(557, 476);
+            this.ClientSize = new System.Drawing.Size(557, 518);
+            this.Controls.Add(this.LiveCameraHostPortTB);
+            this.Controls.Add(this.LiveCameraCB);
             this.Controls.Add(this.LoggingThresholdGroundVelTB);
             this.Controls.Add(this.AutomaticLoggingCB);
             this.Controls.Add(this.ErrorTBRO);
@@ -404,6 +430,8 @@
         private System.Windows.Forms.TextBox ErrorTBRO;
         private System.Windows.Forms.CheckBox AutomaticLoggingCB;
         private System.Windows.Forms.TextBox LoggingThresholdGroundVelTB;
+        private System.Windows.Forms.CheckBox LiveCameraCB;
+        private System.Windows.Forms.TextBox LiveCameraHostPortTB;
     }
 }
 

@@ -22,7 +22,7 @@ namespace FS2020PlanePath
     {
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
-        InternalWebServer internalWebserver = new InternalWebServer();
+        InternalWebServer activeInternalWebserver;
         ScKmlAdapter realTimeUpdater = new ScKmlAdapter();
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
@@ -30,8 +30,6 @@ namespace FS2020PlanePath
         FlightPlan flightPlan;
         bool bStartedLoggingDueToSpeed;
         bool bStoppedLoggingDueToSpeed;
-        string internalWebserverHostName = "localhost";
-        int internalWebserverHostPort = 8000;
 
         public MainPage()
         {
@@ -123,17 +121,11 @@ namespace FS2020PlanePath
                     try
                     {
                         simConnectIntegration.SimConnect.ReceiveMessage();
-                        internalWebserver.Enable(
-                            internalWebserverHostName,
-                            internalWebserverHostPort,
-                            request => internalWebserverResponse(request)
-                        );
                     }
                     catch (Exception ex)
                     {
                         SimConnectStatusLabel.Text = "Connection lost to SimConnect";
                         StopLoggingBtn.PerformClick();
-                        internalWebserver.Disable();
                     }
                 }
             }
@@ -146,11 +138,7 @@ namespace FS2020PlanePath
         private string internalWebserverResponse(string requestPath)
         {
             // Console.WriteLine($"received path({requestPath})");
-            if (requestPath == "/kmlcam")
-            {
-                return realTimeUpdater.GetCameraKml();
-            }
-            return "Unrecognized request";
+            return realTimeUpdater.GetCameraKml();
         }
 
         private void StartLoggingBtn_Click(object sender, EventArgs e)
@@ -767,5 +755,97 @@ namespace FS2020PlanePath
         {
             LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
         }
+
+        private void ErrorTBRO_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void LiveCameraCB_CheckedChanged(object sender, EventArgs eventArgs)
+        {
+            // disable and free any currently running listener
+            if (activeInternalWebserver != null)
+            {
+                activeInternalWebserver.Disable();
+                activeInternalWebserver = null;
+            }
+
+            if (!LiveCameraCB.Checked)
+            {
+                // re-enable the user to change the live camera's URI
+                LiveCameraHostPortTB.Enabled = true;
+                MessageBox.Show(
+                    "No longer listening.", 
+                    "Live Camera Deactivated",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+                return;
+            }
+
+            // start a new live camera listener using supplied URI
+            Uri hostUri = null;
+            String problemMessage = null;
+            try
+            {
+                hostUri = new Uri(LiveCameraHostPortTB.Text);
+            }
+            catch (UriFormatException ufe)
+            {
+                problemMessage = $"Malformed URI: {LiveCameraHostPortTB.Text}.\n\nDetails: {ufe.Message}";
+            }
+
+            if (problemMessage == null)
+            {
+                InternalWebServer internalWebserver = null;
+                try
+                {
+                    internalWebserver = new InternalWebServer(
+                        hostUri, 
+                        request => internalWebserverResponse(request)
+                    );
+                    internalWebserver.Enable();
+                    activeInternalWebserver = internalWebserver;
+                }
+                catch (SystemException ene)
+                {
+                    if (internalWebserver != null)
+                    {
+                        internalWebserver.Disable();
+                    }
+                    problemMessage = $"Could not listen on: {hostUri}.\n\nDetails: {ene.Message}";
+                }
+            }
+
+            if (problemMessage != null)
+            {
+                MessageBox.Show(
+                    $"{problemMessage}\n\nTry e.g.: 'http://localhost:8000/kmlcam'",
+                    "Could not start Live Camera",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                LiveCameraCB.CheckedChanged -= LiveCameraCB_CheckedChanged;
+                LiveCameraCB.Checked = false;
+                LiveCameraCB.CheckedChanged += LiveCameraCB_CheckedChanged;
+                return;
+            }
+
+            // prevent modification of the live camera's URI while it's active
+            LiveCameraHostPortTB.Enabled = false;
+            MessageBox.Show(
+                "Listening at URL:\n" + hostUri, 
+                "Live Camera Activated",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+        }
+
+        private void LiveCameraHostPortTB_TextChanged(object sender, EventArgs e)
+        {
+            
+        }
+
     }
 }

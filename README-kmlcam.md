@@ -27,5 +27,17 @@ The important configuration items are:
 Of course, MSFS2020-PilotPathRecorder must be actively connected to the flight
 simulator in order for this feature to work.
 
+### Running
+
+To start the live camera listener within MSFS2020-PilotPathRecorder, use the new
+checkbox within the dialog.  If you must customize the URI used for the network
+link, you can adjust that prior to starting the listener.  Note that this URI
+value should correspond to the one you used for the "Network Link" within
+Google Earth (see above).
+
+Here's an example of what it might look like:
+
+![MSFS2020-PilotPathRecorder - "Live Camera Listener Started"](docs/images/PPRv13n2lcls.jpg)
+
 [KML Camera]: https://developers.google.com/kml/documentation/cameras
 [Network Link]: https://developers.google.com/kml/documentation/updates
