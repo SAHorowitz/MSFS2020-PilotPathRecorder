@@ -59,6 +59,7 @@
             this.LoggingThresholdGroundVelTB = new System.Windows.Forms.TextBox();
             this.LiveCameraCB = new System.Windows.Forms.CheckBox();
             this.LiveCameraHostPortTB = new System.Windows.Forms.TextBox();
+            this.LiveCameraKmlBT = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label2
@@ -354,13 +355,23 @@
             this.LiveCameraHostPortTB.Size = new System.Drawing.Size(370, 20);
             this.LiveCameraHostPortTB.TabIndex = 16;
             this.LiveCameraHostPortTB.Text = "http://localhost:8000/kmlcam";
-            this.LiveCameraHostPortTB.TextChanged += new System.EventHandler(this.LiveCameraHostPortTB_TextChanged);
+            // 
+            // LiveCameraKmlBT
+            // 
+            this.LiveCameraKmlBT.Location = new System.Drawing.Point(502, 211);
+            this.LiveCameraKmlBT.Name = "LiveCameraKmlBT";
+            this.LiveCameraKmlBT.Size = new System.Drawing.Size(38, 23);
+            this.LiveCameraKmlBT.TabIndex = 29;
+            this.LiveCameraKmlBT.Text = "KML";
+            this.LiveCameraKmlBT.UseVisualStyleBackColor = true;
+            this.LiveCameraKmlBT.Click += new System.EventHandler(this.LiveCameraKml_Click);
             // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 518);
+            this.Controls.Add(this.LiveCameraKmlBT);
             this.Controls.Add(this.LiveCameraHostPortTB);
             this.Controls.Add(this.LiveCameraCB);
             this.Controls.Add(this.LoggingThresholdGroundVelTB);
@@ -432,6 +443,7 @@
         private System.Windows.Forms.TextBox LoggingThresholdGroundVelTB;
         private System.Windows.Forms.CheckBox LiveCameraCB;
         private System.Windows.Forms.TextBox LiveCameraHostPortTB;
+        private System.Windows.Forms.Button LiveCameraKmlBT;
     }
 }
 

@@ -16,4 +16,4 @@ in the _Solution Explorer_:
 1. Change the value for `SignManifests` from `true` to `false`
 1. Reload the Project (e.g., `Project >> Reload Project`)
 
-Just remember: _don't commit this temporary change_ back to the repository!
+- *CAUTION*: _remember to re-enable this_ prior to release!

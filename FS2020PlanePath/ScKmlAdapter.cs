@@ -33,9 +33,7 @@ namespace FS2020PlanePath
 
         }
 
-        public string GetCameraKml()
-        {
-            return $@"<?xml version='1.0' encoding='UTF-8'?>
+        public string CameraKmlTemplate { get; set; } = @"<?xml version='1.0' encoding='UTF-8'?>
 <kml xmlns = 'http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom'>
 
   <NetworkLinkControl>
@@ -51,6 +49,33 @@ namespace FS2020PlanePath
   </NetworkLinkControl>
 
 </kml>";
+
+
+        public string GetCameraKml()
+        {
+            string cameraKml = CameraKmlTemplate;
+            string[][] substitutions =
+            {
+                new string[] { "{longitude}", longitude.ToString() },
+                new string[] { "{latitude}", latitude.ToString() },
+                new string[] { "{altitude}", altitude.ToString() },
+                new string[] { "{heading}", heading.ToString() },
+                new string[] { "{tilt}", tilt.ToString() },
+                new string[] { "{roll}", roll.ToString() }
+            };
+            foreach (string[] sub in substitutions)
+            {
+                while(true) 
+                {
+                    string newCameraKml = cameraKml.Replace(sub[0], sub[1]);
+                    if (newCameraKml == cameraKml)
+                    {
+                        break;
+                    }
+                    cameraKml = newCameraKml;
+                }
+            }
+            return cameraKml;
         }
 
         private void DebugConversion(MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneDataStructure)

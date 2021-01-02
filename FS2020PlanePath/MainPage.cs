@@ -23,7 +23,7 @@ namespace FS2020PlanePath
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
         InternalWebServer activeInternalWebserver;
-        ScKmlAdapter realTimeUpdater = new ScKmlAdapter();
+        ScKmlAdapter scKmlAdapter = new ScKmlAdapter();
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
@@ -85,10 +85,11 @@ namespace FS2020PlanePath
             string sAppLatestVersion;
 
             simConnectIntegration.FForm = this;
-            sAppLatestVersion = ReadLatestAppVersionFromWeb();
-            if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
-                if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
+            // noodnik2 TODO - re-enable version check
+            //sAppLatestVersion = ReadLatestAppVersionFromWeb();
+            //if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
+            //    if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            //        System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
             AttemptSimConnection();
             nCurrentFlightID = 0;
             bStartedLoggingDueToSpeed = false;
@@ -138,7 +139,7 @@ namespace FS2020PlanePath
         private string internalWebserverResponse(string requestPath)
         {
             // Console.WriteLine($"received path({requestPath})");
-            return realTimeUpdater.GetCameraKml();
+            return scKmlAdapter.GetCameraKml();
         }
 
         private void StartLoggingBtn_Click(object sender, EventArgs e)
@@ -237,7 +238,7 @@ namespace FS2020PlanePath
                                                      new FlightWaypointData(simPlaneData.gps_wp_next_latitude, simPlaneData.gps_wp_next_longitude, simPlaneData.gps_wp_next_altitude, simPlaneData.gps_wp_next_id),
                                                      simPlaneData.gps_flight_plan_wp_index, simPlaneData.gps_flight_plan_wp_count);
 
-                    realTimeUpdater.Update(simPlaneData);
+                    scKmlAdapter.Update(simPlaneData);
                 }
             }
         }
@@ -776,7 +777,7 @@ namespace FS2020PlanePath
                 LiveCameraHostPortTB.Enabled = true;
                 MessageBox.Show(
                     "No longer listening.", 
-                    "Live Camera Deactivated",
+                    "Live Camera Disabled",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
@@ -835,17 +836,56 @@ namespace FS2020PlanePath
             LiveCameraHostPortTB.Enabled = false;
             MessageBox.Show(
                 "Listening at URL:\n" + hostUri, 
-                "Live Camera Activated",
+                "Live Camera Enabled",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );
 
         }
 
-        private void LiveCameraHostPortTB_TextChanged(object sender, EventArgs e)
+        private void LiveCameraKml_Click(object sender, EventArgs e)
         {
-            
+            Func<string, string> kmlValidator = (
+                kmlString =>
+                {
+                    try
+                    {
+                        Parser parser = new Parser();
+                        parser.ParseString(kmlString, true);
+                        return null;
+                    }
+                    catch (Exception pe)
+                    {
+                        return pe.Message;
+                    }
+                }
+            );
+
+            string originalCameraKmlTemplate = scKmlAdapter.CameraKmlTemplate;
+            TextEditorForm kmlEditorForm = new TextEditorForm(
+                "Live Camera KML Editor",
+                originalCameraKmlTemplate,
+                kmlValidator
+            );
+            DialogResult dialogResult = kmlEditorForm.ShowDialog(this);
+            if (dialogResult == DialogResult.OK)
+            {
+                string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
+                if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
+                {
+                    //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
+                    scKmlAdapter.CameraKmlTemplate = updatedCameraKmlTemplate;
+                    MessageBox.Show(
+                        "Live Camera KML was Changed",
+                        "Live Camera Update",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+            }
+            kmlEditorForm.Dispose();
         }
 
     }
+
 }
