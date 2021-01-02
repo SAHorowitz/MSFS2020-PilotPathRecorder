@@ -48,7 +48,8 @@ namespace FS2020PlanePath
             this.editorTB.Name = "editorTB";
             this.editorTB.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.editorTB.Size = new System.Drawing.Size(431, 261);
-            this.editorTB.TabIndex = 0;
+            this.editorTB.TabIndex = 2;
+            this.editorTB.TabStop = false;
             this.editorTB.Validating += new System.ComponentModel.CancelEventHandler(this.validateForm);
             // 
             // okBT
@@ -67,7 +68,7 @@ namespace FS2020PlanePath
             this.cancelBT.Location = new System.Drawing.Point(12, 48);
             this.cancelBT.Name = "cancelBT";
             this.cancelBT.Size = new System.Drawing.Size(54, 30);
-            this.cancelBT.TabIndex = 2;
+            this.cancelBT.TabIndex = 0;
             this.cancelBT.Text = "&Cancel";
             this.cancelBT.UseVisualStyleBackColor = true;
             // 
