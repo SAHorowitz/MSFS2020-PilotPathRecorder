@@ -43,10 +43,16 @@ The configured Network Link should look something like this:
 The important configuration items are:
 
 - `Link` - points Google Earth to MSFS2020-PilotPathRecorder for the updated, "live camera view";
+    this should be set to the same value as configured in the "Network Link" text box within
+    the MSFS2020-PilotPathRecorder dialog, as described in the previous section
 
-- `Refresh` - sets the frequency with which the updates will take place;
+- `Refresh` - sets the frequency with which the updates will take place; the more frequent the
+    update, the "smoother" should be the apparent "movement" of the aircraft within Google Earth.
+    Either supported "Refresh Mode" can be used (i.e., refresh as soon as the previous refresh
+    completes, or every so often...)
  
-- `Fly to View on Refresh` - tells Google Earth to "fly" to the newly updated "camera" position
+- `Fly to View on Refresh` - tells Google Earth to "fly" to the newly updated "camera" position;
+    always use this if you want Google Earth's view to follow the aircraft's position.
 
 Once properly activated, the Network Link will periodically refresh the "Camera" view within
 Google Earth to match the "straight ahead" view from within the simulator's cockpit.  
