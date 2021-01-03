@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FS2020PlanePath
 {
     public partial class TextEditorForm : Form
     {
-
+        private const string SavedFileFilter = "KML files (*.kml)|*.kml|All files (*.*)|*.*";
         private Func<string, string> validator;
 
         public TextEditorForm(
@@ -50,6 +45,60 @@ namespace FS2020PlanePath
                     e.Cancel = true;
                 }
             }
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = SavedFileFilter;
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                try
+                {
+                    editorTB.Text = File.ReadAllText(openFileDialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    reflectException(ex);
+                }
+            }
+
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = SavedFileFilter;
+                saveFileDialog.FilterIndex = 1;
+                saveFileDialog.RestoreDirectory = true;
+
+                if (saveFileDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return;
+                }
+
+                try
+                {
+                    File.WriteAllText(saveFileDialog.FileName, editorTB.Text);
+                } catch(Exception ex)
+                {
+                    reflectException(ex);
+                }
+            }
+
+        }
+
+        private void reflectException(Exception e)
+        {
+            MessageBox.Show($"Details:\n{e.Message}", "Exception Encountered", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 

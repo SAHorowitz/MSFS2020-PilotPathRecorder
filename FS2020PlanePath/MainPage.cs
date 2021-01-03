@@ -862,28 +862,30 @@ namespace FS2020PlanePath
             );
 
             string originalCameraKmlTemplate = scKmlAdapter.CameraKmlTemplate;
-            TextEditorForm kmlEditorForm = new TextEditorForm(
-                "Live Camera KML Editor",
-                originalCameraKmlTemplate,
-                kmlValidator
-            );
-            DialogResult dialogResult = kmlEditorForm.ShowDialog(this);
-            if (dialogResult == DialogResult.OK)
-            {
-                string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
-                if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
+            using (
+                TextEditorForm kmlEditorForm = new TextEditorForm(
+                    "Live Camera KML Editor",
+                    originalCameraKmlTemplate,
+                    kmlValidator
+                )
+            ) {
+                DialogResult dialogResult = kmlEditorForm.ShowDialog(this);
+                if (dialogResult == DialogResult.OK)
                 {
-                    //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
-                    scKmlAdapter.CameraKmlTemplate = updatedCameraKmlTemplate;
-                    MessageBox.Show(
-                        "Live Camera KML was Changed",
-                        "Live Camera Update",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
+                    string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
+                    if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
+                    {
+                        //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
+                        scKmlAdapter.CameraKmlTemplate = updatedCameraKmlTemplate;
+                        MessageBox.Show(
+                            "Live Camera KML was Changed",
+                            "Live Camera Update",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information
+                        );
+                    }
                 }
             }
-            kmlEditorForm.Dispose();
         }
 
     }
