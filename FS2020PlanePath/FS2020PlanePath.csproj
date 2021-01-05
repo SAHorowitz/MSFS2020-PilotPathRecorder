@@ -62,7 +62,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-	  <!-- TODO re-enable signed manifest -->
+    <!-- TODO re-enable signed manifest -->
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
@@ -158,6 +158,7 @@
     </Compile>
     <EmbeddedResource Include="TextEditorForm.resx">
       <DependentUpon>TextEditorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="FS2020PlanePath_TemporaryKey.pfx" />

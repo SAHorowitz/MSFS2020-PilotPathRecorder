@@ -29,6 +29,7 @@ namespace FS2020PlanePath
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditorForm));
             this.editorTB = new System.Windows.Forms.TextBox();
             this.okBT = new System.Windows.Forms.Button();
@@ -38,6 +39,8 @@ namespace FS2020PlanePath
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripDividerLB = new System.Windows.Forms.Label();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuSP.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -66,6 +69,7 @@ namespace FS2020PlanePath
             this.okBT.Size = new System.Drawing.Size(54, 30);
             this.okBT.TabIndex = 1;
             this.okBT.Text = "&OK";
+            this.toolTip1.SetToolTip(this.okBT, "Accept and immediately apply the updated KML template");
             this.okBT.UseVisualStyleBackColor = true;
             // 
             // cancelBT
@@ -77,15 +81,18 @@ namespace FS2020PlanePath
             this.cancelBT.Size = new System.Drawing.Size(54, 30);
             this.cancelBT.TabIndex = 0;
             this.cancelBT.Text = "&Cancel";
+            this.toolTip1.SetToolTip(this.cancelBT, "Discard any change(s) made to the KML template");
             this.cancelBT.UseVisualStyleBackColor = true;
             // 
             // menuSP
             // 
             this.menuSP.BackColor = System.Drawing.SystemColors.Control;
             this.menuSP.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.helpToolStripMenuItem});
             this.menuSP.Location = new System.Drawing.Point(0, 0);
             this.menuSP.Name = "menuSP";
+            this.menuSP.ShowItemToolTips = true;
             this.menuSP.Size = new System.Drawing.Size(520, 24);
             this.menuSP.TabIndex = 4;
             // 
@@ -97,18 +104,19 @@ namespace FS2020PlanePath
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
+            this.fileToolStripMenuItem.ToolTipText = "Allows Loading or Saving of KML Template";
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "&Load...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save &As...";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
@@ -122,6 +130,15 @@ namespace FS2020PlanePath
             this.menuStripDividerLB.Name = "menuStripDividerLB";
             this.menuStripDividerLB.Size = new System.Drawing.Size(520, 2);
             this.menuStripDividerLB.TabIndex = 5;
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "&Help";
+            this.helpToolStripMenuItem.ToolTipText = "Invokes \'Pop Up\' Help Panel";
+            this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
             // TextEditorForm
             // 
@@ -140,6 +157,8 @@ namespace FS2020PlanePath
             this.MainMenuStrip = this.menuSP;
             this.Name = "TextEditorForm";
             this.Text = "Text Editor";
+            this.toolTip1.SetToolTip(this, "Allows customization of the \'Live Camera\' KML Template");
+            this.HelpRequested += new System.Windows.Forms.HelpEventHandler(this.TextEditorForm_HelpRequested);
             this.menuSP.ResumeLayout(false);
             this.menuSP.PerformLayout();
             this.ResumeLayout(false);
@@ -157,5 +176,7 @@ namespace FS2020PlanePath
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.Label menuStripDividerLB;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
     }
 }

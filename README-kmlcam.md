@@ -63,7 +63,12 @@ it from within Google Earth to restore synchronization once the link becomes rea
 
 ## Extras
 
-You can use the `KML` button to the right of the "Live Camera Network Link" to modify or 
+- A `Link` button to the right of the "Live Camera Network Link" can be used to install the
+Network Link directly into Google Earth (presuming it's installed and is the handler for `.kml`
+files).  As of this writing, only the default configuration illustrated above (i.e., refresh the
+view immediately "after camera stops", with "Fly to View" selected) is supported.
+
+- You can use the `Edit` button to the right of the "Live Camera Network Link" to modify or 
 replace the "KML" document that is returned to Google Earth each time it queries for the
 updated position.  
 

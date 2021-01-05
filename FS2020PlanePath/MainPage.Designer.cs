@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainPage));
             this.label2 = new System.Windows.Forms.Label();
             this.ThresholdLogWriteFreqTB = new System.Windows.Forms.TextBox();
@@ -60,6 +61,8 @@
             this.LiveCameraCB = new System.Windows.Forms.CheckBox();
             this.LiveCameraHostPortTB = new System.Windows.Forms.TextBox();
             this.LiveCameraKmlBT = new System.Windows.Forms.Button();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.geLinkBT = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label2
@@ -345,6 +348,7 @@
             this.LiveCameraCB.Size = new System.Drawing.Size(85, 17);
             this.LiveCameraCB.TabIndex = 15;
             this.LiveCameraCB.Text = "Live Camera";
+            this.toolTip1.SetToolTip(this.LiveCameraCB, "Check to enable \'Live Camera\' listener (see documentation)");
             this.LiveCameraCB.UseVisualStyleBackColor = true;
             this.LiveCameraCB.CheckedChanged += new System.EventHandler(this.LiveCameraCB_CheckedChanged);
             // 
@@ -352,25 +356,39 @@
             // 
             this.LiveCameraHostPortTB.Location = new System.Drawing.Point(125, 213);
             this.LiveCameraHostPortTB.Name = "LiveCameraHostPortTB";
-            this.LiveCameraHostPortTB.Size = new System.Drawing.Size(370, 20);
+            this.LiveCameraHostPortTB.Size = new System.Drawing.Size(283, 20);
             this.LiveCameraHostPortTB.TabIndex = 16;
             this.LiveCameraHostPortTB.Text = "http://localhost:8000/kmlcam";
+            this.toolTip1.SetToolTip(this.LiveCameraHostPortTB, "Set \'Live Camera\' listener address");
             // 
             // LiveCameraKmlBT
             // 
-            this.LiveCameraKmlBT.Location = new System.Drawing.Point(502, 211);
+            this.LiveCameraKmlBT.Location = new System.Drawing.Point(415, 213);
             this.LiveCameraKmlBT.Name = "LiveCameraKmlBT";
-            this.LiveCameraKmlBT.Size = new System.Drawing.Size(38, 23);
+            this.LiveCameraKmlBT.Size = new System.Drawing.Size(38, 20);
             this.LiveCameraKmlBT.TabIndex = 29;
-            this.LiveCameraKmlBT.Text = "KML";
+            this.LiveCameraKmlBT.Text = "Edit";
+            this.toolTip1.SetToolTip(this.LiveCameraKmlBT, "Edit Selected  \'Live Camera\' Definition");
             this.LiveCameraKmlBT.UseVisualStyleBackColor = true;
             this.LiveCameraKmlBT.Click += new System.EventHandler(this.LiveCameraKml_Click);
+            // 
+            // geLinkBT
+            // 
+            this.geLinkBT.Location = new System.Drawing.Point(458, 213);
+            this.geLinkBT.Name = "geLinkBT";
+            this.geLinkBT.Size = new System.Drawing.Size(38, 20);
+            this.geLinkBT.TabIndex = 30;
+            this.geLinkBT.Text = "Link";
+            this.toolTip1.SetToolTip(this.geLinkBT, "Install Selected Network Link in Google Earth");
+            this.geLinkBT.UseVisualStyleBackColor = true;
+            this.geLinkBT.Click += new System.EventHandler(this.geLinkBT_Click);
             // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 518);
+            this.Controls.Add(this.geLinkBT);
             this.Controls.Add(this.LiveCameraKmlBT);
             this.Controls.Add(this.LiveCameraHostPortTB);
             this.Controls.Add(this.LiveCameraCB);
@@ -444,6 +462,8 @@
         private System.Windows.Forms.CheckBox LiveCameraCB;
         private System.Windows.Forms.TextBox LiveCameraHostPortTB;
         private System.Windows.Forms.Button LiveCameraKmlBT;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.Button geLinkBT;
     }
 }
 

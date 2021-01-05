@@ -90,3 +90,12 @@ Click on First Person View to review your flight from the first person perspecti
 3. Unzip contents of Pilot Path Recorder to a directory
 
 4. Launch FS2020PlanePath.exe to start Pilot Path Recorder
+
+## See Also
+
+Other related projects of interest (without endorsement) include:
+
+- [FSBingMapsConnect](https://github.com/baumhoto/FSBingMapsConnect#fsbingmapsconnect)
+- [Plugin - VFRmap](https://www.msfsaddons.org/freeware/plugin-vfrmap)
+- [FlightControlReplay](https://flightcontrolreplay.wordpress.com/)
+- [MyFsGoogleEarth 1.0](https://flyawaysimulation.com/downloads/files/1272/myfsgoogleearth-10-link-google-earth-with-flight/)

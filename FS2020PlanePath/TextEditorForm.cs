@@ -16,9 +16,10 @@ namespace FS2020PlanePath
             Func<string, string> validator
         ) {
             InitializeComponent();
+
             this.Text = title;
-            editorTB.Text = text;
             this.validator = validator;
+            editorTB.Text = text;
         }
 
         public string EditorText
@@ -36,12 +37,7 @@ namespace FS2020PlanePath
                 string failureMessage = validator.Invoke(EditorText);
                 if (failureMessage != null)
                 {
-                    MessageBox.Show(
-                        $"Details:{failureMessage}",
-                        "Validation Failure",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error
-                    );
+                    displayError("Validation Failure", failureMessage);
                     e.Cancel = true;
                 }
             }
@@ -66,7 +62,7 @@ namespace FS2020PlanePath
                 }
                 catch (Exception ex)
                 {
-                    reflectException(ex);
+                    displayError("Exception Encountered", ex.Message);
                 }
             }
 
@@ -90,16 +86,43 @@ namespace FS2020PlanePath
                     File.WriteAllText(saveFileDialog.FileName, editorTB.Text);
                 } catch(Exception ex)
                 {
-                    reflectException(ex);
+                    displayError("Exception Encountered", ex.Message);
                 }
             }
 
         }
 
-        private void reflectException(Exception e)
+        private void displayError(string caption, string details)
         {
-            MessageBox.Show($"Details:\n{e.Message}", "Exception Encountered", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+
+        private void TextEditorForm_HelpRequested(object sender, HelpEventArgs hlpevent)
+        {
+            showHelp();
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            showHelp();
+        }
+
+        private void showHelp() { 
+            Help.ShowPopup(this,
+                @"Permitted substitution values:
+
+    {longitude}
+    {latitude}
+    {altitude}
+    {heading}
+    {tilt}
+    {roll}
+
+See: https://developers.google.com/kml/documentation/kmlreference",
+                this.Location
+            );
+        }
+
     }
 
 }

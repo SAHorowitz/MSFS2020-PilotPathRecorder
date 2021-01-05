@@ -15,6 +15,7 @@ using Microsoft.FlightSimulator.SimConnect;
 using SharpKml.Base;
 using SharpKml.Dom;
 using SharpKml.Engine;
+using System.Diagnostics;
 
 namespace FS2020PlanePath
 {
@@ -886,6 +887,61 @@ namespace FS2020PlanePath
                     }
                 }
             }
+        }
+
+        private void geLinkBT_Click(object sender, EventArgs e)
+        {
+
+            string linkFileContents = $@"<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom'>
+<NetworkLink>
+	<name>MSFS2020-PilotPathRecorder Live Camera</name>
+	<flyToView>1</flyToView>
+	<Link>
+		<href>{LiveCameraHostPortTB.Text}</href>
+		<viewRefreshMode>onStop</viewRefreshMode>
+		<viewRefreshTime>0</viewRefreshTime>
+	</Link>
+</NetworkLink>
+</kml>
+";
+            string linkFileName = Path.GetTempPath() + "FS2020PlanePath-kmlcam.kml";
+            try
+            {
+                File.WriteAllText(linkFileName, linkFileContents);
+            }
+            catch (Exception ex)
+            {
+                displayError("Could not save Network Link file", ex.Message);
+                return;
+            }
+            Console.WriteLine($"Installing Google Earth Link via({linkFileName})");
+            try
+            {
+                using (Process installLinkProcess = Process.Start(linkFileName))
+                {
+                    if (!installLinkProcess.WaitForExit(5000))
+                    {
+                        displayError("Timeout Waiting for Link Installation", "Is Google Earth Installed?");
+                    } else
+                    {
+                        int exitCode = installLinkProcess.ExitCode;
+                        if (exitCode != 0)
+                        {
+                            Console.WriteLine($"exitCode({exitCode})");
+                            displayError("Unexpected Result while Installing Network Link", $"Exit Code {exitCode}");
+                        }
+                    }
+                }
+            } catch(Exception ilpe)
+            {
+                displayError("Error Installing Network Link", ilpe.Message);
+            }
+        }
+
+        private void displayError(string caption, string details)
+        {
+            MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
     }
