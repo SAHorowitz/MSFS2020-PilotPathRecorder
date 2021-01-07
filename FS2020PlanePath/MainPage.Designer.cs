@@ -379,7 +379,7 @@
             this.geLinkBT.Size = new System.Drawing.Size(38, 20);
             this.geLinkBT.TabIndex = 30;
             this.geLinkBT.Text = "Link";
-            this.toolTip1.SetToolTip(this.geLinkBT, "Install Selected Network Link in Google Earth");
+            this.toolTip1.SetToolTip(this.geLinkBT, "Install Selected Network Link (e.g.,  in Google Earth)");
             this.geLinkBT.UseVisualStyleBackColor = true;
             this.geLinkBT.Click += new System.EventHandler(this.geLinkBT_Click);
             // 

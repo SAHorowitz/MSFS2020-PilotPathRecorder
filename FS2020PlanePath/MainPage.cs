@@ -21,6 +21,10 @@ namespace FS2020PlanePath
 {
     public partial class MainPage : Form
     {
+
+        //const string sourceRepo = "SAHorowitz/MSFS2020-PilotPathRecorder";
+        const string sourceRepo = "noodnik2/MSFS2020-PilotPathRecorder";
+
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
         InternalWebServer activeInternalWebserver;
@@ -87,11 +91,10 @@ namespace FS2020PlanePath
             string sAppLatestVersion;
 
             simConnectIntegration.FForm = this;
-            // noodnik2 TODO - re-enable version check
-            //sAppLatestVersion = ReadLatestAppVersionFromWeb();
-            //if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
-            //    if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            //        System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
+            sAppLatestVersion = ReadLatestAppVersionFromWeb();
+            if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
+                if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    Process.Start($"https://github.com/{sourceRepo}");
             AttemptSimConnection();
             nCurrentFlightID = 0;
             bStartedLoggingDueToSpeed = false;
@@ -720,7 +723,7 @@ namespace FS2020PlanePath
             WebClient client = new WebClient();
             try
             {
-                Stream stream = client.OpenRead("https://raw.githubusercontent.com/SAHorowitz/MSFS2020-PilotPathRecorder/master/docs/latest_version.txt");
+                Stream stream = client.OpenRead($"https://raw.githubusercontent.com/{sourceRepo}/master/docs/latest_version.txt");
                 StreamReader reader = new StreamReader(stream);
                 sRetVal = reader.ReadToEnd();
 
