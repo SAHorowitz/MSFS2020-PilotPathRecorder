@@ -25,6 +25,7 @@ namespace FS2020PlanePath
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
         InternalWebServer activeInternalWebserver;
         ScKmlAdapter scKmlAdapter = new ScKmlAdapter();
+        LiveCamRegistry liveCamRegistry = new LiveCamRegistry();
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
@@ -139,8 +140,14 @@ namespace FS2020PlanePath
 
         private string internalWebserverResponse(string requestPath)
         {
-            // Console.WriteLine($"received path({requestPath})");
-            return scKmlAdapter.GetCameraKml();
+            //Console.WriteLine($"received path({requestPath})");
+            KmlLiveCam liveCam;
+            if (!liveCamRegistry.TryGetByAlias(requestPath, out liveCam))
+            {
+                return $"<error text='LiveCam({requestPath}) not found; request ignored' />";
+            }
+            liveCam.Camera.Values = scKmlAdapter.KmlCameraValues;
+            return liveCam.Camera.Render();
         }
 
         private void StartLoggingBtn_Click(object sender, EventArgs e)
@@ -787,14 +794,17 @@ namespace FS2020PlanePath
 
             // start a new live camera listener using supplied URI
             Uri hostUri = null;
-            String problemMessage = null;
+            string problemMessage = null;
+            string liveCamUrl = LiveCameraHostPortTB.Text;
             try
             {
-                hostUri = new Uri(LiveCameraHostPortTB.Text);
+                hostUri = new Uri(liveCamUrl);
+                // ensure live cam is registered
+                liveCamRegistry.LoadByUrl(liveCamUrl);
             }
             catch (UriFormatException ufe)
             {
-                problemMessage = $"Malformed URI: {LiveCameraHostPortTB.Text}.\n\nDetails: {ufe.Message}";
+                problemMessage = malformedUriErrorMessage(liveCamUrl, ufe);
             }
 
             if (problemMessage == null)
@@ -821,12 +831,7 @@ namespace FS2020PlanePath
 
             if (problemMessage != null)
             {
-                MessageBox.Show(
-                    $"{problemMessage}\n\nTry e.g.: 'http://localhost:8000/kmlcam'",
-                    "Could not start Live Camera",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                displayError("Could not start Live Camera", $"{problemMessage}");
                 LiveCameraCB.CheckedChanged -= LiveCameraCB_CheckedChanged;
                 LiveCameraCB.Checked = false;
                 LiveCameraCB.CheckedChanged += LiveCameraCB_CheckedChanged;
@@ -862,7 +867,19 @@ namespace FS2020PlanePath
                 }
             );
 
-            string originalCameraKmlTemplate = scKmlAdapter.CameraKmlTemplate;
+            KmlLiveCam liveCam;
+            string liveCamUrl = LiveCameraHostPortTB.Text;
+            try
+            {
+                liveCam = liveCamRegistry.LoadByUrl(liveCamUrl);
+            }
+            catch (UriFormatException ufe)
+            {
+                displayError("Could not Invoke Editor", malformedUriErrorMessage(liveCamUrl, ufe));
+                return;
+            }
+
+            string originalCameraKmlTemplate = liveCam.Camera.Template;
             using (
                 TextEditorForm kmlEditorForm = new TextEditorForm(
                     "Live Camera KML Editor",
@@ -877,7 +894,7 @@ namespace FS2020PlanePath
                     if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
                     {
                         //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
-                        scKmlAdapter.CameraKmlTemplate = updatedCameraKmlTemplate;
+                        liveCam.Camera.Template = updatedCameraKmlTemplate;
                         MessageBox.Show(
                             "Live Camera KML was Changed",
                             "Live Camera Update",
@@ -891,24 +908,25 @@ namespace FS2020PlanePath
 
         private void geLinkBT_Click(object sender, EventArgs e)
         {
-
-            string linkFileContents = $@"<?xml version='1.0' encoding='UTF-8'?>
-<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom'>
-<NetworkLink>
-	<name>MSFS2020-PilotPathRecorder Live Camera</name>
-	<flyToView>1</flyToView>
-	<Link>
-		<href>{LiveCameraHostPortTB.Text}</href>
-		<viewRefreshMode>onStop</viewRefreshMode>
-		<viewRefreshTime>0</viewRefreshTime>
-	</Link>
-</NetworkLink>
-</kml>
-";
-            string linkFileName = Path.GetTempPath() + "FS2020PlanePath-kmlcam.kml";
+            KmlLiveCam liveCam;
+            string liveCamUrl = LiveCameraHostPortTB.Text;
             try
             {
-                File.WriteAllText(linkFileName, linkFileContents);
+                liveCam = liveCamRegistry.LoadByUrl(liveCamUrl);
+            } catch(UriFormatException ufe)
+            {
+                displayError("Could not Install Link", malformedUriErrorMessage(liveCamUrl, ufe));
+                return;
+            }
+
+            string liveCamAliasQualifier = (
+                Path.GetInvalidFileNameChars()
+                .Aggregate(liveCam.Link.Values.alias, (current, c) => current.Replace(c, '_'))
+            );
+            string linkFileName = Path.GetTempPath() + $"FS2020PlanePath-kmllink-{liveCamAliasQualifier}.kml";
+            try
+            {
+                File.WriteAllText(linkFileName, liveCam.Link.Render());
             }
             catch (Exception ex)
             {
@@ -937,6 +955,11 @@ namespace FS2020PlanePath
             {
                 displayError("Error Installing Network Link", ilpe.Message);
             }
+        }
+
+        private string malformedUriErrorMessage(string url, UriFormatException ufe)
+        {
+            return $"Malformed URI: {url}.\n\nDetails: {ufe.Message}\n\nTry e.g.: 'http://localhost:8000/kmlcam'";
         }
 
         private void displayError(string caption, string details)

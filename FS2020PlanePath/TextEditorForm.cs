@@ -107,16 +107,11 @@ namespace FS2020PlanePath
             showHelp();
         }
 
-        private void showHelp() { 
+        private void showHelp() {
             Help.ShowPopup(this,
-                @"Permitted substitution values:
+                $@"Permitted substitution values:
 
-    {longitude}
-    {latitude}
-    {altitude}
-    {heading}
-    {tilt}
-    {roll}
+{"\t" + string.Join("\n\t", TemplateRenderer.Placeholders(typeof(KmlCameraParameterValues)))}
 
 See: https://developers.google.com/kml/documentation/kmlreference",
                 this.Location
