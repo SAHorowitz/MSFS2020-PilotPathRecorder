@@ -2,42 +2,59 @@
 using System.IO;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace FS2020PlanePath
 {
     public partial class TextEditorForm : Form
     {
         private const string SavedFileFilter = "KML files (*.kml)|*.kml|All files (*.*)|*.*";
-        private Func<string, string> validator;
+        private Func<string, string> kmlValidator;
 
         public TextEditorForm(
             string title, 
-            string text,
-            Func<string, string> validator
+            string cameraKmlText,
+            string linkKmlText,
+            Func<string, string> kmlValidator
         ) {
             InitializeComponent();
 
             this.Text = title;
-            this.validator = validator;
-            editorTB.Text = text;
+            this.kmlValidator = kmlValidator;
+            cameraEditorTB.Text = cameraKmlText;
+            linkEditorTB.Text = linkKmlText;
         }
 
-        public string EditorText
-        {
-            get
-            {
-                return editorTB.Text;
-            }
-        }
+        public string EditorText { get { return cameraEditorTB.Text; } }
+        public string LinkText { get { return linkEditorTB.Text; } }
 
-        private void validateForm(object sender, CancelEventArgs e)
+        private void validateKmlTexts(object sender, CancelEventArgs e)
         {
-            if (validator != null)
+            if (kmlValidator != null)
             {
-                string failureMessage = validator.Invoke(EditorText);
-                if (failureMessage != null)
+                List<string> complaints = new List<string>();
+                foreach (
+                    string[] item
+                    in
+                    new string[][]
+                    {
+                        new string[] { "Camera KML", EditorText },
+                        new string[] { "Link KML", LinkText }
+                    }
+                )
                 {
-                    displayError("Validation Failure", failureMessage);
+                    string failureMessage = kmlValidator.Invoke(item[1]);
+                    if (failureMessage != null)
+                    {
+                        complaints.Add($"{item[0]}: {failureMessage}");
+                    }
+                }
+                if (complaints.Count > 0)
+                {
+                    displayError(
+                        "Validation Failure(s)",
+                        string.Join("\n", complaints)
+                    );
                     e.Cancel = true;
                 }
             }
@@ -58,7 +75,7 @@ namespace FS2020PlanePath
 
                 try
                 {
-                    editorTB.Text = File.ReadAllText(openFileDialog.FileName);
+                    cameraEditorTB.Text = File.ReadAllText(openFileDialog.FileName);
                 }
                 catch (Exception ex)
                 {
@@ -83,7 +100,7 @@ namespace FS2020PlanePath
 
                 try
                 {
-                    File.WriteAllText(saveFileDialog.FileName, editorTB.Text);
+                    File.WriteAllText(saveFileDialog.FileName, cameraEditorTB.Text);
                 } catch(Exception ex)
                 {
                     displayError("Exception Encountered", ex.Message);
@@ -111,13 +128,18 @@ namespace FS2020PlanePath
             Help.ShowPopup(this,
                 $@"Permitted substitution values:
 
+Camera Template:
+
 {"\t" + string.Join("\n\t", TemplateRenderer.Placeholders(typeof(KmlCameraParameterValues)))}
+
+Link Template:
+
+{"\t" + string.Join("\n\t", TemplateRenderer.Placeholders(typeof(KmlNetworkLinkValues)))}
 
 See: https://developers.google.com/kml/documentation/kmlreference",
                 this.Location
             );
         }
-
     }
 
 }

@@ -856,8 +856,7 @@ namespace FS2020PlanePath
                 {
                     try
                     {
-                        Parser parser = new Parser();
-                        parser.ParseString(kmlString, true);
+                        new Parser().ParseString(kmlString, true);
                         return null;
                     }
                     catch (Exception pe)
@@ -880,30 +879,51 @@ namespace FS2020PlanePath
             }
 
             string originalCameraKmlTemplate = liveCam.Camera.Template;
+            string originalLinkKmlTemplate = liveCam.Link.Template;
             using (
                 TextEditorForm kmlEditorForm = new TextEditorForm(
-                    "Live Camera KML Editor",
+                    $"Live Camera KML Editor: {liveCam.Link.Values.alias}",
                     originalCameraKmlTemplate,
+                    originalLinkKmlTemplate,
                     kmlValidator
                 )
             ) {
-                DialogResult dialogResult = kmlEditorForm.ShowDialog(this);
-                if (dialogResult == DialogResult.OK)
+
+                if (kmlEditorForm.ShowDialog(this) != DialogResult.OK)
                 {
-                    string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
-                    if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
-                    {
-                        //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
-                        liveCam.Camera.Template = updatedCameraKmlTemplate;
-                        MessageBox.Show(
-                            "Live Camera KML was Changed",
-                            "Live Camera Update",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information
-                        );
-                    }
+                    return;
                 }
+
+                List<string> changeList = new List<string>();
+                    
+                string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
+                if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
+                {
+                    Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
+                    liveCam.Camera.Template = updatedCameraKmlTemplate;
+                    changeList.Add("Camera");
+                }
+
+                string updatedLinkKmlTemplate = kmlEditorForm.LinkText;
+                if (originalLinkKmlTemplate != updatedLinkKmlTemplate)
+                {
+                    Console.WriteLine($"updatedLinkKmlTemplate({updatedLinkKmlTemplate})");
+                    liveCam.Link.Template = updatedLinkKmlTemplate;
+                    changeList.Add("Link");
+                }
+
+                if (changeList.Count > 0)
+                {
+                    MessageBox.Show(
+                        $"Live Camera Definition ({string.Join(", ", changeList)} KML) was Changed",
+                        "Live Camera Update",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+
             }
+
         }
 
         private void geLinkBT_Click(object sender, EventArgs e)
@@ -933,14 +953,16 @@ namespace FS2020PlanePath
                 displayError("Could not save Network Link file", ex.Message);
                 return;
             }
-            Console.WriteLine($"Installing Google Earth Link via({linkFileName})");
+            Console.WriteLine($"Installing Link via({linkFileName})");
             try
             {
                 using (Process installLinkProcess = Process.Start(linkFileName))
                 {
-                    if (!installLinkProcess.WaitForExit(5000))
+                    if (!installLinkProcess.WaitForExit(3000))
                     {
-                        displayError("Timeout Waiting for Link Installation", "Is Google Earth Installed?");
+                        //displayError("Timeout Waiting for Link Installation", "Is Google Earth Properly Installed?");
+                        // NOTE: this happens when handling application is not already running (i.e., is started here)
+                        Console.WriteLine($"NOTE: timeout waiting for application started to handle({linkFileName})");
                     } else
                     {
                         int exitCode = installLinkProcess.ExitCode;
