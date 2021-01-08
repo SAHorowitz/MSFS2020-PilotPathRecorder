@@ -3,7 +3,7 @@
 namespace FS2020PlanePath
 {
 
-    class ScKmlAdapter
+    public class ScKmlAdapter
     {
 
         const double FEET_PER_METER = 3.28084;

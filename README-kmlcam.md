@@ -20,10 +20,10 @@ will be activated (at the location specified in the "Network Link" textbox, just
 of the checkbox), enabling Google Earth to periodically retrieve the current position
 of the simulated flight.
 
-Though the default value provided for the Network Link URI (e.g., `http://localhost:8000/kmlcam`)
+Though the default value provided for the Network Link URL (e.g., `http://localhost:8000/kmlcam`)
 should work in most cases, you can change it if necessary prior to enabling the feature.
 
-- _Note: this URI value should correspond to the one used for the "Network Link" within
+- _Note: this URL value should correspond to the one used for the "Network Link" within
 Google Earth (see below)._
 
 Here's an example of what it might look like right after being enabled:
@@ -32,9 +32,11 @@ Here's an example of what it might look like right after being enabled:
 
 ### Google Earth
 
-Once the Live Camera is enabled in MSFS2020-PilotPathRecorder, the Network Link can be activated
-within Google Earth, as illustrated in the example below.  One way to bring up the "Edit Network Link"
-dialog within Google Earth is through its menu item: `Add >> Network Link`.
+Once the Live Camera is enabled in MSFS2020-PilotPathRecorder, the Network Link can be installed
+and/or activated within Google Earth, as illustrated in the example below.  This can be done
+through using the `Link` button on the dialog (see "Extras", below), or manually within Google
+Earth.  One way to bring up the "Edit Network Link" dialog within Google Earth is through its
+menu item: `Add >> Network Link`.
 
 The configured Network Link should look something like this:
 
@@ -63,21 +65,21 @@ it from within Google Earth to restore synchronization once the link becomes rea
 
 ## Extras
 
-- A `Link` button to the right of the "Live Camera Network Link" can be used to install the
-Network Link directly into Google Earth (presuming it's installed and is the handler for `.kml`
-files).  As of this writing, only the default configuration illustrated above (i.e., refresh the
-view immediately "after camera stops", with "Fly to View" selected) is supported.
+Two extra buttons appearing to the right of the Network Link URL can be used to customize
+the "Live Camera", as follows:
 
-- You can use the `Edit` button to the right of the "Live Camera Network Link" to modify or 
-replace the "KML" document that is returned to Google Earth each time it queries for the
-updated position.  
+- Use the `Edit` button to customize the templates used to build the "Network Link" or
+    the "Camera" KML documents.  
+
+- Use `Link` to install the Network Link directly into Google Earth (presuming it's installed
+    and is the handler for `.kml` files), which will be launched if not currently running.
 
 - _See the [KML Reference](https://developers.google.com/kml/documentation/kmlreference) for details_
 
 ### Examples
 
-Instead of returning KML to Google Earth to reflect the current "Camera View", for example, you could
-use the following KML to display your airplane as a moving icon, as viewed from a distance:
+Instead of showing the view from the simulated airplane's cockpit, for example, you could use the
+following "Camera Template" to display your airplane as a moving icon, as viewed from above:
 
 ```
 <?xml version='1.0' encoding='UTF-8'?>

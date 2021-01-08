@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FS2020PlanePath", "FS2020PlanePath\FS2020PlanePath.csproj", "{54B895DB-E959-49ED-A9C4-4CBE00CCA227}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FS2020PlanePath.XUnitTests", "MSFS2020-PilotPathRecorder.XUnitTests\FS2020PlanePath.XUnitTests.csproj", "{CD341D87-6D43-418F-8EEB-2D00F7459F1F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54B895DB-E959-49ED-A9C4-4CBE00CCA227}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD341D87-6D43-418F-8EEB-2D00F7459F1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD341D87-6D43-418F-8EEB-2D00F7459F1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD341D87-6D43-418F-8EEB-2D00F7459F1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD341D87-6D43-418F-8EEB-2D00F7459F1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

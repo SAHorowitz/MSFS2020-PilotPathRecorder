@@ -6,7 +6,7 @@ using WatsonWebserver;
 namespace FS2020PlanePath
 {
 
-    public class InternalWebServer
+    public class InternalWebServer : IDisposable
     {
 
         private readonly List<string> supportedSchemes = new List<string> { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
@@ -24,12 +24,15 @@ namespace FS2020PlanePath
             this.webHostUri = webHostUri;
         }
 
-        public void Enable() {
+        public void Enable()
+        {
             if (server == null)
             {
                 bool ssl = webHostUri.Scheme == Uri.UriSchemeHttps;
                 // see: https://github.com/jchristn/WatsonWebserver/wiki/Using-SSL-on-Windows
                 server = new Server(webHostUri.Host, webHostUri.Port, ssl, RequestHandler);
+            }
+            if (!server.IsListening) {
                 server.Start();
                 Console.WriteLine($"{GetType().Name} listening at({webHostUri})");
             }
@@ -43,6 +46,14 @@ namespace FS2020PlanePath
                     server.Stop();
                     Console.WriteLine($"{GetType().Name} stopped listening");
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            Disable();
+            if (server != null)
+            {
                 server.Dispose();
                 server = null;
             }

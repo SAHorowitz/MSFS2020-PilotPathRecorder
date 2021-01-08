@@ -778,7 +778,7 @@ namespace FS2020PlanePath
             // disable and free any currently running listener
             if (activeInternalWebserver != null)
             {
-                activeInternalWebserver.Disable();
+                activeInternalWebserver.Dispose();
                 activeInternalWebserver = null;
             }
 
@@ -826,7 +826,7 @@ namespace FS2020PlanePath
                 {
                     if (internalWebserver != null)
                     {
-                        internalWebserver.Disable();
+                        internalWebserver.Dispose();
                     }
                     problemMessage = $"Could not listen on: {hostUri}.\n\nDetails: {ene.Message}";
                 }
