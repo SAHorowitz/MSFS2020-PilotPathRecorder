@@ -124,10 +124,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseLiveCamRegistry.cs" />
     <Compile Include="FolderSelectDialog.cs" />
     <Compile Include="FS2020_SQLLiteDB.cs" />
     <Compile Include="InternalWebServer.cs" />
-    <Compile Include="LiveCamRegistry.cs" />
+    <Compile Include="InMemoryLiveCamRegistry.cs" />
     <Compile Include="KmlLiveCam.cs" />
     <Compile Include="MainPage.cs">
       <SubType>Form</SubType>

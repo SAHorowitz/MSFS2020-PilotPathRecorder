@@ -12,7 +12,7 @@ namespace MSFS2020_PilotPathRecorder.XUnitTests
     public class LiveCamRegistryTests
     {
 
-        LiveCamRegistry liveCamRegistry = new LiveCamRegistry();
+        ILiveCamRegistry liveCamRegistry = new InMemoryLiveCamRegistry();
 
         [Fact]
         public void TestSingleRegistrationAndRetrieval()

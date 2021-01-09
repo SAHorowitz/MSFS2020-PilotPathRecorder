@@ -29,7 +29,7 @@ namespace FS2020PlanePath
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
         InternalWebServer activeInternalWebserver;
         ScKmlAdapter scKmlAdapter = new ScKmlAdapter();
-        LiveCamRegistry liveCamRegistry = new LiveCamRegistry();
+        ILiveCamRegistry liveCamRegistry = new InMemoryLiveCamRegistry();
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
