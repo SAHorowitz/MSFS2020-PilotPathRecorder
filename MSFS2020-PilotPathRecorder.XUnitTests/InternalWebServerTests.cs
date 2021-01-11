@@ -23,7 +23,7 @@ namespace MSFS2020_PilotPathRecorder.XUnitTests
         public void TestSimpleGetPath()
         {
             Uri localUri = new Uri("http://localhost:8000/xyz");
-            using (InternalWebServer ws = new InternalWebServer(localUri, path => $"~/{path}/~")) {
+            using (LiveCamLinkListener ws = new LiveCamLinkListener(localUri, path => $"~/{path}/~")) {
                 ws.Enable();
                 (var status, var body) = HttpGet(localUri);
                 string testResultString = $"status({status}); responseBody({body})";
@@ -37,7 +37,7 @@ namespace MSFS2020_PilotPathRecorder.XUnitTests
         {
             Uri localUri = new Uri("http://localhost:8000/xyz");
             Action clientAction = () => HttpGet(localUri);
-            using (InternalWebServer ws = new InternalWebServer(localUri, path => $"~/{path}/~"))
+            using (LiveCamLinkListener ws = new LiveCamLinkListener(localUri, path => $"~/{path}/~"))
             {
                 Assert.ThrowsAny<Exception>(clientAction);  // created but not enabled
                 ws.Enable();

@@ -6,7 +6,7 @@ using WatsonWebserver;
 namespace FS2020PlanePath
 {
 
-    public class InternalWebServer : IDisposable
+    public class LiveCamLinkListener : IDisposable
     {
 
         private readonly List<string> supportedSchemes = new List<string> { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
@@ -15,7 +15,7 @@ namespace FS2020PlanePath
 
         private Server server;
 
-        public InternalWebServer(Uri webHostUri, Func<string, string> pathHandler)
+        public LiveCamLinkListener(Uri webHostUri, Func<string, string> pathHandler)
         {
             if (!supportedSchemes.Contains(webHostUri.Scheme)) {
                 throw new ArgumentException($"unsupported URI scheme: {webHostUri.Scheme}");

@@ -124,12 +124,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FilesystemRegistry .cs" />
+    <Compile Include="LiveCamRegistry.cs" />
     <Compile Include="DatabaseLiveCamRegistry.cs" />
     <Compile Include="FolderSelectDialog.cs" />
     <Compile Include="FS2020_SQLLiteDB.cs" />
-    <Compile Include="InternalWebServer.cs" />
-    <Compile Include="InMemoryLiveCamRegistry.cs" />
+    <Compile Include="IRegistry.cs" />
+    <Compile Include="LiveCamLinkListener.cs" />
+    <Compile Include="InMemoryRegistry.cs" />
     <Compile Include="KmlLiveCam.cs" />
+    <Compile Include="LiveCamRegistryFactory.cs" />
     <Compile Include="MainPage.cs">
       <SubType>Form</SubType>
     </Compile>

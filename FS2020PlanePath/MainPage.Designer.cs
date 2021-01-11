@@ -360,6 +360,7 @@
             this.LiveCameraHostPortTB.TabIndex = 16;
             this.LiveCameraHostPortTB.Text = "http://localhost:8000/kmlcam";
             this.toolTip1.SetToolTip(this.LiveCameraHostPortTB, "Set \'Live Camera\' listener address");
+            this.LiveCameraHostPortTB.Validating += new System.ComponentModel.CancelEventHandler(this.ValidateNetworkLink);
             // 
             // LiveCameraKmlBT
             // 

@@ -27,9 +27,9 @@ namespace FS2020PlanePath
 
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
-        InternalWebServer activeInternalWebserver;
+        LiveCamLinkListener activeLinkListener;
         ScKmlAdapter scKmlAdapter = new ScKmlAdapter();
-        ILiveCamRegistry liveCamRegistry = new InMemoryLiveCamRegistry();
+        LiveCamRegistry liveCamRegistry;
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
@@ -66,6 +66,9 @@ namespace FS2020PlanePath
             LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
 
             LoadFlightList();
+
+            liveCamRegistry = new LiveCamRegistry(new FilesystemRegistry<LiveCamEntity>(typeof(KmlLiveCam).Name));
+
         }
 
         private void LogWriteFreqTB_KeyPress(object sender, KeyPressEventArgs e)
@@ -141,13 +144,13 @@ namespace FS2020PlanePath
             }
         }
 
-        private string internalWebserverResponse(string requestPath)
+        private string handleLinkListenerRequest(string alias)
         {
-            //Console.WriteLine($"received path({requestPath})");
+            //Console.WriteLine($"received path({alias})");
             KmlLiveCam liveCam;
-            if (!liveCamRegistry.TryGetByAlias(requestPath, out liveCam))
+            if (!liveCamRegistry.TryGetById(alias, out liveCam))
             {
-                return $"<error text='LiveCam({requestPath}) not found; request ignored' />";
+                return $"<error text='LiveCam({alias}) not found; request ignored' />";
             }
             liveCam.Camera.Values = scKmlAdapter.KmlCameraValues;
             return liveCam.Camera.Render();
@@ -776,10 +779,10 @@ namespace FS2020PlanePath
         private void LiveCameraCB_CheckedChanged(object sender, EventArgs eventArgs)
         {
             // disable and free any currently running listener
-            if (activeInternalWebserver != null)
+            if (activeLinkListener != null)
             {
-                activeInternalWebserver.Dispose();
-                activeInternalWebserver = null;
+                activeLinkListener.Dispose();
+                activeLinkListener = null;
             }
 
             if (!LiveCameraCB.Checked)
@@ -801,7 +804,7 @@ namespace FS2020PlanePath
             string liveCamUrl = LiveCameraHostPortTB.Text;
             try
             {
-                hostUri = new Uri(liveCamUrl);
+                hostUri = LiveCamRegistry.ParseNetworkLink(liveCamUrl);
                 // ensure live cam is registered
                 liveCamRegistry.LoadByUrl(liveCamUrl);
             }
@@ -812,21 +815,21 @@ namespace FS2020PlanePath
 
             if (problemMessage == null)
             {
-                InternalWebServer internalWebserver = null;
+                LiveCamLinkListener linkListener = null;
                 try
                 {
-                    internalWebserver = new InternalWebServer(
+                    linkListener = new LiveCamLinkListener(
                         hostUri, 
-                        request => internalWebserverResponse(request)
+                        request => handleLinkListenerRequest(request)
                     );
-                    internalWebserver.Enable();
-                    activeInternalWebserver = internalWebserver;
+                    linkListener.Enable();
+                    activeLinkListener = linkListener;
                 }
                 catch (SystemException ene)
                 {
-                    if (internalWebserver != null)
+                    if (linkListener != null)
                     {
-                        internalWebserver.Dispose();
+                        linkListener.Dispose();
                     }
                     problemMessage = $"Could not listen on: {hostUri}.\n\nDetails: {ene.Message}";
                 }
@@ -902,7 +905,7 @@ namespace FS2020PlanePath
                 string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
                 if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
                 {
-                    Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
+                    //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
                     liveCam.Camera.Template = updatedCameraKmlTemplate;
                     changeList.Add("Camera");
                 }
@@ -917,6 +920,7 @@ namespace FS2020PlanePath
 
                 if (changeList.Count > 0)
                 {
+                    liveCamRegistry.Save(liveCam.Link.Values.alias, liveCam);
                     MessageBox.Show(
                         $"Live Camera Definition ({string.Join(", ", changeList)} KML) was Changed",
                         "Live Camera Update",
@@ -992,6 +996,18 @@ namespace FS2020PlanePath
             MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
+        private void ValidateNetworkLink(object sender, CancelEventArgs e)
+        {
+            string liveCamUrl = LiveCameraHostPortTB.Text;
+            try
+            {
+                LiveCamRegistry.ParseNetworkLink(liveCamUrl);
+            } catch(UriFormatException ufe)
+            {
+                displayError("Invalid Network Link", malformedUriErrorMessage(liveCamUrl, ufe));
+            }
+            
+        }
     }
 
 }

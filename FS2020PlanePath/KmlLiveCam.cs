@@ -8,6 +8,13 @@ namespace FS2020PlanePath
     public class KmlLiveCam : ILiveCam<KmlCameraParameterValues, KmlNetworkLinkValues>
     {
 
+        public KmlLiveCam(string cameraTemplate, string linkTemplate, KmlNetworkLinkValues linkValues)
+        {
+            Camera.Template = cameraTemplate;
+            Link.Template = linkTemplate;
+            Link.Values = linkValues;
+        }
+
         public IStringTemplateRenderer<KmlCameraParameterValues> Camera { get; } = new Renderer<KmlCameraParameterValues>();
 
         public IStringTemplateRenderer<KmlNetworkLinkValues> Link { get; } = new Renderer<KmlNetworkLinkValues>();
