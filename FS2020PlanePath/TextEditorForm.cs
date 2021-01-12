@@ -98,9 +98,23 @@ namespace FS2020PlanePath
                     return;
                 }
 
+                string textToWrite;
+                switch (editorPaneTC.SelectedTab.Name)
+                {
+                    case "cameraEditorTP":
+                        textToWrite = cameraEditorTB.Text;
+                        break;
+                    case "linkEditorTP":
+                        textToWrite = linkEditorTB.Text;
+                        break;
+                    default:
+                        displayError("Oops", $"unknown tab({editorPaneTC.SelectedTab.Name})");
+                        return;
+                }
+
                 try
                 {
-                    File.WriteAllText(saveFileDialog.FileName, cameraEditorTB.Text);
+                    File.WriteAllText(saveFileDialog.FileName, textToWrite);
                 } catch(Exception ex)
                 {
                     displayError("Exception Encountered", ex.Message);

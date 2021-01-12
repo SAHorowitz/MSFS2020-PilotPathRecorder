@@ -41,6 +41,7 @@ namespace FS2020PlanePath
                 using (StreamWriter file = File.CreateText(FilenameForId(id)))
                 {
                     JsonSerializer serializer = new JsonSerializer();
+                    serializer.Formatting = Formatting.Indented;
                     serializer.Serialize(file, value);
                 }
                 return true;
