@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <RootNamespace>MSFS2020_PilotPathRecorder.XUnitTests</RootNamespace>
+    <RootNamespace>FS2020PlanePath.XUnitTests</RootNamespace>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>

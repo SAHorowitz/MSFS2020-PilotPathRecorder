@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 
-namespace MSFS2020_PilotPathRecorder.XUnitTests
+namespace FS2020PlanePath.XUnitTests
 {
 
     public class InternalWebServerTests

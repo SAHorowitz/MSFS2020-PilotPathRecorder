@@ -1,7 +1,7 @@
 ﻿using Xunit;
 using FS2020PlanePath;
 
-namespace MSFS2020_PilotPathRecorder.XUnitTests
+namespace FS2020PlanePath.XUnitTests
 {
 
     public class FilesystemRegistryTests
