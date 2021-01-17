@@ -6,9 +6,9 @@ namespace MSFS2020_PilotPathRecorder.XUnitTests
 
     public class LiveCamRegistryTests
     {
-        private const string Alias1 = "/path1";
-        private const string Alias2 = "/path2";
-        private const string BaseUrl = "http://localhost:8000";
+        private const string Alias1 = "path1";
+        private const string Alias2 = "path2";
+        private const string BaseUrl = "http://localhost:8765/";
         private const string Url1 = BaseUrl + Alias1;
         private const string Url2 = BaseUrl + Alias2;
         IRegistry<LiveCamEntity> persistenceRegistry;

@@ -65,9 +65,10 @@ namespace FS2020PlanePath
             LoggingThresholdGroundVelTB.Text = FlightPathDB.GetTableOption("AutomaticLoggingThreshold");
             LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
 
-            LoadFlightList();
+            liveCamRegistry = new LiveCamRegistry(new FilesystemRegistry<LiveCamEntity>($"{typeof(KmlLiveCam).Name}_"));
 
-            liveCamRegistry = new LiveCamRegistry(new FilesystemRegistry<LiveCamEntity>(typeof(KmlLiveCam).Name));
+            LoadFlightList();
+            LoadLiveCams();
 
         }
 
@@ -657,6 +658,14 @@ namespace FS2020PlanePath
             AttemptSimConnection();
         }
 
+        private void LoadLiveCams() {
+            List<string> liveCamAliases = liveCamRegistry.GetAliases();
+            if (liveCamAliases.Count > 0)
+            {
+                LiveCameraHostPortTB.Text = "http://localhost:8000/" + liveCamAliases[0];
+            }
+        }
+
         private void LoadFlightList()
         {
             List<FlightListData> FlightList = new List<FlightListData>();
@@ -820,7 +829,7 @@ namespace FS2020PlanePath
                 {
                     linkListener = new LiveCamLinkListener(
                         hostUri, 
-                        request => handleLinkListenerRequest(request)
+                        request => handleLinkListenerRequest(request.Substring(1))
                     );
                     linkListener.Enable();
                     activeLinkListener = linkListener;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace FS2020PlanePath
 {
@@ -74,6 +75,11 @@ namespace FS2020PlanePath
             return persistentRegistry.Delete(alias) && cacheRegistry.Delete(alias);
         }
 
+        public List<string> GetAliases()
+        {
+            return persistentRegistry.GetAliases();
+        }
+
         /// <exception cref="UriFormatException">malformed url</exception>
         public static Uri ParseNetworkLink(string liveCamUrl)
         {
@@ -83,7 +89,7 @@ namespace FS2020PlanePath
         /// <exception cref="UriFormatException">malformed url</exception>
         public static string GetAlias(string liveCamUrl)
         {
-            return ParseNetworkLink(liveCamUrl).AbsolutePath;
+            return ParseNetworkLink(liveCamUrl).AbsolutePath.Substring(1);
         }
 
         public static KmlLiveCam DefaultLiveCam(string alias, string url)

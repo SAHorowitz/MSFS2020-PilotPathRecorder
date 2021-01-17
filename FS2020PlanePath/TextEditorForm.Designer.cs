@@ -66,7 +66,7 @@ namespace FS2020PlanePath
             this.cameraEditorTB.Size = new System.Drawing.Size(417, 239);
             this.cameraEditorTB.TabIndex = 2;
             this.cameraEditorTB.TabStop = false;
-            this.cameraEditorTB.Validating += new System.ComponentModel.CancelEventHandler(this.validateKmlTexts);
+            this.cameraEditorTB.Validating += new System.ComponentModel.CancelEventHandler(this.Handle_KmlTextValidation_Event);
             // 
             // okBT
             // 
@@ -118,14 +118,14 @@ namespace FS2020PlanePath
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "&Load...";
-            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.Handle_FileOpenMenuItemSelected_Event);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save &As...";
-            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.Handle_FileSaveMenuItemSelected_Event);
             // 
             // helpToolStripMenuItem
             // 
@@ -134,7 +134,7 @@ namespace FS2020PlanePath
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "&Help";
             this.helpToolStripMenuItem.ToolTipText = "Invokes \'Pop Up\' Help Panel";
-            this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
+            this.helpToolStripMenuItem.Click += new System.EventHandler(this.Handle_HelpMenuItemSelected_Event);
             // 
             // menuStripDividerLB
             // 
@@ -200,7 +200,7 @@ namespace FS2020PlanePath
             this.linkEditorTB.Size = new System.Drawing.Size(417, 239);
             this.linkEditorTB.TabIndex = 3;
             this.linkEditorTB.TabStop = false;
-            this.linkEditorTB.Validating += new System.ComponentModel.CancelEventHandler(this.validateKmlTexts);
+            this.linkEditorTB.Validating += new System.ComponentModel.CancelEventHandler(this.Handle_KmlTextValidation_Event);
             // 
             // TextEditorForm
             // 
@@ -220,7 +220,7 @@ namespace FS2020PlanePath
             this.Name = "TextEditorForm";
             this.Text = "Text Editor";
             this.toolTip1.SetToolTip(this, "Allows customization of the \'Live Camera\' KML Template");
-            this.HelpRequested += new System.Windows.Forms.HelpEventHandler(this.TextEditorForm_HelpRequested);
+            this.HelpRequested += new System.Windows.Forms.HelpEventHandler(this.Handle_HelpRequested_Event);
             this.menuSP.ResumeLayout(false);
             this.menuSP.PerformLayout();
             this.editorPaneTC.ResumeLayout(false);

@@ -9,14 +9,14 @@ to synchronize Google Earth's view with the simulator's view, in "real-time", us
 
 ## Setup
 
-Once this feature is enabled within MSFS2020-PilotPathRecorder, configure and activate the Network Link
-within Google Earth, as described below:
+See how to configure, enable and activate this MSFS2020-PilotPathRecorder feature by using a
+Network Link within Google Earth below:
 
 ### MSFS2020-PilotPathRecorder
 
-The "Live Camera" checkbox can be used to enable or disable support for this feature
-within MSFS2020-PilotPathRecorder.  When checked, an internal "webserver" listener
-will be activated (at the location specified in the "Network Link" textbox, just to the right
+The "Live Camera" checkbox can be used to enable or disable support for this feature within
+MSFS2020-PilotPathRecorder.  When checked, an internal listener - a lightweight "web server" -
+will be activated at the location specified in the "Network Link" textbox (just to the right
 of the checkbox), enabling Google Earth to periodically retrieve the current position
 of the simulated flight.
 
@@ -35,8 +35,8 @@ Here's an example of what it might look like right after being enabled:
 Once the Live Camera is enabled in MSFS2020-PilotPathRecorder, the Network Link can be installed
 and/or activated within Google Earth, as illustrated in the example below.  This can be done
 through using the `Link` button on the dialog (see "Extras", below), or manually within Google
-Earth.  One way to bring up the "Edit Network Link" dialog within Google Earth is through its
-menu item: `Add >> Network Link`.
+Earth.  One way to bring up the "Edit Network Link" dialog in Google Earth is through its menu
+item: `Add >> Network Link`.
 
 The configured Network Link should look something like this:
 
@@ -78,8 +78,13 @@ the "Live Camera", as follows:
 
 ### Examples
 
-Instead of showing the view from the simulated airplane's cockpit, for example, you could use the
-following "Camera Template" to display your airplane as a moving icon, as viewed from above:
+The ability to customize the KML "camera" and "link" templates encourages experimentation, and opens
+up additional use cases.  Check out some examples below, for instance:
+
+#### Moving Map with Custom Icon
+
+Instead of showing the pilot's view from the simulated airplane cockpit, for example, you could use
+the following "Camera Template" to display your airplane as a moving icon, as viewed from above:
 
 ```
 <?xml version='1.0' encoding='UTF-8'?>
@@ -114,10 +119,16 @@ following "Camera Template" to display your airplane as a moving icon, as viewed
 </kml>
 ```
 
+#### Other Ideas
+
 There are potentially countless creative ways this experimental feature can be used to track your flight.
+Check out what some other people are doing:
+
+- [Relevant Excerpt: Google I/O 2011](https://www.youtube.com/watch?v=nIoWHlEEeNI&t=16m17s)
+
+#### \<\<Your Idea Goes Here\>\>
 
 If you come up with something interesting or that you'd like to share, please let us know!
-
 
 [KML Camera]: https://developers.google.com/kml/documentation/cameras
 [Network Link]: https://developers.google.com/kml/documentation/updates

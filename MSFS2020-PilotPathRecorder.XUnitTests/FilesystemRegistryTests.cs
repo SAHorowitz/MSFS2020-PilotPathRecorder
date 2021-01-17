@@ -10,7 +10,7 @@ namespace MSFS2020_PilotPathRecorder.XUnitTests
         private FilesystemRegistry<StamType> testInstance;
 
         public FilesystemRegistryTests() {
-            testInstance = new FilesystemRegistry<StamType>($"{GetType().Name}-");
+            testInstance = new FilesystemRegistry<StamType>($"{GetType().Name}_");
         }
 
         [Fact]

@@ -28,7 +28,7 @@ namespace FS2020PlanePath
         public string EditorText { get { return cameraEditorTB.Text; } }
         public string LinkText { get { return linkEditorTB.Text; } }
 
-        private void validateKmlTexts(object sender, CancelEventArgs e)
+        private void Handle_KmlTextValidation_Event(object sender, CancelEventArgs e)
         {
             if (kmlValidator != null)
             {
@@ -60,7 +60,7 @@ namespace FS2020PlanePath
             }
         }
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Handle_FileOpenMenuItemSelected_Event(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -73,19 +73,35 @@ namespace FS2020PlanePath
                     return;
                 }
 
+                string textFromFile;
                 try
                 {
-                    cameraEditorTB.Text = File.ReadAllText(openFileDialog.FileName);
+                    textFromFile = File.ReadAllText(openFileDialog.FileName);
                 }
                 catch (Exception ex)
                 {
                     displayError("Exception Encountered", ex.Message);
+                    return;
                 }
+
+                switch (editorPaneTC.SelectedTab.Name)
+                {
+                    case "cameraEditorTP":
+                        cameraEditorTB.Text = textFromFile;
+                        break;
+                    case "linkEditorTP":
+                        linkEditorTB.Text = textFromFile;
+                        break;
+                    default:
+                        displayUnknownTabError(editorPaneTC.SelectedTab.Name);
+                        return;
+                }
+
             }
 
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void Handle_FileSaveMenuItemSelected_Event(object sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
@@ -108,7 +124,7 @@ namespace FS2020PlanePath
                         textToWrite = linkEditorTB.Text;
                         break;
                     default:
-                        displayError("Oops", $"unknown tab({editorPaneTC.SelectedTab.Name})");
+                        displayUnknownTabError(editorPaneTC.SelectedTab.Name);
                         return;
                 }
 
@@ -123,19 +139,24 @@ namespace FS2020PlanePath
 
         }
 
+        private void Handle_HelpRequested_Event(object sender, HelpEventArgs hlpevent)
+        {
+            showHelp();
+        }
+
+        private void Handle_HelpMenuItemSelected_Event(object sender, EventArgs e)
+        {
+            showHelp();
+        }
+
         private void displayError(string caption, string details)
         {
             MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private void TextEditorForm_HelpRequested(object sender, HelpEventArgs hlpevent)
+        private void displayUnknownTabError(string tabName)
         {
-            showHelp();
-        }
-
-        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            showHelp();
+            displayError("Unknown Tab", $"Tab Name: {tabName}");
         }
 
         private void showHelp() {

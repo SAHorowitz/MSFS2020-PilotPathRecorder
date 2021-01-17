@@ -24,6 +24,10 @@ namespace FS2020PlanePath
             return activeLiveCams.Remove(alias);
         }
 
+        public List<string> GetAliases()
+        {
+            return new List<string>(activeLiveCams.Keys);
+        }
     }
 
 }

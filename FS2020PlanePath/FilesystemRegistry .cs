@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -10,10 +11,12 @@ namespace FS2020PlanePath
     {
 
         string fileNamePrefix;
+        string fileNameSuffix;
 
         public FilesystemRegistry(string fileNamePrefix)
         {
             this.fileNamePrefix = fileNamePrefix;
+            this.fileNameSuffix = ".json";
         }
 
         public bool TryGetById(string id, out T value)
@@ -63,14 +66,24 @@ namespace FS2020PlanePath
             }
         }
 
-        private string FilenameForId(string id)
+        public List<string> GetAliases()
         {
-            return $"{fileNamePrefix}{fnClean(id)}.json";
+            FileInfo[] foundFiles = new DirectoryInfo(".").GetFiles(FilenameForId("*"));
+            Array.Sort(foundFiles, (f1, f2) => f2.LastAccessTimeUtc.CompareTo(f1.LastAccessTimeUtc));
+            List<string> aliases = new List<string>();
+            foreach (FileInfo foundFile in foundFiles)
+            {
+                string foundFileName = foundFile.Name;
+                string aliasLeft = foundFileName.Substring(fileNamePrefix.Length);
+                aliases.Add(aliasLeft.Remove(aliasLeft.Length - fileNameSuffix.Length));
+            }
+            // list of liveCam files, most recently accessed first
+            return aliases;
         }
 
-        private object fnClean(string alias)
+        private string FilenameForId(string cleanId)
         {
-            return Path.GetInvalidFileNameChars().Aggregate(alias, (current, c) => current.Replace(c, '_'));
+            return $"{fileNamePrefix}{cleanId}{fileNameSuffix}";
         }
 
     }
