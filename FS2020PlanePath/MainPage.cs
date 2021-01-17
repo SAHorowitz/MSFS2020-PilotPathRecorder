@@ -798,12 +798,7 @@ namespace FS2020PlanePath
             {
                 // re-enable the user to change the live camera's URI
                 LiveCameraHostPortTB.Enabled = true;
-                MessageBox.Show(
-                    "No longer listening.", 
-                    "Live Camera Disabled",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
+                displayMessage("Live Camera Disabled", "No longer listening.");
                 return;
             }
 
@@ -855,13 +850,7 @@ namespace FS2020PlanePath
 
             // prevent modification of the live camera's URI while it's active
             LiveCameraHostPortTB.Enabled = false;
-            MessageBox.Show(
-                "Listening at URL:\n" + hostUri, 
-                "Live Camera Enabled",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
-
+            displayMessage("Live Camera Enabled", "Listening at URL:\n" + hostUri);
         }
 
         private void LiveCameraKml_Click(object sender, EventArgs e)
@@ -930,12 +919,7 @@ namespace FS2020PlanePath
                 if (changeList.Count > 0)
                 {
                     liveCamRegistry.Save(liveCam.Link.Values.alias, liveCam);
-                    MessageBox.Show(
-                        $"Live Camera Definition ({string.Join(", ", changeList)} KML) was Changed",
-                        "Live Camera Update",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
+                    displayMessage("Live Camera Update", $"Live Camera Definition ({string.Join(", ", changeList)} KML) was Changed");
                 }
 
             }
@@ -995,16 +979,6 @@ namespace FS2020PlanePath
             }
         }
 
-        private string malformedUriErrorMessage(string url, UriFormatException ufe)
-        {
-            return $"Malformed URI: {url}.\n\nDetails: {ufe.Message}\n\nTry e.g.: 'http://localhost:8000/kmlcam'";
-        }
-
-        private void displayError(string caption, string details)
-        {
-            MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
         private void ValidateNetworkLink(object sender, CancelEventArgs e)
         {
             string liveCamUrl = LiveCameraHostPortTB.Text;
@@ -1017,6 +991,57 @@ namespace FS2020PlanePath
             }
             
         }
+
+        private void Handle_LiveCameraKmlResetBT_Click(object sender, EventArgs e)
+        {
+            KmlLiveCam liveCam;
+            if (!liveCamRegistry.TryGetById(LiveCamRegistry.GetAlias(LiveCameraHostPortTB.Text), out liveCam))
+            {
+                return;
+            }
+            
+            if (!LiveCamRegistry.IsDefaultDefinition(liveCam))
+            {
+                if (!obtainConfirmation("Confirm Reset", $"Discard changes for:\n{liveCam.Link.Values.url}"))
+                {
+                    return;
+                }
+            }
+
+            liveCamRegistry.Delete(liveCam.Link.Values.alias);
+        }
+
+        private string malformedUriErrorMessage(string url, UriFormatException ufe)
+        {
+            return $"Malformed URI: {url}.\n\nDetails: {ufe.Message}\n\nTry e.g.: 'http://localhost:8000/kmlcam'";
+        }
+
+        private void displayError(string caption, string details)
+        {
+            MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void displayMessage(string caption, string details)
+        {
+            MessageBox.Show(
+                details,
+                caption,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private bool obtainConfirmation(string caption, string details)
+        {
+            DialogResult confirmationAnswer = MessageBox.Show(
+                details,
+                caption,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+            return (DialogResult.Yes == confirmationAnswer);
+        }
+
     }
 
 }

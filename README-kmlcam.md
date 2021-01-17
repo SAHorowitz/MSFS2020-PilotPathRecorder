@@ -65,7 +65,7 @@ it from within Google Earth to restore synchronization once the link becomes rea
 
 ## Extras
 
-Two extra buttons appearing to the right of the Network Link URL can be used to customize
+The extra buttons appearing to the right of the Network Link URL can be used to customize
 the "Live Camera", as follows:
 
 - Use the `Edit` button to customize the templates used to build the "Network Link" or
@@ -73,6 +73,9 @@ the "Live Camera", as follows:
 
 - Use `Link` to install the Network Link directly into Google Earth (presuming it's installed
     and is the handler for `.kml` files), which will be launched if not currently running.
+
+- `Reset` allows you to discard any edits made to the Live Camera configuration by restoring
+    the initial (default) configuration.   
 
 - _See the [KML Reference](https://developers.google.com/kml/documentation/kmlreference) for details_
 

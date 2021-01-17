@@ -72,7 +72,7 @@ namespace FS2020PlanePath
 
         public bool Delete(string alias)
         {
-            return persistentRegistry.Delete(alias) && cacheRegistry.Delete(alias);
+            return cacheRegistry.Delete(alias) && persistentRegistry.Delete(alias);
         }
 
         public List<string> GetAliases()
@@ -90,6 +90,14 @@ namespace FS2020PlanePath
         public static string GetAlias(string liveCamUrl)
         {
             return ParseNetworkLink(liveCamUrl).AbsolutePath.Substring(1);
+        }
+
+        public static bool IsDefaultDefinition(KmlLiveCam kmlLiveCam)
+        {
+            return (
+                kmlLiveCam.Camera.Template == LiveCamConstants.DefaultCameraKmlTemplate
+             && kmlLiveCam.Link.Template == LiveCamConstants.DefaultNetworkLinkKmlTemplate   
+            );
         }
 
         public static KmlLiveCam DefaultLiveCam(string alias, string url)

@@ -56,12 +56,14 @@ namespace FS2020PlanePath
 
         public bool Delete(string id)
         {
+            string fileName = FilenameForId(id);
             try
             {
-                File.Delete(FilenameForId(id));
+                File.Delete(fileName);
                 return true;
             } catch(Exception e)
             {
+                Console.WriteLine($"Error deleting({fileName}); exceptionMessage({e.Message})");
                 return false;
             }
         }

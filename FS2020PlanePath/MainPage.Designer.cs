@@ -63,6 +63,7 @@
             this.LiveCameraKmlBT = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.geLinkBT = new System.Windows.Forms.Button();
+            this.LiveCameraKmlResetBT = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label2
@@ -364,7 +365,7 @@
             // 
             // LiveCameraKmlBT
             // 
-            this.LiveCameraKmlBT.Location = new System.Drawing.Point(415, 213);
+            this.LiveCameraKmlBT.Location = new System.Drawing.Point(413, 213);
             this.LiveCameraKmlBT.Name = "LiveCameraKmlBT";
             this.LiveCameraKmlBT.Size = new System.Drawing.Size(38, 20);
             this.LiveCameraKmlBT.TabIndex = 29;
@@ -375,7 +376,7 @@
             // 
             // geLinkBT
             // 
-            this.geLinkBT.Location = new System.Drawing.Point(458, 213);
+            this.geLinkBT.Location = new System.Drawing.Point(455, 213);
             this.geLinkBT.Name = "geLinkBT";
             this.geLinkBT.Size = new System.Drawing.Size(38, 20);
             this.geLinkBT.TabIndex = 30;
@@ -384,11 +385,23 @@
             this.geLinkBT.UseVisualStyleBackColor = true;
             this.geLinkBT.Click += new System.EventHandler(this.geLinkBT_Click);
             // 
+            // LiveCameraKmlResetBT
+            // 
+            this.LiveCameraKmlResetBT.Location = new System.Drawing.Point(497, 213);
+            this.LiveCameraKmlResetBT.Name = "LiveCameraKmlResetBT";
+            this.LiveCameraKmlResetBT.Size = new System.Drawing.Size(43, 20);
+            this.LiveCameraKmlResetBT.TabIndex = 31;
+            this.LiveCameraKmlResetBT.Text = "Reset";
+            this.toolTip1.SetToolTip(this.LiveCameraKmlResetBT, "Reset Selected Live Camera Definition (i.e. Discard Edits)");
+            this.LiveCameraKmlResetBT.UseVisualStyleBackColor = true;
+            this.LiveCameraKmlResetBT.Click += new System.EventHandler(this.Handle_LiveCameraKmlResetBT_Click);
+            // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 518);
+            this.Controls.Add(this.LiveCameraKmlResetBT);
             this.Controls.Add(this.geLinkBT);
             this.Controls.Add(this.LiveCameraKmlBT);
             this.Controls.Add(this.LiveCameraHostPortTB);
@@ -465,6 +478,7 @@
         private System.Windows.Forms.Button LiveCameraKmlBT;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button geLinkBT;
+        private System.Windows.Forms.Button LiveCameraKmlResetBT;
     }
 }
 
