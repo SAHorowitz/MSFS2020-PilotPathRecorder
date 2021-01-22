@@ -53,7 +53,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>ACCFC642F9C4885DA59BF945456E3D7F3CEF9A26</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>0688185EFA025FBB873A472E15F4E6019B58F9B9</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>FS2020PlanePath_TemporaryKey.pfx</ManifestKeyFile>
@@ -62,8 +62,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- TODO re-enable signed manifest -->
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
