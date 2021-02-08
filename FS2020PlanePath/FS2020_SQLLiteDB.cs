@@ -984,6 +984,47 @@ namespace FS2020PlanePath
             return FlightWaypoints;
         }
 
+        public List<FlightPathData> GetLiveCamTrackSinceDateTimestamp(int pk, long earliestDateTimestamp)
+        {
+
+            SQLiteCommand sqlite_cmd = sqlite_conn.CreateCommand();
+            sqlite_cmd.CommandText = @"select sample_datetimestamp, cast(latitude as double), cast(longitude as double), altitude, 
+cast(plane_pitch as double), cast(plane_bank as double), cast(plane_heading_true as double)
+from flightsamples s, flightsampledetails d 
+where s.flightsamplesid = d.flightsamplesid and sample_datetimestamp > @earliestDateTimestamp and flightid = @FlightID
+"; ;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+            sqlite_cmd.Parameters.AddWithValue("@earliestDateTimestamp", earliestDateTimestamp);
+
+            try
+            {
+                SQLiteDataReader r = sqlite_cmd.ExecuteReader();
+                List<FlightPathData> FlightPath = new List<FlightPathData>();
+                while (r.Read())
+                {
+                    FlightPath.Add(
+                        new FlightPathData {
+                            timestamp = r.GetInt64(0),
+                            latitude = r.GetDouble(1),
+                            longitude = r.GetDouble(2),
+                            altitude = (int) ((r.GetInt32(3) / 3.28084) + 0.5),
+                            plane_pitch = r.GetDouble(4),
+                            plane_bank = r.GetDouble(5),
+                            plane_heading_true = r.GetDouble(6)
+                        }
+                    );
+                }
+                Console.WriteLine($"query for flightId({pk}) since({earliestDateTimestamp}) found({FlightPath.Count}) entries");
+                return FlightPath;
+            }
+            catch (Exception ex)
+            {
+                Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteReader", sqlite_cmd), ex);
+                throw ex;
+            }
+
+        }
+
         public List<FlightPathData> GetFlightPathData(int pk)
         {
             List<FlightPathData> FlightPath = new List<FlightPathData>();

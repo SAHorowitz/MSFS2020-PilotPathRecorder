@@ -1,3 +1,11 @@
+This is a fork of [SAHorowitz](https://github.com/SAHorowitz)'s [MSFS2020-PilotPathRecorder](https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder).
+
+This fork brings several features (see v1.3.0n2 in [Version history](#version-history))
+
+Original readme follows.
+
+---
+
 See farther down in this document for instructions on how to install and use the program.
 
 Discussions Tab is turned on above, please use it to post questions, bugs, or enhancement ideas.

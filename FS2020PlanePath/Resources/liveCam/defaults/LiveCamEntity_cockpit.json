@@ -1,0 +1,12 @@
+{
+  "Lens": [
+    {
+      "Name": "",
+      "Template": "<?xml version='1.0' encoding='UTF-8'?>\r\n<kml xmlns='http://www.opengis.net/kml/2.2'>\r\n  <NetworkLink>\r\n    <name>MSFS2020-PilotPathRecorder LiveCam: '{alias}'</name>\r\n    <visibility>1</visibility>\r\n    <open>1</open>\r\n    <flyToView>1</flyToView>\r\n    <Link>\r\n      <href>{aliasUrl}/camera</href>\r\n      <refreshMode>onChange</refreshMode>\r\n      <refreshInterval>{refreshSeconds}</refreshInterval>\r\n      <viewRefreshMode>onStop</viewRefreshMode>\r\n      <viewRefreshTime>0</viewRefreshTime>\r\n     <viewFormat />\r\n    </Link>\r\n  </NetworkLink>\r\n</kml>"
+    },
+    {
+      "Name": "camera",
+      "Template": "<?xml version='1.0' encoding='UTF-8'?>\r\n<kml xmlns='http://www.opengis.net/kml/2.2'>\r\n  <NetworkLinkControl>\r\n    <Camera>\r\n      <altitudeMode>absolute</altitudeMode>\r\n      <altitude>{altitude}</altitude>\r\n      <latitude>{latitude}</latitude>\r\n      <longitude>{longitude}</longitude>\r\n      <heading>{heading}</heading>\r\n      <tilt>{tilt}</tilt>\r\n      <roll>{roll}</roll>\r\n    </Camera>\r\n  </NetworkLinkControl>\r\n</kml>"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Collections.Generic;
 
 namespace FS2020PlanePath
@@ -9,65 +9,70 @@ namespace FS2020PlanePath
 
         private IRegistry<KmlLiveCam> cacheRegistry;
         private IRegistry<LiveCamEntity> persistentRegistry;
+        private IRegistry<LiveCamEntity> builtinLiveCamRegistry;
 
-        public LiveCamRegistry(IRegistry<LiveCamEntity> persistentRegistry)
+        public LiveCamRegistry(
+            IRegistry<LiveCamEntity> persistentRegistry,
+            IRegistry<LiveCamEntity> builtinLiveCamRegistry
+        )
         {
             cacheRegistry = new InMemoryRegistry<KmlLiveCam>();
-            this.persistentRegistry = persistentRegistry; ;
+            this.persistentRegistry = persistentRegistry;
+            this.builtinLiveCamRegistry = builtinLiveCamRegistry;
         }
 
-        public KmlLiveCam LoadByUrl(string url)
+        public KmlLiveCam LoadByAlias(string alias)
         {
-            string alias = GetAlias(url);
             KmlLiveCam kmlLiveCam;
-
-            // if we've already got it, 
-            if (TryGetById(alias, out kmlLiveCam))
+            if (!TryGetById(alias, out kmlLiveCam))
             {
-                // and its URL hasn't changed, 
-                if (url == kmlLiveCam.Link.Values.url) {
-                    // then return it
-                    return kmlLiveCam;
-                }
+                kmlLiveCam = new KmlLiveCam(new LiveCamEntity());
+                Save(alias, kmlLiveCam);
             }
-
-            // load it from the persistence provider
-            LiveCamEntity liveCamEntity;
-            if (persistentRegistry.TryGetById(alias, out liveCamEntity))
-            {
-                // load that into a liveCam using the current URL
-                kmlLiveCam = new KmlLiveCam(
-                    liveCamEntity.CameraTemplate,
-                    liveCamEntity.LinkTemplate,
-                    new KmlNetworkLinkValues(alias, url)
-                );
-                // save it (back) to the cache
-                cacheRegistry.Save(alias, kmlLiveCam);
-                return kmlLiveCam;
-            }
-
-            // if not found in the persistence provider, use a default one
-            kmlLiveCam = DefaultLiveCam(alias, url);
-            // and persist that for the alias
-            Save(alias, kmlLiveCam);
             return kmlLiveCam;
         }
 
         public bool TryGetById(string alias, out KmlLiveCam kmlLiveCam)
         {
-            return cacheRegistry.TryGetById(alias, out kmlLiveCam);
+            if (cacheRegistry.TryGetById(alias, out kmlLiveCam))
+            {
+                return true;
+            }
+
+            LiveCamEntity liveCamEntity;
+
+            if (persistentRegistry.TryGetById(alias, out liveCamEntity))
+            {
+                kmlLiveCam = new KmlLiveCam(liveCamEntity);
+                cacheRegistry.Save(alias, kmlLiveCam);
+                return true;
+            }
+
+            if (builtinLiveCamRegistry.TryGetById(alias, out liveCamEntity))
+            {
+                kmlLiveCam = new KmlLiveCam(liveCamEntity);
+                cacheRegistry.Save(alias, kmlLiveCam);
+                return true;
+            }
+
+            return false;
         }
 
         public bool Save(string alias, KmlLiveCam kmlLiveCam)
         {
-            LiveCamEntity liveCamEntity = new LiveCamEntity
-            {
-                Url = kmlLiveCam.Link.Values.url,
-                CameraTemplate = kmlLiveCam.Camera.Template,
-                LinkTemplate = kmlLiveCam.Link.Template
-            };
             cacheRegistry.Save(alias, kmlLiveCam);
-            return persistentRegistry.Save(alias, liveCamEntity);
+            return persistentRegistry.Save(
+                alias,
+                new LiveCamEntity(
+                    kmlLiveCam.LensNames.Select(
+                        lensName => new LiveCamLensEntity(
+                            lensName,
+                            kmlLiveCam.GetLens(lensName).Template
+                        )
+                    )
+                    .ToArray()
+                )
+            );
         }
 
         public bool Delete(string alias)
@@ -75,90 +80,86 @@ namespace FS2020PlanePath
             return cacheRegistry.Delete(alias) && persistentRegistry.Delete(alias);
         }
 
-        public List<string> GetAliases()
+        public List<string> GetIds(int maxCount = -1)
         {
-            return persistentRegistry.GetAliases();
+            List<string> ids = new List<string>();
+            ids.AddRange(persistentRegistry.GetIds(maxCount));
+            foreach (string id in builtinLiveCamRegistry.GetIds(maxCount))
+            {
+                if (!ids.Contains(id))
+                {
+                    ids.Add(id);
+                }
+            }
+            return ids;
         }
 
-        /// <exception cref="UriFormatException">malformed url</exception>
-        public static Uri ParseNetworkLink(string liveCamUrl)
+        public bool IsDefaultDefinition(KmlLiveCam kmlLiveCam, string alias)
         {
-            return new Uri(liveCamUrl);
+            return DefaultLiveCam(alias).Equals(kmlLiveCam);
         }
 
-        /// <exception cref="UriFormatException">malformed url</exception>
-        public static string GetAlias(string liveCamUrl)
+        public KmlLiveCam DefaultLiveCam(string alias)
         {
-            return ParseNetworkLink(liveCamUrl).AbsolutePath.Substring(1);
+            return new KmlLiveCam(DefaultLiveCamEntity(alias));
         }
 
-        public static bool IsDefaultDefinition(KmlLiveCam kmlLiveCam)
+        private LiveCamEntity DefaultLiveCamEntity(string alias)
         {
-            return (
-                kmlLiveCam.Camera.Template == LiveCamConstants.DefaultCameraKmlTemplate
-             && kmlLiveCam.Link.Template == LiveCamConstants.DefaultNetworkLinkKmlTemplate   
-            );
+            LiveCamEntity builtinLiveCamEntity;
+            if (builtinLiveCamRegistry.TryGetById(alias, out builtinLiveCamEntity))
+            {
+                return builtinLiveCamEntity;
+            }
+            return new LiveCamEntity();
         }
 
-        public static KmlLiveCam DefaultLiveCam(string alias, string url)
+    }
+
+    public class LiveCamLensEntity
+    {
+
+        public LiveCamLensEntity(string name, string template)
         {
-            return(
-                new KmlLiveCam(
-                    LiveCamConstants.DefaultCameraKmlTemplate,
-                    LiveCamConstants.DefaultNetworkLinkKmlTemplate,
-                    new KmlNetworkLinkValues(alias, url)
-                )
-            );
+            Name = name;
+            Template = template;
         }
 
-        private static class LiveCamConstants
-        {
+        public string Name {
+            get => name;
+            set {
+                name = value != null ? value : "";
+            }
+         }
 
-            public const string DefaultCameraKmlTemplate = @"<?xml version='1.0' encoding='UTF-8'?>
-<kml xmlns = 'http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom'>
-  <NetworkLinkControl>
-    <Camera>
-      <longitude>{longitude}</longitude>
-      <latitude>{latitude}</latitude>
-      <altitude>{altitude}</altitude>
-      <heading>{heading}</heading>
-      <tilt>{tilt}</tilt>
-      <roll>{roll}</roll>
-      <altitudeMode>absolute</altitudeMode>
-    </Camera>
-  </NetworkLinkControl>
-</kml>";
+        public string Template {
+            get => template;
+            set {
+                template = value != null ? value : "";
+            }
+         }
 
-            public const string DefaultNetworkLinkKmlTemplate =
-    @"<?xml version='1.0' encoding='UTF-8'?>
-<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2' xmlns:kml='http://www.opengis.net/kml/2.2' xmlns:atom='http://www.w3.org/2005/Atom'>
-<NetworkLink>
-	<name>MSFS2020-PilotPathRecorder Live Camera ({alias})</name>
-	<flyToView>1</flyToView>
-	<Link>
-		<href>{url}</href>
-        <!-- onChange, onInterval, ... -->
-		<refreshMode>onChange</refreshMode>
-        <!-- number of seconds between refreshs -->
-		<refreshInterval>1</refreshInterval>
-        <!-- never, onStop, onRequest ... -->
-		<viewRefreshMode>onStop</viewRefreshMode>
-        <!-- number of seconds after camera stops -->
-		<viewRefreshTime>0</viewRefreshTime>
-	</Link>
-</NetworkLink>
-</kml>";
-
-        }
+        private string name, template;
 
     }
 
     public class LiveCamEntity
     {
-        public int Id { get; set; }
-        public string Url { get; set; }
-        public string CameraTemplate { get; set; }
-        public string LinkTemplate { get; set; }
+        public LiveCamEntity(params LiveCamLensEntity[] lens)
+        {
+            Lens = lens;
+        }
+
+        public LiveCamLensEntity[] Lens {
+            get => lens;
+            set
+            {
+                lens = value != null ? value : new LiveCamLensEntity[0];
+            } 
+        }
+
+        private LiveCamLensEntity[] lens;
+
     }
 
 }

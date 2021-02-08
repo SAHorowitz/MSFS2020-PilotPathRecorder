@@ -8,9 +8,20 @@ namespace FS2020PlanePath
 
         const double FEET_PER_METER = 3.28084;
 
-        public KmlCameraParameterValues KmlCameraValues { get; } = new KmlCameraParameterValues();
+        private KmlCameraParameterValues kmlCameraValues;
 
-        public void Update(MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneDataStructure)
+        public KmlCameraParameterValues KmlCameraValues => kmlCameraValues;
+
+        public ScKmlAdapter(KmlCameraParameterValues kmlCameraParameterValues)
+        {
+            this.kmlCameraValues = kmlCameraParameterValues;
+        }
+
+        public void Update(
+            MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneDataStructure,
+            int flightId,
+            long seq
+        )
         {
 
             // see: https://developers.google.com/kml/documentation/kmlreference
@@ -22,6 +33,8 @@ namespace FS2020PlanePath
             KmlCameraValues.heading = simPlaneDataStructure.plane_heading_true;
             KmlCameraValues.tilt = Math.Max(Math.Min(90 - simPlaneDataStructure.plane_pitch, 180), 0);
             KmlCameraValues.roll = simPlaneDataStructure.plane_bank;
+            KmlCameraValues.seq = seq;
+            KmlCameraValues.flightId = flightId;
 
             // DebugConversion(simPlaneDataStructure);
 
@@ -36,9 +49,6 @@ namespace FS2020PlanePath
     plane_bank({simPlaneDataStructure.plane_bank}),
     plane_pitch({simPlaneDataStructure.plane_pitch}),
     plane_heading_true({simPlaneDataStructure.plane_heading_true}),
-    plane_heading_magnetic({simPlaneDataStructure.plane_heading_magnetic}),
-    heading_indicator({simPlaneDataStructure.heading_indicator}),
-    altitude_above_ground({simPlaneDataStructure.altitude_above_ground})
 ";
 
             string output = $@"
@@ -48,6 +58,7 @@ namespace FS2020PlanePath
     heading({KmlCameraValues.heading}),
     tilt({KmlCameraValues.tilt}),
     roll({KmlCameraValues.roll})
+    seq({KmlCameraValues.seq})
 ";
 
             Console.WriteLine($"converted({input}) to({output})");

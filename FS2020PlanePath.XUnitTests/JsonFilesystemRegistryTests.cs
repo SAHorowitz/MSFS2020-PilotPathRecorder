@@ -1,16 +1,22 @@
 ﻿using Xunit;
-using FS2020PlanePath;
 
 namespace FS2020PlanePath.XUnitTests
 {
 
-    public class FilesystemRegistryTests
+    public class JsonFilesystemRegistryTests
     {
         private const string Id1 = "id1";
-        private FilesystemRegistry<StamType> testInstance;
+        private JsonFilesystemRegistry<StamType> testInstance;
 
-        public FilesystemRegistryTests() {
-            testInstance = new FilesystemRegistry<StamType>($"{GetType().Name}_");
+        public JsonFilesystemRegistryTests() {
+            testInstance = new JsonFilesystemRegistry<StamType>("", "fnpfx_");
+        }
+
+        [Fact]
+        public void testFilenameGeneration()
+        {
+            string fileName = testInstance.FilenameForId("one/two.three  four");
+            Assert.Equal("fnpfx_one%2Ftwo.three%20%20four.json", fileName);
         }
 
         [Fact]

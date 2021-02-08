@@ -1,120 +1,158 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace FS2020PlanePath
 {
 
-    public class KmlLiveCam : ILiveCam<KmlCameraParameterValues, KmlNetworkLinkValues>
+    public class KmlLiveCam : ILiveCam, IEquatable<KmlLiveCam>
     {
 
-        public KmlLiveCam(string cameraTemplate, string linkTemplate, KmlNetworkLinkValues linkValues)
+        private IDictionary<string, IStringTemplateRenderer<KmlCameraParameterValues>> lensRenderers;
+        private string[] lensNames;
+
+        public static TemplateRendererFactory TemplateRendererFactory { get; } = new TemplateRendererFactory(
+            (message, details) => $"<rendererError message='{xas(message)}' details='{xas(details)}' />"
+        );
+
+        public KmlLiveCam(LiveCamEntity liveCamEntity)
         {
-            Camera.Template = cameraTemplate;
-            Link.Template = linkTemplate;
-            Link.Values = linkValues;
+            LiveCamLensEntity[] lens = liveCamEntity.Lens;
+            lensNames = lens.Select(l => l.Name).ToArray();
+            lensRenderers = lens.ToDictionary(
+                l => l.Name, 
+                l => TemplateRendererFactory.newTemplateRenderer<KmlCameraParameterValues>(l.Template)
+            );
         }
 
-        public IStringTemplateRenderer<KmlCameraParameterValues> Camera { get; } = new Renderer<KmlCameraParameterValues>();
+        public IEnumerable<string> LensNames => lensNames;
 
-        public IStringTemplateRenderer<KmlNetworkLinkValues> Link { get; } = new Renderer<KmlNetworkLinkValues>();
+        public IStringTemplateRenderer<KmlCameraParameterValues> GetLens(string lensName)
+        {
+            Debug.Assert(lensRenderers.ContainsKey(lensName));
+            return lensRenderers[lensName];
+        }
+
+        public string[] Diagnostics => LensNames.SelectMany(lensName => GetLens(lensName).Diagnostics).ToArray();
+
+        public bool Equals(KmlLiveCam other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+            if (other == this)
+            {
+                return true;
+            }
+            if ((other == null) || !GetType().Equals(other.GetType()))
+            {
+                return false;
+            }
+
+            KmlLiveCam kmlLiveCam = other as KmlLiveCam;
+            if (!LensNames.SequenceEqual(other.LensNames))
+            {
+                return false;
+            }
+
+            foreach (string lensName in LensNames)
+            {
+                if (GetLens(lensName).Template != other.GetLens(lensName).Template)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override bool Equals(object other)
+        {
+            return Equals(other as KmlLiveCam);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -96881253;
+            hashCode = hashCode * -1521134295 + EqualityComparer<IDictionary<string, IStringTemplateRenderer<KmlCameraParameterValues>>>.Default.GetHashCode(lensRenderers);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string[]>.Default.GetHashCode(lensNames);
+            return hashCode;
+        }
+
+        /// <returns>XML encoded attribute string representation of 'plainString'</returns>
+        private static string xas(string plainString)
+        {
+            return System.Security.SecurityElement.Escape(plainString);
+        }
 
     }
 
-    // see: https://developers.google.com/kml/documentation/kmlreference#camera
-    public class KmlCameraParameterValues
+    public delegate KmlCameraParameterValues[] GetMultitrackUpdatesDelegate(int flightId, long sinceSeq);
+
+    //
+    // see:
+    //  - https://developers.google.com/kml/documentation/kmlreference#camera
+    //  - https://developers.google.com/kml/documentation/kmlreference#networklink
+    //
+    public class KmlCameraParameterValues : ICloneable
     {
+
         public double longitude { get; set; }
         public double latitude { get; set; }
         public double altitude { get; set; }    // meters
         public double heading { get; set; }
         public double tilt { get; set; }
         public double roll { get; set; }
-    }
+        public long seq { get; set; }    // update sequence
+        public int flightId { get; set; }
+        public int refreshSeconds { get; set; } = 5;    // sync with "AboveThresholdWriteFreq"
+        public string alias { get; set; }
+        public string lens { get; set; }
+        public Dictionary<string, string> query { get; set; }
+        public string listenerUrl { get; set; }    // base URL of the internal webserver
+        public string liveCamUriPath { get; set; }
+        public string liveCamUrl => $"{listenerUrl}/{liveCamUriPath}";
+        public string aliasUrl => $"{liveCamUrl}/{alias}";
+        public string lensUrl => $"{aliasUrl}/{lens}";
 
-    // see: https://developers.google.com/kml/documentation/kmlreference#networklink
-    public class KmlNetworkLinkValues
-    {
-        private string _url;
-        private string _alias;
+        // prevent Newtonsoft serialization of the corresponding method
+        public bool ShouldSerializegetMultitrackUpdates() => false;
+        public GetMultitrackUpdatesDelegate getMultitrackUpdates { get; set; }
 
-        public KmlNetworkLinkValues(string alias, string url)
+        public KmlCameraParameterValues ShallowCopy()
         {
-            _alias = alias;
-            _url = url;
+            return (KmlCameraParameterValues) MemberwiseClone();
         }
 
-        public string alias { get { return _alias; } }
-        public string url { get { return _url; } }
-
-    }
-
-    public class Renderer<V> : IStringTemplateRenderer<V>
-    {
-
-        public string Render()
+        public KmlCameraParameterValues DeepCopy()
         {
-            return TemplateRenderer.Render<V>(Template, Values);
+            KmlCameraParameterValues kmlCameraParameterValues = ShallowCopy();
+            kmlCameraParameterValues.query = new Dictionary<string, string>(query);
+            return kmlCameraParameterValues;
         }
 
-        public string Template { get; set; }
-        public V Values { get; set; }
-
-    }
-
-    public static class TemplateRenderer
-    {
-
-        public static string Render<V>(string template, V values)
+        public object Clone()
         {
-            string result = template;
-            foreach (PropertyInfo info in typeof(V).GetProperties())
-            {
-                string substitutionTokenName = $"{{{info.Name}}}";
-                string substitutionTokenValue = info.GetValue(values).ToString();
-                while (true)
-                {
-                    string newResult = result.Replace(substitutionTokenName, substitutionTokenValue);
-                    if (newResult == result)
-                    {
-                        break;
-                    }
-                    result = newResult;
-                }
-            }
-            return result;
-        }
-
-        public static string[] Placeholders(Type valueType)
-        {
-            List<string> placeholders = new List<string>();
-            foreach (PropertyInfo info in valueType.GetProperties())
-            {
-                placeholders.Add($"{{{info.Name}}}");
-            }
-            return placeholders.ToArray();
+            return MemberwiseClone();
         }
 
     }
 
-    /** A "Live Cam" has a "Camera", which can be "called back" repeatedly through a "Link" */
-    public interface ILiveCam<CV, LV>
+    public interface ILiveCam
     {
 
-        /** A "Camera" renders a snapshot using current values */
-        IStringTemplateRenderer<CV> Camera { get; }
+        ///  <returns>name(s) of currently defined lens(es)</returns>
+        IEnumerable<string> LensNames { get; }
 
-        /** A "Link" renders a callback to the "Camera" */
-        IStringTemplateRenderer<LV> Link { get; }
+        ///  <returns>renderer for specified lens</returns>
+        IStringTemplateRenderer<KmlCameraParameterValues> GetLens(string lensName);
 
-    }
+        ///  <returns>renderer diagnostic(s) (e.g., warning or error-level) produced for currently defined lens(es)</returns>
+        string[] Diagnostics { get; }
 
-    /** A "String Template Renderer" can render a string template using a current set of values */
-    public interface IStringTemplateRenderer<V>
-    {
-        string Render();
-        string Template { get; set; }
-        V Values { get; set; }
     }
 
 }

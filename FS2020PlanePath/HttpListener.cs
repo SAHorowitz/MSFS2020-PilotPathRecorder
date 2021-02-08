@@ -6,16 +6,17 @@ using WatsonWebserver;
 namespace FS2020PlanePath
 {
 
-    public class LiveCamLinkListener : IDisposable
+    public class HttpListener : IDisposable
     {
 
-        private readonly List<string> supportedSchemes = new List<string> { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
-        private readonly Func<string, string> pathHandler;
-        private readonly Uri webHostUri;
+        public class Request
+        {
+            public string path;
+            public Dictionary<string, string> query;
+            public Func<byte[]> GetBody;
+        }
 
-        private Server server;
-
-        public LiveCamLinkListener(Uri webHostUri, Func<string, string> pathHandler)
+        public HttpListener(Uri webHostUri, Func<Request, byte[]> pathHandler)
         {
             if (!supportedSchemes.Contains(webHostUri.Scheme)) {
                 throw new ArgumentException($"unsupported URI scheme: {webHostUri.Scheme}");
@@ -34,7 +35,7 @@ namespace FS2020PlanePath
             }
             if (!server.IsListening) {
                 server.Start();
-                Console.WriteLine($"{GetType().Name} listening at({webHostUri})");
+                Console.WriteLine($"{GetType().Name} example URL: {webHostUri}");
             }
         }
 
@@ -67,8 +68,31 @@ namespace FS2020PlanePath
 
         async Task RequestHandler(HttpContext context)
         {
-            await context.Response.Send(pathHandler.Invoke(context.Request.Url.RawWithoutQuery));
+            Console.WriteLine($"handling request({context.Request.Url.RawWithQuery})");
+            byte[] listenerResponseBody = (
+                pathHandler.Invoke(
+                    new Request
+                    {
+                        path = context.Request.Url.RawWithoutQuery.Substring(1),
+                        query = context.Request.Query.Elements,
+                        GetBody = () => context.Request.DataAsBytes()
+                    }
+                )
+            );
+            Console.WriteLine($"listenerResponseBody({fixupForDisplay(listenerResponseBody)})");
+            await context.Response.Send(listenerResponseBody);
         }
+
+        private string fixupForDisplay(byte[] listenerResponseBody)
+        {
+            return $"Length({listenerResponseBody.Length})";
+        }
+
+        private readonly List<string> supportedSchemes = new List<string> { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+        private readonly Func<Request, byte[]> pathHandler;
+        private readonly Uri webHostUri;
+
+        private Server server;
 
     }
 }

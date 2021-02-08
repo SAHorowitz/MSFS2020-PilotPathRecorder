@@ -27,15 +27,113 @@ namespace FS2020PlanePath
 
         bool bLoggingEnabled = false;
         MSFS2020_SimConnectIntergration simConnectIntegration = new MSFS2020_SimConnectIntergration();
-        LiveCamLinkListener activeLinkListener;
-        ScKmlAdapter scKmlAdapter = new ScKmlAdapter();
+        ScKmlAdapter scKmlAdapter;
         LiveCamRegistry liveCamRegistry;
+        LiveCamServer liveCamServer;
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
         DateTime dtLastDataRecord;
         FlightPlan flightPlan;
         bool bStartedLoggingDueToSpeed;
         bool bStoppedLoggingDueToSpeed;
+
+        // TODO test only - remove this or polish its integration
+        static FlightPathData currentSample = new FlightPathData
+        {
+            timestamp = DateTime.Now.Ticks,
+            longitude = -121.6601805,
+            latitude = 38.0282797,
+            altitude = 2000,
+            plane_pitch = 0,
+            plane_bank = 0,
+            plane_heading_true = 200,
+            ground_velocity = 40           // nm/hr
+        };
+
+       // TODO test only - remove this method
+       private List<FlightPathData> GetLiveCamTrackSinceDateTimestamp(int pk, long earliestTimestamp)
+        {
+            List<FlightPathData> samples = new List<FlightPathData>();
+            long ticksPerSample = System.TimeSpan.TicksPerSecond / 2;
+            Random random = new Random();
+
+            for (
+                currentSample.timestamp = Math.Max(currentSample.timestamp, earliestTimestamp) + ticksPerSample;
+                currentSample.timestamp <= DateTime.Now.Ticks;
+                currentSample.timestamp += ticksPerSample
+            )
+            {
+
+                double distancePerHr = currentSample.ground_velocity += random.NextDouble() - 0.5;
+                double distancePerTick = distancePerHr / (3600 * System.TimeSpan.TicksPerSecond);
+                double distancePerSample = distancePerTick * ticksPerSample;
+
+                double bearing = GeoCalcUtils.rationalizedCompassDirection(
+                    currentSample.plane_heading_true + 5 * (random.NextDouble() - 0.5)
+                );
+
+                (double lat, double lon) to = GeoCalcUtils.calcLatLonOffset(
+                    GeoCalcUtils.normalizedIso6709GeoDirection(currentSample.latitude),
+                    GeoCalcUtils.normalizedIso6709GeoDirection(currentSample.longitude),
+                    bearing,
+                    distancePerSample
+                );
+
+                //Console.WriteLine($"brg({bearing}),v({distancePerHr}),d({distancePerSample}),p({GeoCalcUtils.pcoord(to)}");
+
+                currentSample.ground_velocity = distancePerHr;
+                currentSample.plane_heading_true = bearing;
+                currentSample.latitude = to.lat;
+                currentSample.longitude = to.lon;
+                samples.Add(
+                    new FlightPathData
+                    {
+                        timestamp = currentSample.timestamp,
+                        longitude = currentSample.longitude,
+                        latitude = currentSample.latitude,
+                        altitude = currentSample.altitude,
+                        plane_pitch = currentSample.plane_pitch,
+                        plane_bank = currentSample.plane_bank,
+                        plane_heading_true = currentSample.plane_heading_true,
+                        ground_velocity = currentSample.ground_velocity
+                    }
+                );
+                
+            }
+
+            return samples;
+        }
+
+        public KmlCameraParameterValues[] getKmlCameraUpdates(int flightId, long seqSince)
+        {
+            Console.WriteLine($"looking for camera updates({flightId}, {seqSince})");
+
+            // use sim data if we're in an actual flight and logging;
+            // otherwise use our fake dataset (useful for testing)
+            List<FlightPathData> flightPaths = (
+                (bLoggingEnabled && nCurrentFlightID != 0)
+              ? FlightPathDB.GetLiveCamTrackSinceDateTimestamp(flightId, seqSince)
+              : GetLiveCamTrackSinceDateTimestamp(flightId, seqSince)
+            );
+
+            KmlCameraParameterValues[] kmlCameraUpdates = new KmlCameraParameterValues[flightPaths.Count];
+            int cameraIndex = 0;
+            foreach (var fp in flightPaths)
+            {
+                KmlCameraParameterValues newCameraParameterValues = scKmlAdapter.KmlCameraValues.ShallowCopy();
+                newCameraParameterValues.seq = fp.timestamp;
+                newCameraParameterValues.altitude = fp.altitude;
+                newCameraParameterValues.longitude = fp.longitude;
+                newCameraParameterValues.latitude = fp.latitude;
+                newCameraParameterValues.tilt = fp.plane_pitch;
+                newCameraParameterValues.roll = fp.plane_bank;
+                newCameraParameterValues.heading = fp.plane_heading_true;
+                kmlCameraUpdates[cameraIndex++] = newCameraParameterValues;
+            }
+
+            return kmlCameraUpdates;
+        }
+
 
         public MainPage()
         {
@@ -65,10 +163,18 @@ namespace FS2020PlanePath
             LoggingThresholdGroundVelTB.Text = FlightPathDB.GetTableOption("AutomaticLoggingThreshold");
             LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
 
-            liveCamRegistry = new LiveCamRegistry(new FilesystemRegistry<LiveCamEntity>($"{typeof(KmlLiveCam).Name}_"));
+            liveCamRegistry = new LiveCamRegistryFactory().NewRegistry();
 
             LoadFlightList();
             LoadLiveCams();
+
+            KmlCameraParameterValues kmlCameraParameterValues = new KmlCameraParameterValues();
+            kmlCameraParameterValues.listenerUrl = LiveCamServer.LiveCamUrl();
+            kmlCameraParameterValues.liveCamUriPath = LiveCamServer.LIVECAM_URLPATH_SEGMENTS;
+            kmlCameraParameterValues.getMultitrackUpdates = getKmlCameraUpdates;
+
+            scKmlAdapter = new ScKmlAdapter(kmlCameraParameterValues);
+            liveCamServer = new LiveCamServer(scKmlAdapter, liveCamRegistry);
 
         }
 
@@ -143,18 +249,6 @@ namespace FS2020PlanePath
             {
                 base.DefWndProc(ref m);
             }
-        }
-
-        private string handleLinkListenerRequest(string alias)
-        {
-            //Console.WriteLine($"received path({alias})");
-            KmlLiveCam liveCam;
-            if (!liveCamRegistry.TryGetById(alias, out liveCam))
-            {
-                return $"<error text='LiveCam({alias}) not found; request ignored' />";
-            }
-            liveCam.Camera.Values = scKmlAdapter.KmlCameraValues;
-            return liveCam.Camera.Render();
         }
 
         private void StartLoggingBtn_Click(object sender, EventArgs e)
@@ -253,7 +347,8 @@ namespace FS2020PlanePath
                                                      new FlightWaypointData(simPlaneData.gps_wp_next_latitude, simPlaneData.gps_wp_next_longitude, simPlaneData.gps_wp_next_altitude, simPlaneData.gps_wp_next_id),
                                                      simPlaneData.gps_flight_plan_wp_index, simPlaneData.gps_flight_plan_wp_count);
 
-                    scKmlAdapter.Update(simPlaneData);
+                    scKmlAdapter.Update(simPlaneData, nCurrentFlightID, dtLastDataRecord.Ticks);
+
                 }
             }
         }
@@ -659,11 +754,19 @@ namespace FS2020PlanePath
         }
 
         private void LoadLiveCams() {
-            List<string> liveCamAliases = liveCamRegistry.GetAliases();
-            if (liveCamAliases.Count > 0)
+            LiveCameraHostPortCB.Items.Clear();
+            List<string> liveCamAliases = liveCamRegistry.GetIds(1000);
+            if (liveCamAliases.Count == 0)
             {
-                LiveCameraHostPortTB.Text = "http://localhost:8000/" + liveCamAliases[0];
+                return;
             }
+            List<string> liveCamUrls = new List<string>();
+            foreach (var alias in liveCamAliases) {
+                liveCamUrls.Add(LiveCamServer.LiveCamLensSpecToUrl(alias, ""));
+            }
+            string[] liveCamUrlsArray = liveCamUrls.ToArray();
+            LiveCameraHostPortCB.Text = liveCamUrlsArray[0];
+            LiveCameraHostPortCB.Items.AddRange(liveCamUrlsArray);
         }
 
         private void LoadFlightList()
@@ -787,30 +890,23 @@ namespace FS2020PlanePath
 
         private void LiveCameraCB_CheckedChanged(object sender, EventArgs eventArgs)
         {
-            // disable and free any currently running listener
-            if (activeLinkListener != null)
-            {
-                activeLinkListener.Dispose();
-                activeLinkListener = null;
-            }
+            liveCamServer.Stop();
 
             if (!LiveCameraCB.Checked)
             {
-                // re-enable the user to change the live camera's URI
-                LiveCameraHostPortTB.Enabled = true;
-                displayMessage("Live Camera Disabled", "No longer listening.");
+                ErrorTBRO.Text = "NOTE: Live Camera Listener Deactivated";
                 return;
             }
 
             // start a new live camera listener using supplied URI
             Uri hostUri = null;
             string problemMessage = null;
-            string liveCamUrl = LiveCameraHostPortTB.Text;
+            string liveCamUrl = LiveCameraHostPortCB.Text;
             try
             {
-                hostUri = LiveCamRegistry.ParseNetworkLink(liveCamUrl);
+                hostUri = new Uri(liveCamUrl);
                 // ensure live cam is registered
-                liveCamRegistry.LoadByUrl(liveCamUrl);
+                liveCamRegistry.LoadByAlias(LiveCamServer.LiveCamUrlToLensSpec(liveCamUrl).alias);
             }
             catch (UriFormatException ufe)
             {
@@ -819,107 +915,58 @@ namespace FS2020PlanePath
 
             if (problemMessage == null)
             {
-                LiveCamLinkListener linkListener = null;
                 try
                 {
-                    linkListener = new LiveCamLinkListener(
-                        hostUri, 
-                        request => handleLinkListenerRequest(request.Substring(1))
-                    );
-                    linkListener.Enable();
-                    activeLinkListener = linkListener;
+                    liveCamServer.Start(hostUri);
+                    scKmlAdapter.KmlCameraValues.listenerUrl = hostUri.GetLeftPart(UriPartial.Authority);
                 }
                 catch (SystemException ene)
                 {
-                    if (linkListener != null)
-                    {
-                        linkListener.Dispose();
-                    }
                     problemMessage = $"Could not listen on: {hostUri}.\n\nDetails: {ene.Message}";
                 }
             }
 
             if (problemMessage != null)
             {
-                displayError("Could not start Live Camera", $"{problemMessage}");
+                UserDialogUtils.displayError("Could not start Live Camera", $"{problemMessage}");
                 LiveCameraCB.CheckedChanged -= LiveCameraCB_CheckedChanged;
                 LiveCameraCB.Checked = false;
                 LiveCameraCB.CheckedChanged += LiveCameraCB_CheckedChanged;
                 return;
             }
 
-            // prevent modification of the live camera's URI while it's active
-            LiveCameraHostPortTB.Enabled = false;
-            displayMessage("Live Camera Enabled", "Listening at URL:\n" + hostUri);
+            ErrorTBRO.Text = "NOTE: Live Camera Listener Activated"; 
         }
 
         private void LiveCameraKml_Click(object sender, EventArgs e)
         {
-            Func<string, string> kmlValidator = (
-                kmlString =>
-                {
-                    try
-                    {
-                        new Parser().ParseString(kmlString, true);
-                        return null;
-                    }
-                    catch (Exception pe)
-                    {
-                        return pe.Message;
-                    }
-                }
-            );
+            string liveCamUrl = LiveCameraHostPortCB.Text;
+            string alias, lensName;
 
-            KmlLiveCam liveCam;
-            string liveCamUrl = LiveCameraHostPortTB.Text;
             try
             {
-                liveCam = liveCamRegistry.LoadByUrl(liveCamUrl);
+                (alias, lensName) = LiveCamServer.LiveCamUrlToLensSpec(liveCamUrl);
             }
             catch (UriFormatException ufe)
             {
-                displayError("Could not Invoke Editor", malformedUriErrorMessage(liveCamUrl, ufe));
+                UserDialogUtils.displayError("Could not Invoke LiveCam Editor", malformedUriErrorMessage(liveCamUrl, ufe));
                 return;
             }
 
-            string originalCameraKmlTemplate = liveCam.Camera.Template;
-            string originalLinkKmlTemplate = liveCam.Link.Template;
-            using (
-                TextEditorForm kmlEditorForm = new TextEditorForm(
-                    $"Live Camera KML Editor: {liveCam.Link.Values.alias}",
-                    originalCameraKmlTemplate,
-                    originalLinkKmlTemplate,
-                    kmlValidator
-                )
-            ) {
+            KmlLiveCam liveCam = liveCamRegistry.LoadByAlias(alias);
+            using (KmlLiveCamEditorForm kmlEditorForm = new KmlLiveCamEditorForm(alias, lensName, liveCam))
+            {
 
                 if (kmlEditorForm.ShowDialog(this) != DialogResult.OK)
                 {
                     return;
                 }
 
-                List<string> changeList = new List<string>();
-                    
-                string updatedCameraKmlTemplate = kmlEditorForm.EditorText;
-                if (originalCameraKmlTemplate != updatedCameraKmlTemplate)
+                KmlLiveCam updatedKmlLiveCam = kmlEditorForm.KmlLiveCam;
+                if (!updatedKmlLiveCam.Equals(liveCam))
                 {
-                    //Console.WriteLine($"updatedCameraKmlTemplate({updatedCameraKmlTemplate})");
-                    liveCam.Camera.Template = updatedCameraKmlTemplate;
-                    changeList.Add("Camera");
-                }
-
-                string updatedLinkKmlTemplate = kmlEditorForm.LinkText;
-                if (originalLinkKmlTemplate != updatedLinkKmlTemplate)
-                {
-                    Console.WriteLine($"updatedLinkKmlTemplate({updatedLinkKmlTemplate})");
-                    liveCam.Link.Template = updatedLinkKmlTemplate;
-                    changeList.Add("Link");
-                }
-
-                if (changeList.Count > 0)
-                {
-                    liveCamRegistry.Save(liveCam.Link.Values.alias, liveCam);
-                    displayMessage("Live Camera Update", $"Live Camera Definition ({string.Join(", ", changeList)} KML) was Changed");
+                    liveCamRegistry.Save(alias, updatedKmlLiveCam);
+                    UserDialogUtils.displayMessage("Live Camera Update", $"Live Camera '{alias}' Definition was Changed");
                 }
 
             }
@@ -928,31 +975,40 @@ namespace FS2020PlanePath
 
         private void geLinkBT_Click(object sender, EventArgs e)
         {
-            KmlLiveCam liveCam;
-            string liveCamUrl = LiveCameraHostPortTB.Text;
+            string alias, lensName;
+            string liveCamUrl = LiveCameraHostPortCB.Text;
             try
             {
-                liveCam = liveCamRegistry.LoadByUrl(liveCamUrl);
+                (alias, lensName) = LiveCamServer.LiveCamUrlToLensSpec(liveCamUrl);
             } catch(UriFormatException ufe)
             {
-                displayError("Could not Install Link", malformedUriErrorMessage(liveCamUrl, ufe));
+                UserDialogUtils.displayError("Could not Install Link", malformedUriErrorMessage(liveCamUrl, ufe));
                 return;
             }
 
+            KmlLiveCam liveCam = liveCamRegistry.LoadByAlias(alias);
             string liveCamAliasQualifier = (
                 Path.GetInvalidFileNameChars()
-                .Aggregate(liveCam.Link.Values.alias, (current, c) => current.Replace(c, '_'))
+                .Aggregate(alias, (current, c) => current.Replace(c, '_'))
             );
             string linkFileName = Path.GetTempPath() + $"FS2020PlanePath-kmllink-{liveCamAliasQualifier}.kml";
+            IStringTemplateRenderer<KmlCameraParameterValues> stringTemplateRenderer = liveCam.GetLens(lensName);
+            KmlCameraParameterValues linkKmlCameraParameterValues = scKmlAdapter.KmlCameraValues.ShallowCopy();
+            linkKmlCameraParameterValues.alias = alias;
+            linkKmlCameraParameterValues.lens = lensName;
             try
             {
-                File.WriteAllText(linkFileName, liveCam.Link.Render());
+                File.WriteAllText(
+                    linkFileName,
+                    stringTemplateRenderer.Render(linkKmlCameraParameterValues)
+                );
             }
             catch (Exception ex)
             {
-                displayError("Could not save Network Link file", ex.Message);
+                UserDialogUtils.displayError("Could not save Network Link file", ex.Message);
                 return;
             }
+
             Console.WriteLine($"Installing Link via({linkFileName})");
             try
             {
@@ -961,7 +1017,7 @@ namespace FS2020PlanePath
                     if (!installLinkProcess.WaitForExit(3000))
                     {
                         //displayError("Timeout Waiting for Link Installation", "Is Google Earth Properly Installed?");
-                        // NOTE: this happens when handling application is not already running (i.e., is started here)
+                        // NOTE: this seems to happen always when KML handling application (e.g., Google Earth) is not already running (i.e., is started here)
                         Console.WriteLine($"NOTE: timeout waiting for application started to handle({linkFileName})");
                     } else
                     {
@@ -969,77 +1025,53 @@ namespace FS2020PlanePath
                         if (exitCode != 0)
                         {
                             Console.WriteLine($"exitCode({exitCode})");
-                            displayError("Unexpected Result while Installing Network Link", $"Exit Code {exitCode}");
+                            UserDialogUtils.displayError("Unexpected Result while Installing Network Link", $"Exit Code {exitCode}");
                         }
                     }
                 }
             } catch(Exception ilpe)
             {
-                displayError("Error Installing Network Link", ilpe.Message);
+                UserDialogUtils.displayError("Error Installing Network Link", ilpe.Message);
             }
+
         }
 
         private void ValidateNetworkLink(object sender, CancelEventArgs e)
         {
-            string liveCamUrl = LiveCameraHostPortTB.Text;
+            string liveCamUrl = LiveCameraHostPortCB.Text;
             try
             {
-                LiveCamRegistry.ParseNetworkLink(liveCamUrl);
+                new Uri(liveCamUrl);
             } catch(UriFormatException ufe)
             {
-                displayError("Invalid Network Link", malformedUriErrorMessage(liveCamUrl, ufe));
-            }
-            
+                UserDialogUtils.displayError("Invalid Network Link", malformedUriErrorMessage(liveCamUrl, ufe));
+            }            
         }
 
         private void Handle_LiveCameraKmlResetBT_Click(object sender, EventArgs e)
         {
             KmlLiveCam liveCam;
-            if (!liveCamRegistry.TryGetById(LiveCamRegistry.GetAlias(LiveCameraHostPortTB.Text), out liveCam))
+            string liveCamUrl = LiveCameraHostPortCB.Text;
+            string alias = LiveCamServer.LiveCamUrlToLensSpec(liveCamUrl).alias;
+            if (!liveCamRegistry.TryGetById(alias, out liveCam))
             {
                 return;
             }
             
-            if (!LiveCamRegistry.IsDefaultDefinition(liveCam))
+            if (!liveCamRegistry.IsDefaultDefinition(liveCam, alias))
             {
-                if (!obtainConfirmation("Confirm Reset", $"Discard changes for:\n{liveCam.Link.Values.url}"))
+                if (!UserDialogUtils.obtainConfirmation("Confirm Reset", $"Discard changes for:\n{liveCamUrl}"))
                 {
                     return;
                 }
             }
 
-            liveCamRegistry.Delete(liveCam.Link.Values.alias);
+            liveCamRegistry.Delete(alias);
         }
 
         private string malformedUriErrorMessage(string url, UriFormatException ufe)
         {
-            return $"Malformed URI: {url}.\n\nDetails: {ufe.Message}\n\nTry e.g.: 'http://localhost:8000/kmlcam'";
-        }
-
-        private void displayError(string caption, string details)
-        {
-            MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-        private void displayMessage(string caption, string details)
-        {
-            MessageBox.Show(
-                details,
-                caption,
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
-        }
-
-        private bool obtainConfirmation(string caption, string details)
-        {
-            DialogResult confirmationAnswer = MessageBox.Show(
-                details,
-                caption,
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            );
-            return (DialogResult.Yes == confirmationAnswer);
+            return $"Malformed URI: {url}.\n\nDetails: {ufe.Message}\n\nTry e.g.: 'http://localhost:8000/kmlcam/cockpit'";
         }
 
     }

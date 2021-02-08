@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace FS2020PlanePath
 {
@@ -24,10 +25,18 @@ namespace FS2020PlanePath
             return activeLiveCams.Remove(alias);
         }
 
-        public List<string> GetAliases()
+        /// <summary>
+        /// NOTE: violates contract; does not return in order of access
+        /// </summary>
+        public List<string> GetIds(int maxCount)
         {
-            return new List<string>(activeLiveCams.Keys);
+            return new List<string>(
+                maxCount < 0
+              ? activeLiveCams.Keys
+              : activeLiveCams.Keys.Take(maxCount)
+            );
         }
+
     }
 
 }

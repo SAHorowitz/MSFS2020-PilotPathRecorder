@@ -1,7 +1,7 @@
 ﻿
 namespace FS2020PlanePath
 {
-    partial class TextEditorForm
+    partial class KmlLiveCamEditorForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,8 +30,7 @@ namespace FS2020PlanePath
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditorForm));
-            this.cameraEditorTB = new System.Windows.Forms.TextBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KmlLiveCamEditorForm));
             this.okBT = new System.Windows.Forms.Button();
             this.cancelBT = new System.Windows.Forms.Button();
             this.menuSP = new System.Windows.Forms.MenuStrip();
@@ -41,32 +40,11 @@ namespace FS2020PlanePath
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripDividerLB = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.newBT = new System.Windows.Forms.Button();
+            this.deleteBT = new System.Windows.Forms.Button();
             this.editorPaneTC = new System.Windows.Forms.TabControl();
-            this.cameraEditorTP = new System.Windows.Forms.TabPage();
-            this.linkEditorTP = new System.Windows.Forms.TabPage();
-            this.linkEditorTB = new System.Windows.Forms.TextBox();
             this.menuSP.SuspendLayout();
-            this.editorPaneTC.SuspendLayout();
-            this.cameraEditorTP.SuspendLayout();
-            this.linkEditorTP.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // cameraEditorTB
-            // 
-            this.cameraEditorTB.AcceptsReturn = true;
-            this.cameraEditorTB.AcceptsTab = true;
-            this.cameraEditorTB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.cameraEditorTB.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cameraEditorTB.Location = new System.Drawing.Point(3, 3);
-            this.cameraEditorTB.Multiline = true;
-            this.cameraEditorTB.Name = "cameraEditorTB";
-            this.cameraEditorTB.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.cameraEditorTB.Size = new System.Drawing.Size(417, 239);
-            this.cameraEditorTB.TabIndex = 2;
-            this.cameraEditorTB.TabStop = false;
-            this.cameraEditorTB.Validating += new System.ComponentModel.CancelEventHandler(this.Handle_KmlTextValidation_Event);
             // 
             // okBT
             // 
@@ -76,19 +54,19 @@ namespace FS2020PlanePath
             this.okBT.Size = new System.Drawing.Size(54, 30);
             this.okBT.TabIndex = 1;
             this.okBT.Text = "&OK";
-            this.toolTip1.SetToolTip(this.okBT, "Accept and immediately apply the updated KML template");
+            this.toolTip1.SetToolTip(this.okBT, "Accept and immediately apply the updated LiveCam");
             this.okBT.UseVisualStyleBackColor = true;
             // 
             // cancelBT
             // 
             this.cancelBT.CausesValidation = false;
             this.cancelBT.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelBT.Location = new System.Drawing.Point(12, 74);
+            this.cancelBT.Location = new System.Drawing.Point(12, 73);
             this.cancelBT.Name = "cancelBT";
             this.cancelBT.Size = new System.Drawing.Size(54, 30);
             this.cancelBT.TabIndex = 0;
             this.cancelBT.Text = "&Cancel";
-            this.toolTip1.SetToolTip(this.cancelBT, "Discard any change(s) made to the KML template");
+            this.toolTip1.SetToolTip(this.cancelBT, "Discard any change(s) made to the LiveCam");
             this.cancelBT.UseVisualStyleBackColor = true;
             // 
             // menuSP
@@ -111,7 +89,7 @@ namespace FS2020PlanePath
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
-            this.fileToolStripMenuItem.ToolTipText = "Allows Loading or Saving of KML Template";
+            this.fileToolStripMenuItem.ToolTipText = "Allows Loading or Saving of LiveCam Lens Template";
             // 
             // openToolStripMenuItem
             // 
@@ -147,13 +125,35 @@ namespace FS2020PlanePath
             this.menuStripDividerLB.Size = new System.Drawing.Size(520, 2);
             this.menuStripDividerLB.TabIndex = 5;
             // 
+            // newBT
+            // 
+            this.newBT.CausesValidation = false;
+            this.newBT.Location = new System.Drawing.Point(12, 109);
+            this.newBT.Name = "newBT";
+            this.newBT.Size = new System.Drawing.Size(54, 30);
+            this.newBT.TabIndex = 7;
+            this.newBT.Text = "&New";
+            this.toolTip1.SetToolTip(this.newBT, "Create a new LiveCam Lens");
+            this.newBT.UseVisualStyleBackColor = true;
+            this.newBT.Click += new System.EventHandler(this.newBT_Click);
+            // 
+            // deleteBT
+            // 
+            this.deleteBT.CausesValidation = false;
+            this.deleteBT.Location = new System.Drawing.Point(12, 145);
+            this.deleteBT.Name = "deleteBT";
+            this.deleteBT.Size = new System.Drawing.Size(54, 30);
+            this.deleteBT.TabIndex = 8;
+            this.deleteBT.Text = "&Delete";
+            this.toolTip1.SetToolTip(this.deleteBT, "Delete selected LiveCam Lens");
+            this.deleteBT.UseVisualStyleBackColor = true;
+            this.deleteBT.Click += new System.EventHandler(this.deleteBT_Click);
+            // 
             // editorPaneTC
             // 
             this.editorPaneTC.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.editorPaneTC.Controls.Add(this.cameraEditorTP);
-            this.editorPaneTC.Controls.Add(this.linkEditorTP);
             this.editorPaneTC.Location = new System.Drawing.Point(77, 38);
             this.editorPaneTC.Name = "editorPaneTC";
             this.editorPaneTC.SelectedIndex = 0;
@@ -161,48 +161,7 @@ namespace FS2020PlanePath
             this.editorPaneTC.Size = new System.Drawing.Size(431, 271);
             this.editorPaneTC.TabIndex = 6;
             // 
-            // cameraEditorTP
-            // 
-            this.cameraEditorTP.Controls.Add(this.cameraEditorTB);
-            this.cameraEditorTP.Location = new System.Drawing.Point(4, 22);
-            this.cameraEditorTP.Name = "cameraEditorTP";
-            this.cameraEditorTP.Padding = new System.Windows.Forms.Padding(3);
-            this.cameraEditorTP.Size = new System.Drawing.Size(423, 245);
-            this.cameraEditorTP.TabIndex = 0;
-            this.cameraEditorTP.Text = "Camera Template";
-            this.cameraEditorTP.ToolTipText = "You may edit the \"Camera\" KML Template text in this tab.";
-            this.cameraEditorTP.UseVisualStyleBackColor = true;
-            // 
-            // linkEditorTP
-            // 
-            this.linkEditorTP.Controls.Add(this.linkEditorTB);
-            this.linkEditorTP.Location = new System.Drawing.Point(4, 22);
-            this.linkEditorTP.Name = "linkEditorTP";
-            this.linkEditorTP.Padding = new System.Windows.Forms.Padding(3);
-            this.linkEditorTP.Size = new System.Drawing.Size(423, 245);
-            this.linkEditorTP.TabIndex = 1;
-            this.linkEditorTP.Text = "Link Template";
-            this.linkEditorTP.ToolTipText = "You may edit the \"Link\" KML Template text in this tab.";
-            this.linkEditorTP.UseVisualStyleBackColor = true;
-            // 
-            // linkEditorTB
-            // 
-            this.linkEditorTB.AcceptsReturn = true;
-            this.linkEditorTB.AcceptsTab = true;
-            this.linkEditorTB.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.linkEditorTB.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.linkEditorTB.Location = new System.Drawing.Point(3, 3);
-            this.linkEditorTB.Multiline = true;
-            this.linkEditorTB.Name = "linkEditorTB";
-            this.linkEditorTB.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.linkEditorTB.Size = new System.Drawing.Size(417, 239);
-            this.linkEditorTB.TabIndex = 3;
-            this.linkEditorTB.TabStop = false;
-            this.linkEditorTB.Validating += new System.ComponentModel.CancelEventHandler(this.Handle_KmlTextValidation_Event);
-            // 
-            // TextEditorForm
+            // KmlLiveCamEditorForm
             // 
             this.AcceptButton = this.okBT;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -210,6 +169,8 @@ namespace FS2020PlanePath
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.cancelBT;
             this.ClientSize = new System.Drawing.Size(520, 321);
+            this.Controls.Add(this.deleteBT);
+            this.Controls.Add(this.newBT);
             this.Controls.Add(this.editorPaneTC);
             this.Controls.Add(this.menuStripDividerLB);
             this.Controls.Add(this.cancelBT);
@@ -217,25 +178,18 @@ namespace FS2020PlanePath
             this.Controls.Add(this.menuSP);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuSP;
-            this.Name = "TextEditorForm";
-            this.Text = "Text Editor";
-            this.toolTip1.SetToolTip(this, "Allows customization of the \'Live Camera\' KML Template");
+            this.Name = "KmlLiveCamEditorForm";
+            this.Text = "LiveCam Editor";
+            this.toolTip1.SetToolTip(this, "Allows customization of the LiveCam Template");
             this.HelpRequested += new System.Windows.Forms.HelpEventHandler(this.Handle_HelpRequested_Event);
             this.menuSP.ResumeLayout(false);
             this.menuSP.PerformLayout();
-            this.editorPaneTC.ResumeLayout(false);
-            this.cameraEditorTP.ResumeLayout(false);
-            this.cameraEditorTP.PerformLayout();
-            this.linkEditorTP.ResumeLayout(false);
-            this.linkEditorTP.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox cameraEditorTB;
         private System.Windows.Forms.Button okBT;
         private System.Windows.Forms.Button cancelBT;
         private System.Windows.Forms.MenuStrip menuSP;
@@ -246,8 +200,7 @@ namespace FS2020PlanePath
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.TabControl editorPaneTC;
-        private System.Windows.Forms.TabPage cameraEditorTP;
-        private System.Windows.Forms.TextBox linkEditorTB;
-        private System.Windows.Forms.TabPage linkEditorTP;
+        private System.Windows.Forms.Button newBT;
+        private System.Windows.Forms.Button deleteBT;
     }
 }

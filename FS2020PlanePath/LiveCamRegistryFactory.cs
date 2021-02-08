@@ -1,14 +1,21 @@
-﻿namespace FS2020PlanePath
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+
+namespace FS2020PlanePath
 {
-    public static class LiveCamRegistryFactory
+    public class LiveCamRegistryFactory
     {
 
-        static IRegistry<KmlLiveCam> CreateRegistry()
+        public LiveCamRegistry NewRegistry()
         {
+            string liveCamRegistryFilenamePrefix = $"{typeof(LiveCamEntity).Name}_";
             return new LiveCamRegistry(
-                new FilesystemRegistry<LiveCamEntity>("FS2020ppLiveCamEntity")
+                new JsonFilesystemRegistry<LiveCamEntity>("", liveCamRegistryFilenamePrefix),
+                new JsonFilesystemRegistry<LiveCamEntity>("Resources/liveCam/defaults/", liveCamRegistryFilenamePrefix)
             );
         }
+
     }
 
 }

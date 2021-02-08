@@ -59,11 +59,11 @@
             this.AutomaticLoggingCB = new System.Windows.Forms.CheckBox();
             this.LoggingThresholdGroundVelTB = new System.Windows.Forms.TextBox();
             this.LiveCameraCB = new System.Windows.Forms.CheckBox();
-            this.LiveCameraHostPortTB = new System.Windows.Forms.TextBox();
             this.LiveCameraKmlBT = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.geLinkBT = new System.Windows.Forms.Button();
             this.LiveCameraKmlResetBT = new System.Windows.Forms.Button();
+            this.LiveCameraHostPortCB = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // label2
@@ -353,16 +353,6 @@
             this.LiveCameraCB.UseVisualStyleBackColor = true;
             this.LiveCameraCB.CheckedChanged += new System.EventHandler(this.LiveCameraCB_CheckedChanged);
             // 
-            // LiveCameraHostPortTB
-            // 
-            this.LiveCameraHostPortTB.Location = new System.Drawing.Point(125, 213);
-            this.LiveCameraHostPortTB.Name = "LiveCameraHostPortTB";
-            this.LiveCameraHostPortTB.Size = new System.Drawing.Size(283, 20);
-            this.LiveCameraHostPortTB.TabIndex = 16;
-            this.LiveCameraHostPortTB.Text = "http://localhost:8000/kmlcam";
-            this.toolTip1.SetToolTip(this.LiveCameraHostPortTB, "Set \'Live Camera\' listener address");
-            this.LiveCameraHostPortTB.Validating += new System.ComponentModel.CancelEventHandler(this.ValidateNetworkLink);
-            // 
             // LiveCameraKmlBT
             // 
             this.LiveCameraKmlBT.Location = new System.Drawing.Point(413, 213);
@@ -396,15 +386,24 @@
             this.LiveCameraKmlResetBT.UseVisualStyleBackColor = true;
             this.LiveCameraKmlResetBT.Click += new System.EventHandler(this.Handle_LiveCameraKmlResetBT_Click);
             // 
+            // LiveCameraHostPortCB
+            // 
+            this.LiveCameraHostPortCB.Location = new System.Drawing.Point(125, 212);
+            this.LiveCameraHostPortCB.Name = "LiveCameraHostPortCB";
+            this.LiveCameraHostPortCB.Size = new System.Drawing.Size(283, 21);
+            this.LiveCameraHostPortCB.TabIndex = 32;
+            this.toolTip1.SetToolTip(this.LiveCameraHostPortCB, "Set \'Live Camera\' listener address");
+            this.LiveCameraHostPortCB.Validating += new System.ComponentModel.CancelEventHandler(this.ValidateNetworkLink);
+            // 
             // MainPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 518);
+            this.Controls.Add(this.LiveCameraHostPortCB);
             this.Controls.Add(this.LiveCameraKmlResetBT);
             this.Controls.Add(this.geLinkBT);
             this.Controls.Add(this.LiveCameraKmlBT);
-            this.Controls.Add(this.LiveCameraHostPortTB);
             this.Controls.Add(this.LiveCameraCB);
             this.Controls.Add(this.LoggingThresholdGroundVelTB);
             this.Controls.Add(this.AutomaticLoggingCB);
@@ -474,11 +473,11 @@
         private System.Windows.Forms.CheckBox AutomaticLoggingCB;
         private System.Windows.Forms.TextBox LoggingThresholdGroundVelTB;
         private System.Windows.Forms.CheckBox LiveCameraCB;
-        private System.Windows.Forms.TextBox LiveCameraHostPortTB;
         private System.Windows.Forms.Button LiveCameraKmlBT;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button geLinkBT;
         private System.Windows.Forms.Button LiveCameraKmlResetBT;
+        private System.Windows.Forms.ComboBox LiveCameraHostPortCB;
     }
 }
 

@@ -7,7 +7,12 @@ MSFS2020-PilotPathRecorder.
 Please share knowledge here that could help to make future development more pleasant
 and/or less frustrating!
 
-## Signing Manifest
+## Quick Links
+
+- [Signing The Application Manifest](#signing-the-application-manifest)
+- [LiveCam Webserver Tricks](#livecam-webserver-tricks)
+
+## Signing The Application Manifest
 
 When trying to build this project for the first time, you are likely to receive the error:
 
@@ -59,3 +64,17 @@ the _Solution Explorer_:
 
 Once the desired change is made, cleaning and rebuilding the project without
 the error depicted above should be possible.
+
+## LiveCam Webserver Tricks
+
+The following additional endpoints (see [LiveCam](README-kmlcam.md)) can be helpful during
+development or customization of LiveCams:
+
+- `http://localhost:8000/eval/Model.values` (shows current real-time LiveCam values)
+- `http://localhost:8000/eval/template` (renders a template `POST`ed to this endpoint)
+
+The default handler for an unrecognized HTTP request will attempt to read and return
+the resource (file) named by the URL path.  This enables built-in resources to be
+accessed by liveCam templates.  As of this writing, there is no way to load new
+resources from the dialog; however, they can be manually copied into the application
+runtime directory, if needed.

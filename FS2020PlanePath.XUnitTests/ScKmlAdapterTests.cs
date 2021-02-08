@@ -11,7 +11,7 @@ namespace FS2020PlanePath.XUnitTests
         public ScKmlAdapterTests()
         {
             simPlaneDataStructure = new MSFS2020_SimConnectIntergration.SimPlaneDataStructure();
-            scKmlAdapter = new ScKmlAdapter();
+            scKmlAdapter = new ScKmlAdapter(new KmlCameraParameterValues());
         }
 
         [Fact]
@@ -51,16 +51,18 @@ namespace FS2020PlanePath.XUnitTests
         [Fact]
         public void TestTiltConversion()
         {
+            int flightId = 0;
+            long seq = 0;
             simPlaneDataStructure.plane_pitch = 1;
-            scKmlAdapter.Update(simPlaneDataStructure);
+            scKmlAdapter.Update(simPlaneDataStructure, flightId, seq);
             AssertDoubleValues(89, scKmlAdapter.KmlCameraValues.tilt);
 
             simPlaneDataStructure.plane_pitch = 90;
-            scKmlAdapter.Update(simPlaneDataStructure);
+            scKmlAdapter.Update(simPlaneDataStructure, flightId, seq);
             AssertDoubleValues(0, scKmlAdapter.KmlCameraValues.tilt);
 
             simPlaneDataStructure.plane_pitch = -90;
-            scKmlAdapter.Update(simPlaneDataStructure);
+            scKmlAdapter.Update(simPlaneDataStructure, flightId, seq);
             AssertDoubleValues(180, scKmlAdapter.KmlCameraValues.tilt);
         }
 
@@ -72,7 +74,7 @@ namespace FS2020PlanePath.XUnitTests
             simPlaneDataStructure.plane_heading_true = d;
             simPlaneDataStructure.plane_pitch = d;
             simPlaneDataStructure.plane_bank = d;
-            scKmlAdapter.Update(simPlaneDataStructure);
+            scKmlAdapter.Update(simPlaneDataStructure, 0, 0);
         }
 
         private void AssertDoubleValues(double expected,  params double[] actuals)
