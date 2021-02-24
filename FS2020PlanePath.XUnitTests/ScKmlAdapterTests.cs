@@ -5,12 +5,12 @@ namespace FS2020PlanePath.XUnitTests
     public class ScKmlAdapterTests
     {
 
-        private MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneDataStructure;
+        private FlightDataStructure flightDataStructure;
         private ScKmlAdapter scKmlAdapter;
 
         public ScKmlAdapterTests()
         {
-            simPlaneDataStructure = new MSFS2020_SimConnectIntergration.SimPlaneDataStructure();
+            flightDataStructure = new FlightDataStructure();
             scKmlAdapter = new ScKmlAdapter(new KmlCameraParameterValues());
         }
 
@@ -53,28 +53,28 @@ namespace FS2020PlanePath.XUnitTests
         {
             int flightId = 0;
             long seq = 0;
-            simPlaneDataStructure.plane_pitch = 1;
-            scKmlAdapter.Update(simPlaneDataStructure, flightId, seq);
+            flightDataStructure.plane_pitch = 1;
+            scKmlAdapter.Update(flightDataStructure, flightId, seq);
             AssertDoubleValues(89, scKmlAdapter.KmlCameraValues.tilt);
 
-            simPlaneDataStructure.plane_pitch = 90;
-            scKmlAdapter.Update(simPlaneDataStructure, flightId, seq);
+            flightDataStructure.plane_pitch = 90;
+            scKmlAdapter.Update(flightDataStructure, flightId, seq);
             AssertDoubleValues(0, scKmlAdapter.KmlCameraValues.tilt);
 
-            simPlaneDataStructure.plane_pitch = -90;
-            scKmlAdapter.Update(simPlaneDataStructure, flightId, seq);
+            flightDataStructure.plane_pitch = -90;
+            scKmlAdapter.Update(flightDataStructure, flightId, seq);
             AssertDoubleValues(180, scKmlAdapter.KmlCameraValues.tilt);
         }
 
         private void UpdateWithSimPlaneValues(double d)
         {
-            simPlaneDataStructure.latitude = d;
-            simPlaneDataStructure.longitude = d;
-            simPlaneDataStructure.altitude = (int)d;
-            simPlaneDataStructure.plane_heading_true = d;
-            simPlaneDataStructure.plane_pitch = d;
-            simPlaneDataStructure.plane_bank = d;
-            scKmlAdapter.Update(simPlaneDataStructure, 0, 0);
+            flightDataStructure.latitude = d;
+            flightDataStructure.longitude = d;
+            flightDataStructure.altitude = (int)d;
+            flightDataStructure.plane_heading_true = d;
+            flightDataStructure.plane_pitch = d;
+            flightDataStructure.plane_bank = d;
+            scKmlAdapter.Update(flightDataStructure, 0, 0);
         }
 
         private void AssertDoubleValues(double expected,  params double[] actuals)

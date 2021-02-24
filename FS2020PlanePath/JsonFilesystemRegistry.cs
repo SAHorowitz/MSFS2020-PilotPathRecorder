@@ -21,34 +21,12 @@ namespace FS2020PlanePath
 
         public bool TryGetById(string id, out T value)
         {
-            string fileName = FilenameForId(id);
-            try
-            {
-                value = new JsonSerializer<T>().Deserialize(File.ReadAllText(fileName));
-                Console.WriteLine($"loaded({fileName})");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Can't load({fileName}); {ex.Message}");
-                value = default(T);
-                return false;
-            }
+            return FilesystemSerializer.TryDeserializeFromFile(FilenameForId(id), new JsonSerializer<T>(), out value);
         }
 
         public bool Save(string id, T value)
         {
-            string fileName = FilenameForId(id);
-            try
-            {
-                File.WriteAllText(fileName, new JsonSerializer<T>().Serialize(value));
-                Console.WriteLine($"saved({fileName})");
-                return true;
-            } catch(Exception ex)
-            {
-                Console.WriteLine($"Can't save({fileName}); {ex.Message}");
-                return false;
-            }
+            return FilesystemSerializer.TrySerializeToFile(FilenameForId(id), new JsonSerializer<T>(), value);
         }
 
         public bool Delete(string id)

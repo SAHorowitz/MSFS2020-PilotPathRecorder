@@ -79,7 +79,7 @@ namespace FS2020PlanePath
                     }
                 )
             );
-            Console.WriteLine($"listenerResponseBody({fixupForDisplay(listenerResponseBody)})");
+            //Console.WriteLine($"listenerResponseBody({fixupForDisplay(listenerResponseBody)})");
             await context.Response.Send(listenerResponseBody);
         }
 

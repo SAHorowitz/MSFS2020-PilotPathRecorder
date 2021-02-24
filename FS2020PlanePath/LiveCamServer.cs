@@ -15,7 +15,6 @@ namespace FS2020PlanePath
         public const string EVAL_TEMPLATE_URLPATH = "eval/template";
         public const string EVAL_MODELVALUES_URLPATH = "eval/Model.values";
 
-        public readonly static string LIVECAM_URLPATH_PREFIX = $"{LIVECAM_URLPATH_SEGMENTS}/";
         public readonly static char[] URI_SEPARATOR_CHARS = { '/' };
 
         /// <param name="liveCamLensPath">URL path to a liveCam lens</param>
@@ -23,14 +22,16 @@ namespace FS2020PlanePath
         /// <exception cref="UriFormatException">invalid liveCam path</exception>
         public static (string alias, string lensName) LiveCamPathToLensSpec(string liveCamLensPath)
         {
-            if (!liveCamLensPath.StartsWith(LIVECAM_URLPATH_PREFIX))
+            string[] liveCamUrlSegments = GetLiveCamUrlSegements(liveCamLensPath, 3);
+            if (!IsLiveCamLensPathSegments(liveCamUrlSegments))
             {
                 throw new UriFormatException($"invalid liveCamLensPath({liveCamLensPath})");
             }
 
-            string liveCamSpec = liveCamLensPath.Remove(0, LIVECAM_URLPATH_PREFIX.Length);
-            string[] specParts = liveCamSpec.Split(new char[] { '/' }, 2);
-            return (specParts[0], specParts.Length < 2 ? "" : specParts[1]);
+            return (
+                liveCamUrlSegments.Length < 2 ? "" : liveCamUrlSegments[1],
+                liveCamUrlSegments.Length < 3 ? "" : liveCamUrlSegments[2]
+            );
         }
 
         /// <param name="liveCamUrl">URL link to a liveCam</param>
@@ -78,7 +79,7 @@ namespace FS2020PlanePath
             routingTable.Add(
                 new Route
                 {
-                    IsSupported = request => request.path.StartsWith(LIVECAM_URLPATH_PREFIX),
+                    IsSupported = request => IsLiveCamLensPathSegments(GetLiveCamUrlSegements(request.path, 2)),
                     Handler = request => handleLiveCamRequest(request)
                 }
             );
@@ -157,13 +158,27 @@ namespace FS2020PlanePath
 
         }
 
+        private static string[] GetLiveCamUrlSegements(string liveCamUrl, int maxSegments)
+        {
+            return liveCamUrl.Split(new char[] { '/' }, maxSegments);
+        }
+
+        private static bool IsLiveCamLensPathSegments(string[] urlPathSegments)
+        {
+            if (urlPathSegments.Length == 0)
+            {
+                return false;
+            }
+            return LIVECAM_URLPATH_SEGMENTS.Equals(urlPathSegments[0]);
+        }
+
         private byte[] handleServerRequest(HttpListener.Request request)
         {
             foreach (Route route in routingTable)
             {
                 if (route.IsSupported(request))
                 {
-                    Console.WriteLine($"handling path({request.path})");
+                    //Console.WriteLine($"handling /*path*/({request.path})");
                     return route.Handler(request);
                 }
             }
@@ -211,6 +226,7 @@ namespace FS2020PlanePath
             }
             return s2b(result);
         }
+
         private byte[] handleEvalContextRequest(HttpListener.Request request)
         {
             Console.WriteLine($"handling evalContext request({request.path})");

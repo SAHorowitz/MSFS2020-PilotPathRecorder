@@ -35,8 +35,15 @@ namespace FS2020PlanePath
             this.cancelBT = new System.Windows.Forms.Button();
             this.menuSP = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.liveCamDefinitionToolStripMenuItems = new System.Windows.Forms.ToolStripMenuItem();
+            this.liveCamDefinitionRenameMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.liveCamDefinitionLoadFromFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.liveCamDefinitionSaveToFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.lensTemplateToolStripMenuItems = new System.Windows.Forms.ToolStripMenuItem();
+            this.lensTemplateLoadFromMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lensTemplateSaveAsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripDividerLB = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
@@ -84,26 +91,85 @@ namespace FS2020PlanePath
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openToolStripMenuItem,
-            this.saveToolStripMenuItem});
+            this.liveCamDefinitionToolStripMenuItems,
+            this.toolStripSeparator1,
+            this.lensTemplateToolStripMenuItems});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
             this.fileToolStripMenuItem.ToolTipText = "Allows Loading or Saving of LiveCam Lens Template";
             // 
-            // openToolStripMenuItem
+            // liveCamDefinitionToolStripMenuItems
             // 
-            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.openToolStripMenuItem.Text = "&Load...";
-            this.openToolStripMenuItem.Click += new System.EventHandler(this.Handle_FileOpenMenuItemSelected_Event);
+            this.liveCamDefinitionToolStripMenuItems.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.liveCamDefinitionRenameMenuItem,
+            this.toolStripSeparator2,
+            this.liveCamDefinitionLoadFromFileMenuItem,
+            this.liveCamDefinitionSaveToFileMenuItem});
+            this.liveCamDefinitionToolStripMenuItems.Name = "liveCamDefinitionToolStripMenuItems";
+            this.liveCamDefinitionToolStripMenuItems.Size = new System.Drawing.Size(180, 22);
+            this.liveCamDefinitionToolStripMenuItems.Text = "LiveCam Definition";
+            this.liveCamDefinitionToolStripMenuItems.ToolTipText = "Manage the LiveCam definition.";
             // 
-            // saveToolStripMenuItem
+            // liveCamDefinitionRenameMenuItem
             // 
-            this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.saveToolStripMenuItem.Text = "Save &As...";
-            this.saveToolStripMenuItem.Click += new System.EventHandler(this.Handle_FileSaveMenuItemSelected_Event);
+            this.liveCamDefinitionRenameMenuItem.Name = "liveCamDefinitionRenameMenuItem";
+            this.liveCamDefinitionRenameMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.liveCamDefinitionRenameMenuItem.Text = "&Rename...";
+            this.liveCamDefinitionRenameMenuItem.ToolTipText = "Change the alias for the LiveCam definition";
+            this.liveCamDefinitionRenameMenuItem.Click += new System.EventHandler(this.Handle_LiveCamDefinitionRename_Event);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
+            // 
+            // liveCamDefinitionLoadFromFileMenuItem
+            // 
+            this.liveCamDefinitionLoadFromFileMenuItem.Name = "liveCamDefinitionLoadFromFileMenuItem";
+            this.liveCamDefinitionLoadFromFileMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.liveCamDefinitionLoadFromFileMenuItem.Text = "&Load From File...";
+            this.liveCamDefinitionLoadFromFileMenuItem.ToolTipText = "Load the LiveCam definition from a file.";
+            this.liveCamDefinitionLoadFromFileMenuItem.Click += new System.EventHandler(this.Handle_LiveCamDefinitionLoadFromFile_Event);
+            // 
+            // liveCamDefinitionSaveToFileMenuItem
+            // 
+            this.liveCamDefinitionSaveToFileMenuItem.Name = "liveCamDefinitionSaveToFileMenuItem";
+            this.liveCamDefinitionSaveToFileMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.liveCamDefinitionSaveToFileMenuItem.Text = "&Save To File...";
+            this.liveCamDefinitionSaveToFileMenuItem.ToolTipText = "Save the LiveCam definition to a file.";
+            this.liveCamDefinitionSaveToFileMenuItem.Click += new System.EventHandler(this.Handle_LiveCamDefinitionSaveToFile_Event);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(177, 6);
+            // 
+            // lensTemplateToolStripMenuItems
+            // 
+            this.lensTemplateToolStripMenuItems.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lensTemplateLoadFromMenuItem,
+            this.lensTemplateSaveAsMenuItem});
+            this.lensTemplateToolStripMenuItems.Name = "lensTemplateToolStripMenuItems";
+            this.lensTemplateToolStripMenuItems.Size = new System.Drawing.Size(180, 22);
+            this.lensTemplateToolStripMenuItems.Text = "Lens Template";
+            this.lensTemplateToolStripMenuItems.ToolTipText = "Manage the currently selected lens template.";
+            // 
+            // lensTemplateLoadFromMenuItem
+            // 
+            this.lensTemplateLoadFromMenuItem.Name = "lensTemplateLoadFromMenuItem";
+            this.lensTemplateLoadFromMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.lensTemplateLoadFromMenuItem.Text = "&Load From File...";
+            this.lensTemplateLoadFromMenuItem.ToolTipText = "Load the template for the currently selected lens from a file.";
+            this.lensTemplateLoadFromMenuItem.Click += new System.EventHandler(this.Handle_LensTemplateLoadFrom_Event);
+            // 
+            // lensTemplateSaveAsMenuItem
+            // 
+            this.lensTemplateSaveAsMenuItem.Name = "lensTemplateSaveAsMenuItem";
+            this.lensTemplateSaveAsMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.lensTemplateSaveAsMenuItem.Text = "&Save To File...";
+            this.lensTemplateSaveAsMenuItem.ToolTipText = "Save the template for the currently selected lens to a file.";
+            this.lensTemplateSaveAsMenuItem.Click += new System.EventHandler(this.Handle_LensTemplateSaveAs_Event);
             // 
             // helpToolStripMenuItem
             // 
@@ -181,6 +247,7 @@ namespace FS2020PlanePath
             this.Name = "KmlLiveCamEditorForm";
             this.Text = "LiveCam Editor";
             this.toolTip1.SetToolTip(this, "Allows customization of the LiveCam Template");
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.KmlLiveCamEditorForm_FormClosing);
             this.HelpRequested += new System.Windows.Forms.HelpEventHandler(this.Handle_HelpRequested_Event);
             this.menuSP.ResumeLayout(false);
             this.menuSP.PerformLayout();
@@ -194,13 +261,20 @@ namespace FS2020PlanePath
         private System.Windows.Forms.Button cancelBT;
         private System.Windows.Forms.MenuStrip menuSP;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.Label menuStripDividerLB;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.TabControl editorPaneTC;
         private System.Windows.Forms.Button newBT;
         private System.Windows.Forms.Button deleteBT;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem liveCamDefinitionToolStripMenuItems;
+        private System.Windows.Forms.ToolStripMenuItem lensTemplateToolStripMenuItems;
+        private System.Windows.Forms.ToolStripMenuItem liveCamDefinitionSaveToFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem lensTemplateLoadFromMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem lensTemplateSaveAsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem liveCamDefinitionLoadFromFileMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem liveCamDefinitionRenameMenuItem;
     }
 }

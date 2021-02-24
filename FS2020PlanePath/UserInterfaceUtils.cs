@@ -1,9 +1,60 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Media;
 
 namespace FS2020PlanePath
 {
+
+    public enum ToggleState
+    {
+        Out,
+        In
+    }
+
+    public interface IButtonStateModel<ButtonState>
+    {
+        ButtonState State { get; set; }
+
+        bool IsEnabled { get; set; }
+    }
+
+    public class MultiButtonStateModel<ButtonState> : IButtonStateModel<ButtonState> where ButtonState : Enum
+    {
+        private Button button;
+        private string[] typeNames;
+        private ButtonState type;
+
+        public MultiButtonStateModel(Button button, bool enabled, ButtonState type, params string[] typeNames)
+        {
+            Debug.Assert(typeof(ButtonState).GetEnumValues().Length == typeNames.Length);
+            this.button = button;
+            this.typeNames = typeNames;
+            button.Enabled = enabled;
+            IsEnabled = button.Enabled;
+            State = type;
+        }
+
+        public ButtonState State
+        {
+            get => type;
+            set
+            {
+                type = value;
+                button.Text = typeNames[Convert.ToInt32(type)];
+            }
+
+        }
+
+        public bool IsEnabled
+        {
+            get => button.Enabled;
+            set => button.Enabled = value;
+        }
+    }
+
     public static class UserDialogUtils
     {
 
@@ -12,13 +63,13 @@ namespace FS2020PlanePath
             MessageBox.Show($"Details:\n{details}", caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        public static void displayMessage(string caption, string details)
+        public static void displayMessage(string caption, string details, MessageBoxIcon icon = MessageBoxIcon.Information)
         {
             MessageBox.Show(
                 details,
                 caption,
                 MessageBoxButtons.OK,
-                MessageBoxIcon.Information
+                icon
             );
         }
 
@@ -27,25 +78,37 @@ namespace FS2020PlanePath
             DialogResult confirmationAnswer = MessageBox.Show(
                 details,
                 caption,
-                MessageBoxButtons.YesNo,
-                icon
+                MessageBoxButtons.YesNoCancel,
+                icon,
+                MessageBoxDefaultButton.Button3
             );
             return (DialogResult.Yes == confirmationAnswer);
         }
 
+        public static void LettersOrDigitsOnlyInputKeyPressHandler(object sender, KeyPressEventArgs e)
+        {
+            char key = e.KeyChar;
+            if (!char.IsControl(key) && !char.IsLetterOrDigit(key))
+            {
+                e.Handled = true;
+                SystemSounds.Hand.Play();
+            }
+        }
+
         public static bool TryGetStringInput(
-            string text, 
-            string caption, 
+            string text,
+            string caption,
             out string input,
-            KeyPressEventHandler keyPressHandler = null
+            KeyPressEventHandler keyPressHandler = default(KeyPressEventHandler),
+            Func<string, bool> validator = default(Func<string, bool>)
         )
         {
             using (
                 Form prompt = new Form()
                 {
                     Text = caption,
-                    Height = 150,
-                    Width = 340,
+                    Height = 180,
+                    Width = 370,
                     FormBorderStyle = FormBorderStyle.FixedDialog,
                     StartPosition = FormStartPosition.CenterScreen
                 }
@@ -57,7 +120,7 @@ namespace FS2020PlanePath
                     {
                         using (Graphics graphics = prompt.CreateGraphics())
                         {
-                            graphics.DrawImage(SystemIcons.Question.ToBitmap(), new Point(260, 25));
+                            graphics.DrawImage(SystemIcons.Question.ToBitmap(), new Point(275, 40));
                         }
                     }
                 );
@@ -66,16 +129,16 @@ namespace FS2020PlanePath
                     new Label()
                     {
                         Text = text,
-                        Top = 17,
-                        Left = 15,
+                        Top = 32,
+                        Left = 30,
                         Width = 220
                     }
                 );
 
                 TextBox textBox = new TextBox()
                 {
-                    Top = 40,
-                    Left = 15,
+                    Top = 55,
+                    Left = 30,
                     Width = 220
                 };
                 prompt.Controls.Add(textBox);
@@ -83,13 +146,25 @@ namespace FS2020PlanePath
                 {
                     textBox.KeyPress += keyPressHandler;
                 }
+                if (validator != default(Func<string, bool>))
+                {
+                    textBox.Validating += (
+                        (object sender, CancelEventArgs e) =>
+                        {
+                            if (!validator.Invoke(textBox.Text))
+                            {
+                                e.Cancel = true;
+                            }
+                        }
+                    );
+                }
 
                 Button okButton = new Button()
                 {
-                    Top = 75,
-                    Left = 15,
-                    Width = 50,
-                    Text = "&Ok",
+                    Top = 90,
+                    Left = 30,
+                    Width = 60,
+                    Text = "&OK",
                     DialogResult = DialogResult.OK
                 };
                 okButton.Click += closeFn;
@@ -98,13 +173,14 @@ namespace FS2020PlanePath
 
                 Button cancelButton = new Button()
                 {
-                    Top = 75,
-                    Left = 75,
-                    Width = 50,
+                    Top = 90,
+                    Left = 100,
+                    Width = 60,
                     Text = "&Cancel",
                     DialogResult = DialogResult.Cancel
                 };
                 cancelButton.Click += closeFn;
+                cancelButton.CausesValidation = false;
                 prompt.Controls.Add(cancelButton);
                 prompt.CancelButton = cancelButton;
 

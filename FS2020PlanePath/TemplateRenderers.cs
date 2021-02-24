@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using SharpKml.Base;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -203,7 +202,7 @@ namespace FS2020PlanePath
             {
                 try
                 {
-                    new Parser().ParseString(Template, true);
+                    new SharpKml.Base.Parser().ParseString(Template, true);
                     return new string[0];
                 }
                 catch (Exception pe)

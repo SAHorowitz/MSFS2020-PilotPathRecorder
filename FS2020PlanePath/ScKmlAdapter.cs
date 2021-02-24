@@ -14,11 +14,11 @@ namespace FS2020PlanePath
 
         public ScKmlAdapter(KmlCameraParameterValues kmlCameraParameterValues)
         {
-            this.kmlCameraValues = kmlCameraParameterValues;
+            kmlCameraValues = kmlCameraParameterValues;
         }
 
         public void Update(
-            MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneDataStructure,
+            FlightDataStructure flightDataStructure,
             int flightId,
             long seq
         )
@@ -27,20 +27,20 @@ namespace FS2020PlanePath
             // see: https://developers.google.com/kml/documentation/kmlreference
             // see: http://prepar3desp.com/SDK/Core%20Utilities%20Kit/SimConnect%20SDK/SimConnect.htm
 
-            KmlCameraValues.latitude = simPlaneDataStructure.latitude;
-            KmlCameraValues.longitude = simPlaneDataStructure.longitude;
-            KmlCameraValues.altitude = simPlaneDataStructure.altitude / FEET_PER_METER;
-            KmlCameraValues.heading = simPlaneDataStructure.plane_heading_true;
-            KmlCameraValues.tilt = Math.Max(Math.Min(90 - simPlaneDataStructure.plane_pitch, 180), 0);
-            KmlCameraValues.roll = simPlaneDataStructure.plane_bank;
+            KmlCameraValues.latitude = flightDataStructure.latitude;
+            KmlCameraValues.longitude = flightDataStructure.longitude;
+            KmlCameraValues.altitude = flightDataStructure.altitude / FEET_PER_METER;
+            KmlCameraValues.heading = flightDataStructure.plane_heading_true;
+            KmlCameraValues.tilt = Math.Max(Math.Min(90 - flightDataStructure.plane_pitch, 180), 0);
+            KmlCameraValues.roll = flightDataStructure.plane_bank;
             KmlCameraValues.seq = seq;
             KmlCameraValues.flightId = flightId;
 
-            // DebugConversion(simPlaneDataStructure);
+            //DebugConversion(flightDataStructure);
 
         }
 
-        private void DebugConversion(MSFS2020_SimConnectIntergration.SimPlaneDataStructure simPlaneDataStructure)
+        private void DebugConversion(FlightDataStructure simPlaneDataStructure)
         {
             string input = $@"
     latitude({simPlaneDataStructure.latitude}),
@@ -66,6 +66,5 @@ namespace FS2020PlanePath
         }
 
     }
-
 
 }

@@ -1,18 +1,10 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data.SQLite;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace FS2020PlanePath
 {
-    class FlightPathData
+    public class FlightPathData
     {
         public double latitude;
         public double longitude;
@@ -179,6 +171,10 @@ namespace FS2020PlanePath
         private const int TblVersion_FlightSampleDetails = 3;
         private const int TblVersion_FlightWaypoints = 1;
         private const int TblVersion_FlightOptions = 1;
+
+        internal const double DEFAULT_ABOVE_THRESHOLD_WRITE_FREQ = 5;
+        internal const int DEFAULT_THRESHOLD_MIN_ALT = 500;
+        internal const int DEFAULT_AUTOMATIC_LOGGING_THRESHOLD = 30;
 
         public FS2020_SQLLiteDB()
         {
@@ -620,7 +616,7 @@ namespace FS2020PlanePath
             {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@optionname", "AboveThresholdWriteFreq");
-                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "5");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", DEFAULT_ABOVE_THRESHOLD_WRITE_FREQ.ToString());
                 try
                 {
                     sqlite_cmd.ExecuteNonQuery();
@@ -636,7 +632,7 @@ namespace FS2020PlanePath
             {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@optionname", "ThresholdMinAltitude");
-                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "500");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", DEFAULT_THRESHOLD_MIN_ALT.ToString());
                 try
                 {
                     sqlite_cmd.ExecuteNonQuery();
@@ -716,7 +712,7 @@ namespace FS2020PlanePath
             {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@optionname", "AutomaticLoggingThreshold");
-                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "30");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", DEFAULT_AUTOMATIC_LOGGING_THRESHOLD.ToString());
                 try
                 {
                     sqlite_cmd.ExecuteNonQuery();
@@ -984,17 +980,46 @@ namespace FS2020PlanePath
             return FlightWaypoints;
         }
 
-        public List<FlightPathData> GetLiveCamTrackSinceDateTimestamp(int pk, long earliestDateTimestamp)
+        public List<FlightPathData> GetFlightPathSinceTimestamp(int pk, long startingTimestamp)
         {
 
             SQLiteCommand sqlite_cmd = sqlite_conn.CreateCommand();
-            sqlite_cmd.CommandText = @"select sample_datetimestamp, cast(latitude as double), cast(longitude as double), altitude, 
-cast(plane_pitch as double), cast(plane_bank as double), cast(plane_heading_true as double)
-from flightsamples s, flightsampledetails d 
-where s.flightsamplesid = d.flightsamplesid and sample_datetimestamp > @earliestDateTimestamp and flightid = @FlightID
+            sqlite_cmd.CommandText = @"
+select 
+    sample_datetimestamp, 
+    cast(latitude as double), 
+    cast(longitude as double), 
+    altitude, 
+    cast(plane_pitch as double), 
+    cast(plane_bank as double), 
+    cast(plane_heading_true as double),
+    cast (ground_velocity as double),
+    cast (plane_heading_magnetic as double),
+    cast(plane_airspeed_indicated as double),
+    cast(airspeed_true as double), 
+    cast(vertical_speed as double), 
+    cast(heading_indicator as double), 
+    flaps_handle_position,
+    spoilers_handle_position, 
+    gear_handle_position, 
+    cast (ambient_wind_velocity as double), 
+    cast (ambient_wind_direction as double), 
+    cast (ambient_temperature as double),
+    stall_warning, 
+    overspeed_warning, 
+    is_gear_retractable, 
+    spoiler_available, 
+    sim_on_ground,
+    alitutdeaboveground
+from
+    flightsamples s, flightsampledetails d 
+where 
+    s.flightsamplesid = d.flightsamplesid 
+and sample_datetimestamp > @earliestDateTimestamp 
+and flightid = @FlightID
 "; ;
             sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
-            sqlite_cmd.Parameters.AddWithValue("@earliestDateTimestamp", earliestDateTimestamp);
+            sqlite_cmd.Parameters.AddWithValue("@earliestDateTimestamp", startingTimestamp);
 
             try
             {
@@ -1007,14 +1032,31 @@ where s.flightsamplesid = d.flightsamplesid and sample_datetimestamp > @earliest
                             timestamp = r.GetInt64(0),
                             latitude = r.GetDouble(1),
                             longitude = r.GetDouble(2),
-                            altitude = (int) ((r.GetInt32(3) / 3.28084) + 0.5),
+                            altitude = r.GetInt32(3),
                             plane_pitch = r.GetDouble(4),
                             plane_bank = r.GetDouble(5),
-                            plane_heading_true = r.GetDouble(6)
+                            plane_heading_true = r.GetDouble(6),
+                            ground_velocity = r.GetDouble(7),
+                            plane_heading_magnetic = r.GetDouble(8),
+                            plane_airspeed_indicated = r.GetDouble(9),
+                            airspeed_true = r.GetDouble(10),
+                            vertical_speed = r.GetDouble(11),
+                            heading_indicator = r.GetDouble(12),
+                            flaps_handle_position = r.GetInt32(13),
+                            spoilers_handle_position = r.GetInt32(14),
+                            gear_handle_position = r.GetInt32(15),
+                            ambient_wind_velocity = r.GetDouble(16),
+                            ambient_wind_direction = r.GetDouble(17),
+                            ambient_temperature = r.GetDouble(18),
+                            stall_warning = r.GetInt32(19),
+                            overspeed_warning = r.GetInt32(20),
+                            is_gear_retractable = r.GetInt32(21),
+                            sim_on_ground = r.GetInt32(22),
+                            altitudeaboveground = r.GetInt32(23)
                         }
                     );
                 }
-                Console.WriteLine($"query for flightId({pk}) since({earliestDateTimestamp}) found({FlightPath.Count}) entries");
+                Console.WriteLine($"query for flightId({pk}) since({startingTimestamp}) found({FlightPath.Count}) entries");
                 return FlightPath;
             }
             catch (Exception ex)

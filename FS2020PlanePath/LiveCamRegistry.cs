@@ -61,18 +61,7 @@ namespace FS2020PlanePath
         public bool Save(string alias, KmlLiveCam kmlLiveCam)
         {
             cacheRegistry.Save(alias, kmlLiveCam);
-            return persistentRegistry.Save(
-                alias,
-                new LiveCamEntity(
-                    kmlLiveCam.LensNames.Select(
-                        lensName => new LiveCamLensEntity(
-                            lensName,
-                            kmlLiveCam.GetLens(lensName).Template
-                        )
-                    )
-                    .ToArray()
-                )
-            );
+            return persistentRegistry.Save(alias, new LiveCamEntity(kmlLiveCam));
         }
 
         public bool Delete(string alias)
@@ -145,6 +134,25 @@ namespace FS2020PlanePath
 
     public class LiveCamEntity
     {
+
+        public LiveCamEntity(KmlLiveCam kmlLiveCam)
+        : this(
+            kmlLiveCam.LensNames.Select(
+                lensName => new LiveCamLensEntity(
+                    lensName,
+                    kmlLiveCam.GetLens(lensName).Template
+                )
+            )
+            .ToArray()
+        ) {
+            // nothing additional
+        }
+
+        public LiveCamEntity()
+        {
+            Lens = default(LiveCamLensEntity[]) ;
+        }
+
         public LiveCamEntity(params LiveCamLensEntity[] lens)
         {
             Lens = lens;
@@ -154,7 +162,7 @@ namespace FS2020PlanePath
             get => lens;
             set
             {
-                lens = value != null ? value : new LiveCamLensEntity[0];
+                lens = value ?? new LiveCamLensEntity[0];
             } 
         }
 

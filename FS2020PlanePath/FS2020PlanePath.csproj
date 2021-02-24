@@ -172,6 +172,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\ui\FlightLoggingOrchestrator.cs" />
     <Compile Include="GeoCalcUtils.cs" />
     <Compile Include="JsonFilesystemRegistry.cs" />
     <Compile Include="LiveCamRegistry.cs" />
@@ -189,7 +190,12 @@
     <Compile Include="MainPage.Designer.cs">
       <DependentUpon>MainPage.cs</DependentUpon>
     </Compile>
-    <Compile Include="MSFS2020_SimConnectIntergration.cs" />
+    <Compile Include="FlightDataConnector.cs" />
+    <Compile Include="AbstractFlightDataGenerator.cs" />
+    <Compile Include="ReplayFlightDataGenerator.cs" />
+    <Compile Include="FlightDataGenerator.cs" />
+    <Compile Include="GeneratedFlightDataConnector.cs" />
+    <Compile Include="SimConnectFlightDataConnector.cs" />
     <Compile Include="MultiTrackKmlGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -202,7 +208,7 @@
     </Compile>
     <Compile Include="SerializationUtils.cs" />
     <Compile Include="TemplateRenderers.cs" />
-    <Compile Include="UserDialogUtils.cs" />
+    <Compile Include="UserInterfaceUtils.cs" />
     <EmbeddedResource Include="MainPage.resx">
       <DependentUpon>MainPage.cs</DependentUpon>
       <SubType>Designer</SubType>
