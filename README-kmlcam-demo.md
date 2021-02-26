@@ -1,7 +1,7 @@
-# Feb 2021 KmlCam Demonstration
+# KmlCam Demonstration Script
 
-These notes guide a demonstration of the "LiveCam" enhancements as of 
-February 2021.
+These notes provide a suggested "script" to help demonstrate some of
+the enhancements made to `PilotPathRecorder` in support of KML "LiveCams".
 
 ## Intro
 
@@ -18,7 +18,7 @@ near "real time" - not just retrospectively, after the flight completes.
 This demo is a short presentation of the enhancements made so far to add this
 type of functionality to `PilotPathRecorder`.
 
-*\<\<bring up the app\>\>*
+*\<\<bring up the `PilotPathRecorder` dialog\>\>*
 
 ## Feature Presentations
 
@@ -37,14 +37,14 @@ new streams of flight path data:
 - `Replay` - replays a previously logged stream of flight data
 - `RandomWalk` - generates a new, random stream of flight data
 
-I found it very cumbersome without these enhancements to develop LiveCams,
+I found it cumbersome without these enhancements to develop LiveCams,
 since otherwise I would have needed to fly while developing.  With these
 new features, I can test LiveCams while either replaying a previously 
 recorded flight, or while playing a new, randomly generated flight.
 
 ### LiveCams
 
-I use the term "LiveCam" to describe a new view that `PilotPathRecorder` 
+The term "LiveCam" is used to describe the new view that `PilotPathRecorder` 
 can give the user of a flight path it's receiving.
 
 I've considered two of the LiveCam definitions I've experimented with so far
@@ -61,7 +61,7 @@ Here's a demonstration of some of these ideas:
 
 ##### Random Walk
 
-1. *\<\<start the app\>\>*
+1. *\<\<start the `PilotPathRecorder` dialog\>\>*
 1. *\<\<point out `Automatic Logging`\>\>*
 1. *\<\<start a `RandomWalk`\>\>*
 1. *\<\<point out logging started\>\>*
@@ -125,4 +125,4 @@ find the link to the file [chartbundle_aero.kml](http://www.chartbundle.com/char
 which I used to overlay FAA aeronautical charts directly onto Google Earth,
 on top of which to project my flight path with `PilotPathRecorder'.
 
-*\<\<demonstration\>\>*
+*\<\<demonstration of navigation atop an FAA "terminal" or "sectional" chart\>\>*

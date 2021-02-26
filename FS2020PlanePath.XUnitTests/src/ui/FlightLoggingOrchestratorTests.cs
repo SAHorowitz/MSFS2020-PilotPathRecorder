@@ -54,7 +54,7 @@ namespace FS2020PlanePath.XUnitTests
         {
             Assert.False(orchestrator.IsAutomatic);
             AssertInitialButtonState();
-            AssertActions("");
+            AssertActions("i");
         }
 
         /// <summary>
@@ -65,23 +65,23 @@ namespace FS2020PlanePath.XUnitTests
         public void NonAutomaticFullNormalCase()
         {
             orchestrator.IsAutomatic = false;
-            AssertActions("");
+            AssertActions("i");
             orchestrator.ThresholdReached();
             orchestrator.ThresholdMissed();
-            AssertActions("");
+            AssertActions("i");
             Assert.False(orchestrator.IsAutomatic);
             AssertInitialButtonState();
             orchestrator.Start();
             AssertActions("i,e");
             orchestrator.Pause();
-            AssertButtonState(true,  true);
+            AssertButtonEnabledState(true,  true);
             AssertActions("i,e,d");
             orchestrator.Resume();
-            AssertButtonState(true, true);
+            AssertButtonEnabledState(true, true);
             AssertActions("i,e,d,e");
             orchestrator.Stop();
             AssertActions("i,e,d,e,d,f");
-            AssertSources("0,0,1,1,0,0");
+            AssertSources("2,0,1,1,0,0");
             AssertInitialButtonState();
         }
 
@@ -98,8 +98,8 @@ namespace FS2020PlanePath.XUnitTests
             orchestrator.IsAutomatic = false;
             orchestrator.ThresholdMissed();
             AssertActions("i,e");
-            AssertSources("0,0");
-            AssertButtonState(true, true);
+            AssertSources("2,0");
+            AssertButtonEnabledState(true, true);
         }
 
         /// <summary>
@@ -116,11 +116,11 @@ namespace FS2020PlanePath.XUnitTests
             AssertActions("i,e");
             orchestrator.ThresholdMissed();
             AssertActions("i,e");
-            AssertButtonState(true, true);
+            AssertButtonEnabledState(true, true);
             orchestrator.Stop();
             AssertInitialButtonState();
-            AssertSources("0,0,0,0");
             AssertActions("i,e,d,f");
+            AssertSources("2,0,0,0");
         }
 
         /// <summary>
@@ -136,12 +136,12 @@ namespace FS2020PlanePath.XUnitTests
             AssertActions("i,e");
             orchestrator.ThresholdReached();
             AssertActions("i,e");
-            AssertButtonState(true, true);
+            AssertButtonEnabledState(true, true);
             orchestrator.IsAutomatic = true;
             orchestrator.ThresholdMissed();
             AssertActions("i,e");
-            AssertSources("0,0");
-            AssertButtonState(true, true);
+            AssertSources("2,0");
+            AssertButtonEnabledState(true, true);
         }
 
         /// <summary>
@@ -157,11 +157,13 @@ namespace FS2020PlanePath.XUnitTests
             AssertActions("i,e");
             orchestrator.Stop();
             AssertActions("i,e,d,f");
+            orchestrator.ThresholdReached();
+            AssertActions("i,e,d,f");
             orchestrator.ThresholdMissed();
             AssertActions("i,e,d,f");
             orchestrator.ThresholdReached();
-            AssertSources("0,0,0,0,0,0");
-            AssertActions("i,e,d,f,i,e");
+            AssertActions("i,e,d,f,e");
+            AssertSources("2,0,0,0,0");
         }
 
         /// <summary>
@@ -172,12 +174,12 @@ namespace FS2020PlanePath.XUnitTests
         {
             orchestrator.IsAutomatic = true;
             Assert.True(orchestrator.IsAutomatic);
-            AssertActions("");
+            AssertActions("i");
             orchestrator.ThresholdReached();
             AssertActions("i,e");
             orchestrator.ThresholdMissed();
-            AssertSources("0,0,0,0");
             AssertActions("i,e,d,f");
+            AssertSources("2,0,0,0");
         }
 
         /// <summary>
@@ -190,17 +192,17 @@ namespace FS2020PlanePath.XUnitTests
             Assert.True(orchestrator.IsAutomatic);
             orchestrator.ThresholdReached();
             AssertActions("i,e");
-            AssertButtonState(true, true);
+            AssertButtonEnabledState(true, true);
             orchestrator.Pause();
-            AssertButtonState(true, true);
+            AssertButtonEnabledState(true, true);
             AssertActions("i,e,d");
             orchestrator.ThresholdMissed();
             AssertActions("i,e,d");
-            AssertButtonState(true, true);
+            AssertButtonEnabledState(true, true);
             orchestrator.Stop();
             AssertInitialButtonState();
             AssertActions("i,e,d,d,f");
-            AssertSources("0,0,1,0,0");
+            AssertSources("2,0,1,0,0");
         }
 
         /// <summary>
@@ -212,14 +214,30 @@ namespace FS2020PlanePath.XUnitTests
         {
             orchestrator.IsAutomatic = true;
             orchestrator.ThresholdReached();
+            AssertActions("i,e");
             orchestrator.Pause();
+
+            // while paused, threshold calls should be ignored
+
+            AssertActions("i,e,d");
             orchestrator.ThresholdMissed();
+            AssertActions("i,e,d");
+            orchestrator.ThresholdReached();
+            AssertActions("i,e,d");
+            orchestrator.ThresholdMissed();
+            AssertActions("i,e,d");
+
             orchestrator.Resume();
+
+            // resume always re-enables logging, regardless of threshold
+
+            AssertActions("i,e,d,e");
+            orchestrator.ThresholdReached();    // does nothing since already enabled
             AssertActions("i,e,d,e");
             orchestrator.ThresholdMissed();
             AssertActions("i,e,d,e,d,f");
             AssertInitialButtonState();
-            AssertSources("0,0,1,1,0,0");
+            AssertSources("2,0,1,1,0,0");
         }
 
         /// <summary>
@@ -244,12 +262,12 @@ namespace FS2020PlanePath.XUnitTests
             AssertActions("i,e,d,f");
             AssertInitialButtonState();
             orchestrator.ThresholdReached();
-            AssertButtonState(true, true);
-            AssertActions("i,e,d,f,i,e");
+            AssertButtonEnabledState(true, true);
+            AssertActions("i,e,d,f,e");
             orchestrator.ThresholdMissed();
-            AssertActions("i,e,d,f,i,e,d,f");
+            AssertActions("i,e,d,f,e,d,f");
             AssertInitialButtonState();
-            AssertSources("0,0,0,0,0,0,0,0");
+            AssertSources("2,0,0,0,0,0,0");
         }
 
         private void AssertActions(string actions)
@@ -264,10 +282,10 @@ namespace FS2020PlanePath.XUnitTests
 
         private void AssertInitialButtonState()
         {
-            AssertButtonState(true, false);
+            AssertButtonEnabledState(true, false);
         }
 
-        private void AssertButtonState(bool start, bool pause)
+        private void AssertButtonEnabledState(bool start, bool pause)
         {
             Assert.Equal(start, orchestrator.StartButton.IsEnabled);
             Assert.Equal(pause, orchestrator.PauseButton.IsEnabled);

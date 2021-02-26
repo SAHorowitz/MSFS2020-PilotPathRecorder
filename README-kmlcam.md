@@ -13,7 +13,13 @@ In addition to using and/or extending the built-in LiveCams, it's possible to cr
 specialized, provided editor to define "Lens" (another metaphor) templates used to periodically generate
 and deliver KML to Google Earth to synchronize its view with the simulation.
 
-Notes:
+Check out some demonstrations of this feature in action:
+
+- [LiveCam Demo](https://youtu.be/KmmUC1Yl1oo)
+- [LiveCam Editing](https://youtu.be/qcHL9cVQe5s)
+- [LiveCam Demo Script](README-kmlcam-demo.md)
+
+### Notes
 1. As of this writing, this feature is only usable in the "desktop" version of "Google Earth"
 1. See the [KML Tutorial] for some practical examples and ideas for setting up or customizing LiveCams,
    and the [KML Reference] for some gory details you'll likely need to understand

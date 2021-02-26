@@ -18,7 +18,9 @@ namespace FS2020PlanePath
         public enum TriggerSource
         {
             StartStop,      // "Start / Stop" (toggle) button
-            PauseResume     // "Pause / Resume" (toggle) button
+            PauseResume,    // "Pause / Resume" (toggle) button
+            Initialization,
+            Reset
         }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace FS2020PlanePath
         public Action<TriggerSource> FlushLoggingAction { get; private set; }
 
         private bool userStarted;
+        private bool thresholdReached;
 
         public FlightLoggingOrchestrator(
             IButtonStateModel<ToggleState> enableButton,
@@ -73,6 +76,7 @@ namespace FS2020PlanePath
             this.EnableLoggingAction = enableLoggingAction;
             this.DisableLoggingAction = disableLoggingAction;
             this.FlushLoggingAction = flushLoggingAction;
+            InitializeLoggingAction(TriggerSource.Initialization);
         }
 
         /// <summary>
@@ -81,10 +85,11 @@ namespace FS2020PlanePath
         /// </summary>
         public void ThresholdReached()
         {
-            if (IsAutomatic && StartButton.State == ToggleState.Out)
+            if (IsAutomatic && !thresholdReached && StartButton.State == ToggleState.Out)
             {
                 StartAction(false);
             }
+            thresholdReached = true;
         }
 
         /// <summary>
@@ -97,12 +102,14 @@ namespace FS2020PlanePath
             if (
                 IsAutomatic 
              && !userStarted 
+             && thresholdReached
              && StartButton.State == ToggleState.In
              && PauseButton.State == ToggleState.Out
             )
             {
                 StopAction();
             }
+            thresholdReached = false;
         }
 
         /// <summary>
@@ -137,10 +144,20 @@ namespace FS2020PlanePath
             ResumeAction();
         }
 
+        /// <summary>
+        /// Resets the logger to initial state
+        /// </summary>
+        public void Reset()
+        {
+            thresholdReached = false;
+            userStarted = false;
+            InitializeLoggingAction(TriggerSource.Reset);
+            FlushLoggingAction(TriggerSource.Reset);
+        }
+
         private void StartAction(bool fromUi)
         {
             Debug.Assert(StartButton.State == ToggleState.Out);
-            InitializeLoggingAction(TriggerSource.StartStop);
             EnableLoggingAction(TriggerSource.StartStop);
             StartButton.State = ToggleState.In;
             PauseButton.State = ToggleState.Out;

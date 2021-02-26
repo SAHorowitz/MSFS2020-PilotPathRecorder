@@ -29,7 +29,6 @@ namespace FS2020PlanePath
         LiveCamServer liveCamServer;
         FS2020_SQLLiteDB FlightPathDB;
         int nCurrentFlightID;
-        bool bLoggingThresholdReached;
         DateTime dtLastDataRecord;
         FlightPlan flightPlan;
         FlightLoggingOrchestrator flightLogOrchestrator;
@@ -268,6 +267,7 @@ namespace FS2020PlanePath
         {
             flightDataConnector.SetMode(operationalMode);
             flightDataConnector.Connect();
+            flightLogOrchestrator.Reset();
             UpdateConnectionDialogStatus();
         }
 
@@ -308,7 +308,7 @@ namespace FS2020PlanePath
         {
             if (nCurrentFlightID == 0)
             {
-                loggingStatusLB.Text = "Empty log closed.";
+                loggingStatusLB.Text = "";
                 return;
             }
 
@@ -328,32 +328,25 @@ namespace FS2020PlanePath
         // on prefrences
         public void HandleFlightData(FlightDataStructure simPlaneData)
         {
-            if (flightLogOrchestrator.IsAutomatic)
+
+            // logging mode according to ground velocity
+            int userLoggingThresholdGroundVelocity = Parser.Convert(
+                LoggingThresholdGroundVelTB.Text,
+                s => Convert.ToInt32(s),
+                () => FS2020_SQLLiteDB.DEFAULT_AUTOMATIC_LOGGING_THRESHOLD
+            );
+
+            if (simPlaneData.ground_velocity >= userLoggingThresholdGroundVelocity)
             {
-                // automatic management of logging mode according to ground velocity
-                int userLoggingThresholdGroundVelocity = Parser.Convert(
-                    LoggingThresholdGroundVelTB.Text,
-                    s => Convert.ToInt32(s),
-                    () => FS2020_SQLLiteDB.DEFAULT_AUTOMATIC_LOGGING_THRESHOLD
-                );
-                if (simPlaneData.ground_velocity >= userLoggingThresholdGroundVelocity)
-                {
-                    if (!bLoggingThresholdReached)
-                    {
-                        flightLogOrchestrator.ThresholdReached();
-                        bLoggingThresholdReached = true;
-                    }
-                }
-                else {
-                    if (bLoggingThresholdReached)
-                    {
-                        flightLogOrchestrator.ThresholdMissed();
-                        bLoggingThresholdReached = false;
-                    }
-                }
+                flightLogOrchestrator.ThresholdReached();
+            }
+            else
+            {
+                flightLogOrchestrator.ThresholdMissed();
             }
 
-            if (bLoggingEnabled)
+            // the value of this flag is managed through 'flightLogOrchestrator'
+            if (bLoggingEnabled)     
             {
                 // if we don't have flight header information then ask for it and don't write out this data point
                 if (nCurrentFlightID == 0)
