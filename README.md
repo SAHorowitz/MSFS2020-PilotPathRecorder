@@ -21,7 +21,8 @@ This is a stand-alone application that is run outside of Microsft Flight Simulat
 # Version History
 v1.3.0n2
 - Added ["Live Cam" support](README-kmlcam.md)
-- Added [Developer Notes](README-dev.md) doc
+- Added [Installation Notes](README-installation.md)
+- Added [Developer Notes](README-dev.md)
 
 v1.3.0
 - Added ability to automatically start and stop the recorder based on flight ground speed. This way you will never forget to log your flight.

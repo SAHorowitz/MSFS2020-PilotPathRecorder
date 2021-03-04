@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - '*-release'
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        configuration: [Release]
+
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Source
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+      
+    - name: Setup Package Manager
+      uses: NuGet/setup-nuget@v1
+        
+    - name: Resolve Dependencies
+      run: nuget restore FS2020PlanePath.sln
+
+    - name: Build Solution
+      run: msbuild FS2020PlanePath.sln /p:Configuration=Release
+
+    - name: Add Build Manifest
+      id: build-manifest
+      run: |
+        $env:BUILD_TAG=(-join('${{ github.ref }}'.split('/')[2], '.', '${{ github.run_id }}'))
+        echo "$env:BUILD_TAG" > FS2020PlanePath/bin/Release/build_tag.txt
+        echo "::set-output name=BUILD_TAG::$env:BUILD_TAG"
+
+    - name: Save Assets
+      uses: actions/upload-artifact@v2
+      with:
+        name: MSFS2020-PilotPathRecorder-n2
+        path: FS2020PlanePath/bin/
+        retention-days: 30
+
+    - name: Create GitHub Release
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.build-manifest.outputs.BUILD_TAG }}
+        release_name: Release ${{ steps.build-manifest.outputs.BUILD_TAG }}
+
+    - name: Build Release Deliverable
+      run: |
+        Compress-Archive -Path FS2020PlanePath\bin\Release\* -DestinationPath PilotPathRecorder-n2.zip
+
+    - name: Upload Release Deliverable
+      id: upload_release_asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: PilotPathRecorder-n2.zip
+        asset_name: PilotPathRecorder-n2-${{ steps.build-manifest.outputs.BUILD_TAG }}.zip
+        asset_content_type: application/zip
+

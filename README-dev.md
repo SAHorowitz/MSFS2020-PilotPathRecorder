@@ -9,18 +9,29 @@ and/or less frustrating!
 
 ## Quick Links
 
+- [Creating a Release](#creating-a-release)
 - [Signing The Application Manifest](#signing-the-application-manifest)
 - [LiveCam Webserver Tricks](#livecam-webserver-tricks)
 
+## Creating A Release
+
+See the [build file](.github/workflows/build.yml) for details, but
+know that when you push a Git tag whose name ends with `-release`
+to the repository, a new release will be built and created 
+using the current version of the code in that branch.
+
 ## Signing The Application Manifest
 
-When trying to build this project for the first time, you are likely to receive the error:
+If when building the project you receive the error:
 
 ```
 Unable to find manifest signing certificate in the certificate store.
 ```
 
-There are (at least) two ways to get beyond this problem during development:
+You may have enabled manifest signing without having created the
+proper certificate.  See below for ways to address this error,
+involving alternatives such as creating your own certificate, or
+to leave signing disabled.
 
 ### Use Your Own "Test Certificate"
 
