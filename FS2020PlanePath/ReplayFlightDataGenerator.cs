@@ -14,6 +14,7 @@ namespace FS2020PlanePath
         )
         {
             segmentDurationSecs = context.segmentDurationSecs;
+            // retrieve the (entire) flight path of the specified pre-recorded flight
             flightPath = dbAccessor.GetFlightPathSinceTimestamp(context.flightNo, 0);
             generatorName = $"Replay of {context.flightName}";
             Console.WriteLine($"{generatorName}; size({flightPath.Count})");

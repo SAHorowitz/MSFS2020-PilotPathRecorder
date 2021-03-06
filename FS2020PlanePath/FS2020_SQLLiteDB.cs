@@ -827,7 +827,7 @@ namespace FS2020PlanePath
             return Convert.ToInt32(FlightID);
         }
 
-        public int WriteFlightPoint(long pk, double latitude, double longitude, Int32 altitude)
+        public int WriteFlightPoint(long flightId, double latitude, double longitude, Int32 altitude)
         {
             SQLiteCommand sqlite_cmd;
             string Insertsql;
@@ -838,7 +838,7 @@ namespace FS2020PlanePath
             transaction = sqlite_conn.BeginTransaction();
             Insertsql = "Insert into FlightSamples (FlightID, latitude, longitude, altitude, sample_datetimestamp) VALUES (@FlightID, @latitude, @longitude, @altitude, @sample_datetimestamp)";
             sqlite_cmd.CommandText = Insertsql;
-            sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", flightId);
             sqlite_cmd.Parameters.AddWithValue("@latitude", latitude);
             sqlite_cmd.Parameters.AddWithValue("@longitude", longitude);
             sqlite_cmd.Parameters.AddWithValue("@altitude", altitude);
@@ -859,7 +859,7 @@ namespace FS2020PlanePath
             return Convert.ToInt32(FlightSampleID);
         }
 
-        public void WriteFlightPointDetails(long pk, Int32 altitude_above_ground, Int32 engine1rpm, Int32 engine2rpm, Int32 engine3rpm, Int32 engine4rpm, Int32 lightsmask, double ground_velocity,
+        public void WriteFlightPointDetails(long flightSampleId, Int32 altitude_above_ground, Int32 engine1rpm, Int32 engine2rpm, Int32 engine3rpm, Int32 engine4rpm, Int32 lightsmask, double ground_velocity,
                                             double plane_pitch, double plane_bank, double plane_heading_true, double plane_heading_magnetic,
                                             double plane_airspeed_indicated, double airspeed_true, double vertical_speed, double heading_indicator,
                                             Int32 flaps_handle_position, Int32 spoilers_handle_position, Int32 gear_handle_position,
@@ -877,7 +877,7 @@ namespace FS2020PlanePath
             Insertsql += "@vertical_speed, @heading_indicator, @flaps_handle_position, @spoilers_handle_position, @gear_handle_position, @ambient_wind_velocity, @ambient_wind_direction, @ambient_temperature, @stall_warning, ";
             Insertsql += "@overspeed_warning, @is_gear_retractable, @spoiler_available, @sim_on_ground)";
             sqlite_cmd.CommandText = Insertsql;
-            sqlite_cmd.Parameters.AddWithValue("@FlightSamplesID", pk);
+            sqlite_cmd.Parameters.AddWithValue("@FlightSamplesID", flightSampleId);
             sqlite_cmd.Parameters.AddWithValue("@alitutdeaboveground", altitude_above_ground);
             sqlite_cmd.Parameters.AddWithValue("@engine1rpm", engine1rpm);
             sqlite_cmd.Parameters.AddWithValue("@engine2rpm", engine2rpm);

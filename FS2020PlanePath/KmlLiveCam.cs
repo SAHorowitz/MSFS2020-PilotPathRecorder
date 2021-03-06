@@ -120,6 +120,8 @@ namespace FS2020PlanePath
 
         // prevent Newtonsoft serialization of the corresponding method
         public bool ShouldSerializegetMultitrackUpdates() => false;
+
+        // NOTE: this delegate is called by LiveCams in order to retrieve position updates
         public GetMultitrackUpdatesDelegate getMultitrackUpdates { get; set; }
 
         public KmlCameraParameterValues ShallowCopy()

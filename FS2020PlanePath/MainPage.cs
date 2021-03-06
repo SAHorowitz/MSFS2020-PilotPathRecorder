@@ -11,6 +11,7 @@ using SharpKml.Base;
 using SharpKml.Dom;
 using SharpKml.Engine;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace FS2020PlanePath
 {
@@ -21,8 +22,10 @@ namespace FS2020PlanePath
         //const string sourceRepo = "SAHorowitz/MSFS2020-PilotPathRecorder";
         const string sourceRepo = "noodnik2/MSFS2020-PilotPathRecorder";        
         const string EXPORT_KMLFILE_CAPTION = "Export KML File";
+        const int WM_APP_LOGGING_INACTIVE = 0x8001;
 
-        bool bLoggingEnabled = false;
+        bool bLoggingEnabled;
+        bool inactiveLoggingWarningIssued;
         FlightDataConnector flightDataConnector;
         ScKmlAdapter scKmlAdapter;
         LiveCamRegistry liveCamRegistry;
@@ -85,6 +88,22 @@ namespace FS2020PlanePath
 
         private KmlCameraParameterValues[] getKmlCameraUpdatesFromDb(int flightId, long seqSince)
         {
+
+            //
+            //  Send a notification that can be used to warn the user of and advise them how to handle two cases:
+            //   1. liveCam is asking for flight 0 because logging was not active when it was launched; or,
+            //   2. liveCam was playing a flight, but that flight is no longer being logged
+            //
+            if (flightId == 0 || (seqSince != 0 && flightId != nCurrentFlightID))
+            {
+                Invoke(
+                    new Action(
+                        () => UserDialogUtils.PostMessage(Handle, WM_APP_LOGGING_INACTIVE, 0, 0)
+                    )
+                );
+                return new KmlCameraParameterValues[0];
+            }
+
             Console.WriteLine($"fetching camera updates for flight #{flightId} from timestamp({seqSince})");
 
             List<FlightPathData> flightPaths = FlightPathDB.GetFlightPathSinceTimestamp(flightId, seqSince);
@@ -273,6 +292,24 @@ namespace FS2020PlanePath
 
         protected override void DefWndProc(ref Message m)
         {
+
+            if (m.Msg == WM_APP_LOGGING_INACTIVE)
+            {
+                // warn user only once per connection
+                if (!inactiveLoggingWarningIssued)
+                {
+                    inactiveLoggingWarningIssued = true;
+                    UserDialogUtils.displayMessage(
+                        "Flight Logging Not Active",
+                        "A 'LiveCam' was unable to access the active flight's log." +
+                        "\nRelaunch the LiveCam with flight logging enabled.",
+                        MessageBoxIcon.Warning
+                    );
+                }
+                return;
+            }
+
+
             if (!flightDataConnector.HandleWindowMessage(ref m))
             {
                 base.DefWndProc(ref m);
@@ -306,6 +343,8 @@ namespace FS2020PlanePath
 
         private void StopLoggingAction()
         {
+            inactiveLoggingWarningIssued = false;
+
             if (nCurrentFlightID == 0)
             {
                 loggingStatusLB.Text = "";
@@ -1063,8 +1102,43 @@ namespace FS2020PlanePath
             throw new Exception($"Could not load KmlLiveCam from '{liveCamFilename}'");
         }
 
+        private bool ContinueInSpiteOfProblematicLinkContext()
+        {
+            List<String> problematicContextMessages = new List<String>();
+            if (!LiveCameraCB.Checked)
+            {
+                problematicContextMessages.Add("- Link will be inactive without an enabled 'LiveCam'.");
+                problematicContextMessages.Add("  hint: enable using the 'LiveCam' checkbox");
+                problematicContextMessages.Add("");
+            }
+            if (!flightDataConnector.IsSimConnected())
+            {
+                problematicContextMessages.Add("- You'll go to 'Null Island' without an active connection.");
+                problematicContextMessages.Add("  hint: activate one using the 'Connect' button");
+                problematicContextMessages.Add("");
+            }
+            if (problematicContextMessages.Count() == 0)
+            {
+                return true;
+            }
+
+            problematicContextMessages.Add("Do you wish to continue in spite of these warnings?");
+            return (
+                UserDialogUtils.obtainConfirmation(
+                    "Link Activation Warning",
+                    string.Join("\n", problematicContextMessages.ToArray()),
+                    MessageBoxIcon.Warning
+                )
+            );
+        }
+
         private void geLinkBT_Click(object sender, EventArgs e)
         {
+            if (!ContinueInSpiteOfProblematicLinkContext())
+            {
+                return;
+            }
+
             string alias, lensName;
             string liveCamUrl = LiveCameraHostPortCB.Text;
             try
@@ -1187,8 +1261,8 @@ namespace FS2020PlanePath
 
         private void RetrySimConnectionBtn_Click(object sender, EventArgs e)
         {
-            Button button = (Button)sender;
-            if (button.Text == DISCONNECT_BUTTON_TEXT)
+            Button button = (Button) sender;
+            if (flightDataConnector.IsSimConnected())
             {
                 flightDataConnector.CloseConnection();
                 UpdateConnectionDialogStatus();

@@ -61,7 +61,7 @@ v1.0.3 - Fixed all issues related to international use of the program
 
 
 ## Instructions for use
-Note that the Flight Simluator should be up and running before launching Pilot Path Recorder.  If not, then click Retry Sim Connection until you get the "SimConnect Connected" message.  Next choose the write frequency of how often to write to the database when above the minimum altitude threshold. Adjust the minimum altitude threshold as well.  For example if you want to write every 30 seconds when above ground by 5000 feet use the values 30 and 5000 respectfully.
+Note that the Flight Simulator should be up and running before launching Pilot Path Recorder.  If not, then click Retry Sim Connection until you get the "SimConnect Connected" message.  Next choose the write frequency of how often to write to the database when above the minimum altitude threshold. Adjust the minimum altitude threshold as well.  For example if you want to write every 30 seconds when above ground by 5000 feet use the values 30 and 5000 respectfully.
 
 There are two ways to log a flight.  Automatic and manual.  For automatic ensure the "Automatic Logging is checked and set the appropriate ground speed.  Once the plane is above that speed logging will begin.  When it is below that speed logging will end and the flight will be recorded.  For manual logging, click 'Start Logging' when you are ready to start the recording.  You may pause at anytime using the pause function and continue logging when ready.  'Stop Logging' ends the recording for that flight.
 
@@ -94,7 +94,8 @@ Click on First Person View to review your flight from the first person perspecti
 ## Instructions for install
 1. Install .NET 4.7.2 - download can be found at https://dotnet.microsoft.com/download/dotnet-framework/net472
 
-2. Download Pilot Path Recorder zip file from the releases area of this project: https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder/releases
+2. Download Pilot Path Recorder zip file from the releases area of this project:
+   https://github.com/noodnik2/MSFS2020-PilotPathRecorder/releases
 
 3. Unzip contents of Pilot Path Recorder to a directory
 

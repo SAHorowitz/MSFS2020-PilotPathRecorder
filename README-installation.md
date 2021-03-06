@@ -16,6 +16,9 @@ file extension.
 
 ## "How do I install and run it?"
 
+NOTE: the notes below are addendum to the [installation instructions](README.md#instructions-for-install)
+on the main README document. 
+
 1. Download the `PilotPathRecorder*.zip` deliverable build asset from a 
    [release](https://github.com/noodnik2/MSFS2020-PilotPathRecorder/releases).
    If you haven't any reason to prefer a specific release, please 

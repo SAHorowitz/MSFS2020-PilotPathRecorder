@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace FS2020PlanePath
 {
@@ -87,7 +86,7 @@ namespace FS2020PlanePath
 
         private void TimerTickHandler(object sender, EventArgs e)
         {
-            PostMessage(parentControl.Handle, WM_USER_SIMCONNECT, 0, 0);
+            UserDialogUtils.PostMessage(parentControl.Handle, WM_USER_SIMCONNECT, 0, 0);
         }
 
         private void pumpFlightDataUpdates()
@@ -153,9 +152,6 @@ namespace FS2020PlanePath
 
             };
         }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern bool PostMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
 
         private const int WM_USER_SIMCONNECT = 0x0402;
 

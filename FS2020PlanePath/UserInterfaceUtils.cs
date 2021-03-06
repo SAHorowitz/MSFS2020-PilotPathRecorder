@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Media;
+using System.Runtime.InteropServices;
 
 namespace FS2020PlanePath
 {
@@ -204,6 +205,9 @@ namespace FS2020PlanePath
         {
             Help.ShowPopup(parent, popupText, parent.Location);
         }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool PostMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
 
     }
 
