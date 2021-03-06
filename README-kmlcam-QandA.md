@@ -1,17 +1,20 @@
-# Getting Started / Installation Notes
+# LiveCam Q & A
 
 These notes are aimed at answering the most frequent questions
-arising for new users.
+arising for new users of `PilotPathRecorder`'s "LiveCam" support.
 
 Please let us know if your question isn't answered below!
 
-## What does it do?  Can I have a demo?
+## _What does it do?  Can I have a demo?_
 
 Yes!  Check out this YouTube video:
 
 - [![MSFS2020-PilotPathRecorder v1.3.0n2b Enhancement Demo](https://img.youtube.com/vi/KmmUC1Yl1oo/0.jpg)](https://www.youtube.com/watch?v=KmmUC1Yl1oo)
 
-## "What are the prerequisites?"
+Also check out a [script](README-kmlcam-demo.md) that was developed
+to help demonstrate these features.
+
+## _What are the prerequisites?_
 
 `MSFS2020-PilotPathRecorder` has been successfully
 installed on [Windows 10] with a standard installation of
@@ -25,7 +28,7 @@ So, basically it's:
 - [.NET Framework 4.7.2]
 - desktop version of [Google Earth]
 
-## "How do I install and run it?"
+## _How do I install and run it?_
 
 See the [base installation instructions].
 
@@ -49,7 +52,7 @@ can override the warning and continue to install and run the application,
 taking comfort that the full source code, [automated build script] and
 [build logs] are provided for each release._
 
-## How can I create my own LiveCams?
+## _How can I create my own LiveCams?_
 
 Another YouTube video covers the subject of how to customize
 and/or create your own LiveCams:
@@ -58,6 +61,17 @@ and/or create your own LiveCams:
 
 Time to crack open the [KML Documentation]!
 
+## _What was your inspiration?_
+
+I'm glad you asked :hand_over_mouth:
+
+In addition to being inspired by [SA Horiwitz's original project], and being a fan
+of moving map technology (i.e., I put 2+2 together), I found the following video
+of a very relevant presentation (given at Google I/O way back in 2011), which
+convinced me this could be done for simulated flights as well.  The relevant
+presentation starts at offset 16 minutes 17 seconds into the video:
+
+- [![Google I/O 2011: High Performance KML for Maps and Earth](https://img.youtube.com/vi/nIoWHlEEeNI/0.jpg)](https://www.youtube.com/watch?v=nIoWHlEEeNI&t=16m17s)
 
 [releases]: https://github.com/noodnik2/MSFS2020-PilotPathRecorder/releases
 [latest release]: https://github.com/noodnik2/MSFS2020-PilotPathRecorder/releases/latest
@@ -67,4 +81,5 @@ Time to crack open the [KML Documentation]!
 [Windows 10]: https://www.microsoft.com/en-us/windows/get-windows-10
 [.NET Framework 4.7.2]: https://dotnet.microsoft.com/download/dotnet-framework/net472
 [base installation instructions]: README.md#instructions-for-install
-[KML Documentation]: https://developers.google.com/kml/documentation 
+[KML Documentation]: https://developers.google.com/kml/documentation
+[SA Horiwitz's original project]: https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder

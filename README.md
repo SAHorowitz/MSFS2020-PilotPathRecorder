@@ -19,9 +19,9 @@ This is a stand-alone application that is run outside of Microsft Flight Simulat
 
 
 # Version History
-v1.3.0n2
-- Added ["Live Cam" support](README-kmlcam.md)
-- Added [Installation Notes](README-installation.md)
+v1.3.0n2.* - Added Support for "LiveCams"
+- Added ["Live Cam" Intro](README-kmlcam.md)
+- Added [LiveCam Q & A](README-kmlcam-QandA.md)
 - Added [Developer Notes](README-dev.md)
 
 v1.3.0
