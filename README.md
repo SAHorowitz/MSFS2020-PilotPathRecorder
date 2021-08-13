@@ -31,8 +31,7 @@ Loc.Start.State - the state of the closest airport at the start of the flight
 Loc.End.State - the state of the closest airport at the end of the flight
 Flight.Start.Timestamp:timeformat - the computer date/time at the start of the flight using timeformat as the format of date/time desired
 Flight.End.Timestamp:timeformat - the computer date/time at the end of the flight using timeformat as the format of date/time desired
-more details about timeformat can be found at https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings
-Also, plain text and symbols can be used in the file name as well. Just type them in outside of { }
+more details about timeformat can be found at https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings. Also, plain text and symbols can be used in the file name as well. Just type them in outside of { }
 
 v1.3.0
 - Added ability to automatically start and stop the recorder based on flight ground speed. This way you will never forget to log your flight.
