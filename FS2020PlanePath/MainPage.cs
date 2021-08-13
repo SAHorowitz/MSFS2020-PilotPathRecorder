@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -9,9 +10,9 @@ using System.Media;
 using System.Net;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.FlightSimulator.SimConnect;
 using SharpKml.Base;
 using SharpKml.Dom;
 using SharpKml.Engine;
@@ -28,6 +29,7 @@ namespace FS2020PlanePath
         FlightPlan flightPlan;
         bool bStartedLoggingDueToSpeed;
         bool bStoppedLoggingDueToSpeed;
+        Timer CheckSimConnectionTimer = new Timer();
 
         public MainPage()
         {
@@ -39,6 +41,7 @@ namespace FS2020PlanePath
             ThresholdLogWriteFreqTB.Text = FlightPathDB.GetTableOption("AboveThresholdWriteFreq");
             ThresholdMinAltTB.Text = FlightPathDB.GetTableOption("ThresholdMinAltitude");
             KMLFilePathTBRO.Text = FlightPathDB.GetTableOption("KMLFilePath");
+            KMLFileNameTBRO.Text = GetFilenameFromTemplate(0);
             if (string.Compare(FlightPathDB.GetTableOption("GoolgeEarthChoice"), "Application") == 0)
                 GoogleEarthAppRB.Checked = true;
             else
@@ -56,6 +59,11 @@ namespace FS2020PlanePath
 
             LoggingThresholdGroundVelTB.Text = FlightPathDB.GetTableOption("AutomaticLoggingThreshold");
             LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
+
+            if (string.Compare(FlightPathDB.GetTableOption("AutomaticLoggingStopEngineOff"), "true") == 0)
+                LoggingThresholdEngineOffCB.Checked = true;
+            else
+                LoggingThresholdEngineOffCB.Checked = false;
 
             LoadFlightList();
         }
@@ -81,16 +89,64 @@ namespace FS2020PlanePath
         private void MainPage_Shown(object sender, EventArgs e)
         {
             string sAppLatestVersion;
+            string sKMLFileNameToolTip;
 
             simConnectIntegration.FForm = this;
-            sAppLatestVersion = ReadLatestAppVersionFromWeb();
-            if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
-                if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
-            AttemptSimConnection();
-            nCurrentFlightID = 0;
-            bStartedLoggingDueToSpeed = false;
-            bStoppedLoggingDueToSpeed = true;
+            System.Windows.Forms.ToolTip KMLFileNameToolTip = new System.Windows.Forms.ToolTip();
+            System.Windows.Forms.ToolTip AutomaticLoggingEngineOffToolTip = new System.Windows.Forms.ToolTip();
+
+            sKMLFileNameToolTip =  "Template format: key fields need to be surrounded by { }\r\nValid key field values are:\r\n";
+            sKMLFileNameToolTip += "Plane.Name = name of the plane\r\n";
+            sKMLFileNameToolTip += "Loc.Start.Ident = closest airport identification at start of flight\r\n";
+            sKMLFileNameToolTip += "Loc.End.Ident = closest airport identification at end of flight\r\n";
+            sKMLFileNameToolTip += "Loc.Start.Name = closest airport name at start of flight\r\n";
+            sKMLFileNameToolTip += "Loc.End.Name = closest airport name at end of flight\r\n";
+            sKMLFileNameToolTip += "Loc.Start.City = closest airport city at start of flight\r\n";
+            sKMLFileNameToolTip += "Loc.End.City = closest airport city at end of flight\r\n";
+            sKMLFileNameToolTip += "Loc.Start.State = closest airport state at start of flight\r\n";
+            sKMLFileNameToolTip += "Loc.End.State = closest airport state at end of flight\r\n";
+            sKMLFileNameToolTip += "Flight.Start.Timestamp:timeformat = computer date and time when flight started\r\n";
+            sKMLFileNameToolTip += "Flight.Start.Timestamp:timeformat = computer date and time when flight ended\r\n";
+            sKMLFileNameToolTip += "timeformat details can be found by searching 'Standard date and time format strings' on the web\r\n\r\n";
+            sKMLFileNameToolTip += "Non key fields (plain text or symbols) can also be placed throughout the KML File Name as well";
+
+            KMLFileNameToolTip.SetToolTip(KMLFileNameTBRO, sKMLFileNameToolTip);
+            KMLFileNameToolTip.SetToolTip(KMLFileNameGB, sKMLFileNameToolTip);
+            KMLFileNameToolTip.SetToolTip(KMLFileNameTemplateTB, sKMLFileNameToolTip);
+            AutomaticLoggingEngineOffToolTip.SetToolTip(LoggingThresholdEngineOffCB, "Leave Unchecked To Stop Automatic Logging By Ground Velocity Only");
+
+            KMLFileNameTemplateTB.Text = FlightPathDB.GetTableOption("KMLFileNameTemplate");
+
+            // Load Up Airport Info if needed
+            string pattern = "AirportListv*.csv";
+            var dirInfo = new DirectoryInfo(".\\"); 
+            try
+            {
+                var file = (from f in dirInfo.GetFiles(pattern) orderby f.LastWriteTime descending select f).First();
+                if (Int32.Parse(FlightPathDB.GetAirportListVersion(file.Name)) > Int32.Parse(FlightPathDB.GetTableOption("AirportListVersion")))
+                    FlightPathDB.LoadUpAirportInfo(file.Name);
+
+                // See if there is a newer version availble on the web
+                sAppLatestVersion = ReadLatestAppVersionFromWeb();
+                if (sAppLatestVersion.Equals(Program.sAppVersion) == false)
+                    if (MessageBox.Show("There is a newer version of the application available. Do you wish to download it now?", "New Version Available", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        System.Diagnostics.Process.Start("https://github.com/SAHorowitz/MSFS2020-PilotPathRecorder");
+                AttemptSimConnection();
+                nCurrentFlightID = 0;
+                bStartedLoggingDueToSpeed = false;
+                bStoppedLoggingDueToSpeed = true;
+
+                // Setup SimConnection Timer
+                CheckSimConnectionTimer.Interval = 5000; // 5 seconds
+                CheckSimConnectionTimer.Tick += new EventHandler(CheckSimConnection_Tick);
+                CheckSimConnectionTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                Program.ErrorLogging("Error finding or parsing AirportListvx.csv where x is a number.  Please ensure file is in directory and try again", ex);
+                MessageBox.Show("Errors detected.  Please see " + Program.ErrorLogFile() + " for more details. Program will now end.", "Fatal Error");
+                System.Windows.Forms.Application.Exit();
+            }
         }
 
         private void AttemptSimConnection()
@@ -108,6 +164,13 @@ namespace FS2020PlanePath
                 RetrySimConnectionBtn.Enabled = true;
                 StartLoggingBtn.Enabled = false;
             }
+        }
+
+        // Specify what you want to happen when the Elapsed event is raised.
+        private void CheckSimConnection_Tick(object sender, EventArgs e)
+        {
+            if (simConnectIntegration.IsSimConnected() == false)
+                AttemptSimConnection();
         }
 
         protected override void DefWndProc(ref Message m)
@@ -189,8 +252,12 @@ namespace FS2020PlanePath
                 {
                     if (bLoggingEnabled == true)
                     {
-                        // if ground speed is < LoggingThresholdGroundVelTB and user wanted automatic logging and logging was on due to speed then turn it off
+                        // if ground speed is < LoggingThresholdGroundVelTB and user wanted automatic logging and logging was on due to speed then check if it should be turned off
                         if (bStartedLoggingDueToSpeed == true)
+                            // if user wanted to only turn off if all engines off and all engines are off OR user wanted it based on speed only
+                            if (((LoggingThresholdEngineOffCB.Checked == true) && (simPlaneData.engine1rpm == 0) && (simPlaneData.engine2rpm == 0) && 
+                                (simPlaneData.engine3rpm == 0) && (simPlaneData.engine4rpm == 0)) ||
+                                (LoggingThresholdEngineOffCB.Checked == false))
                             StopLoggingAction();
                     }
                     bStoppedLoggingDueToSpeed = true;
@@ -241,14 +308,10 @@ namespace FS2020PlanePath
             }
         }
 
-        // function that writes out KML file based on the flight chosen by the user
+        // user desires to export to KML
         private void CreateKMLButton_Click(object sender, EventArgs e)
         {
-            int nCount;
-            int nFlightID;
-            string sfilename;
-            long lprevTimestamp;
-
+            int nCount = 0;
             bLoggingEnabled = false;
 
             if (FlightPickerLV.SelectedItems.Count < 1)
@@ -263,12 +326,50 @@ namespace FS2020PlanePath
                 return;
             }
 
-            nFlightID = (int)FlightPickerLV.SelectedItems[0].Tag;
+            // Export passing the FlightID
+            foreach (int nSelectedItem in FlightPickerLV.SelectedIndices)
+            {
+                if (ExportKML((int)FlightPickerLV.Items[nSelectedItem].Tag) == false)
+                    break;
+                nCount++;
+            }
+
+            DialogResult dialogResult = MessageBox.Show(String.Format("{0} flight(s) successfully exported.  Do you wish to open the exported KML folder?", nCount.ToString()), "Export KML File", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.Arguments = KMLFilePathTBRO.Text; 
+                startInfo.FileName = "explorer.exe";
+
+                Process.Start(startInfo);
+            }
+        }
+
+        // function that writes out KML file based on the flight chosen by the user         
+        private bool ExportKML(int nFlightID)
+        {
+            int nCount;
+            string sfilename;
+            long lprevTimestamp;
+            FlightListData FlightData;
+            bool bFileSavedOK;
+
+            // Get Flight Info
+            FlightData = FlightPathDB.GetFlight(nFlightID);
+
+            // should never happen but just in case
+            if (FlightData == null)
+            {
+                MessageBox.Show("Error getting data for that flight.", "Export KML File Failure");
+                bFileSavedOK = false;
+                return bFileSavedOK;
+            }
 
             // This is the root element of the file
             var kml = new Kml();
             Folder mainFolder = new Folder();
-            mainFolder.Name = String.Format("{0} {1}", FlightPickerLV.SelectedItems[0].SubItems[1].Text, FlightPickerLV.SelectedItems[0].SubItems[0].Text);
+            mainFolder.Name = GetFilenameFromTemplate(nFlightID); 
+
             mainFolder.Description = new Description
             {
                 Text = "Overall Data for the flight"
@@ -341,6 +442,11 @@ namespace FS2020PlanePath
                 foreach (FlightWaypointData waypointData in FlightWaypoints)
                 {
                     var placemarkPoint = new Placemark();
+
+                    // verify that waypoint name is a valid string
+                    Regex r = new Regex(@"[^\w\.@-]");
+                    if (r.IsMatch(waypointData.gps_wp_name))
+                        waypointData.gps_wp_name = Program.sInvalidWaypointName;
 
                     placemarkPoint.Name = waypointData.gps_wp_name;
                     placemarkPoint.StyleUrl = new System.Uri("#WaypointStyle", UriKind.Relative);
@@ -564,18 +670,159 @@ namespace FS2020PlanePath
 
             // write out KML file
             char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
-            sfilename = String.Format("{0}_{1}.kml", FlightPickerLV.SelectedItems[0].SubItems[1].Text, FlightPickerLV.SelectedItems[0].SubItems[0].Text);
-            var validfilename = new string(sfilename.Select(ch => invalidFileNameChars.Contains(ch) ? '_' : ch).ToArray());
-            sfilename = string.Concat(KMLFilePathTBRO.Text, "\\");
-            sfilename += validfilename;
-
-            System.IO.File.Delete(sfilename);
-            KmlFile kmlfile = KmlFile.Create(kml, true);
-            using (var stream = System.IO.File.OpenWrite(sfilename))
+            sfilename = GetFilenameFromTemplate(nFlightID);
+            if (String.Compare(sfilename, "Filename Error") != 0)
             {
-                kmlfile.Save(stream);
+                sfilename = sfilename + ".kml"; 
+                var validfilename = new string(sfilename.Select(ch => invalidFileNameChars.Contains(ch) ? '_' : ch).ToArray());
+                sfilename = string.Concat(KMLFilePathTBRO.Text, "\\");
+                sfilename += validfilename;
+
+                System.IO.File.Delete(sfilename);
+                KmlFile kmlfile = KmlFile.Create(kml, true);
+                using (var stream = System.IO.File.OpenWrite(sfilename))
+                {
+                    kmlfile.Save(stream);
+                }
+                bFileSavedOK = true;
             }
-            MessageBox.Show(String.Format("Flight successfully exported to {0}", sfilename), "Export KML File");
+            else
+            {
+                MessageBox.Show("Filename Template Invalid.", "Export KML File Failure");
+                bFileSavedOK = false;
+            }
+
+            return bFileSavedOK;
+        }
+
+        // this function will parse the KMLFileNameTemplate and create filename.  Either example or real one
+        private string GetFilenameFromTemplate(int nFlightID)
+        {
+            string sFilename = "";
+            string sFileNameTemplate;
+            string sPlaneName;
+            string sStartIdent;
+            string sEndIdent;
+            string sStartName;
+            string sEndName;
+            string sStartCity;
+            string sEndCity;
+            string sStartState;
+            string sEndState;
+            DateTime dtStartFlight;
+            DateTime dtEndFlight;
+            int nStrPos;
+
+            // if FlightID is 0 then it must be example as FlightID minimum value is 1
+            if (nFlightID == 0)
+            {
+                sPlaneName = "Cessna Skyhawk G1000 Asobo";
+                dtStartFlight = DateTime.Now.AddHours(-1);
+                dtEndFlight = DateTime.Now;
+                sStartIdent = "KATL";
+                sEndIdent = "KHXD";
+                sStartName = "Hartsfield-Jackson Atlanta Int Airport";
+                sEndName = "Hilton Head";
+                sStartCity = "Atlanta";
+                sEndCity = "Hilton Head";
+                sStartState = "Georgia";
+                sEndState = "South Carolina";
+            }
+            else
+            {
+                FlightListData FlightData;
+                AirportData apFirstPointData;
+                AirportData apLastPointData;
+
+                // Get Flight Info
+                FlightData = FlightPathDB.GetFlight(nFlightID);
+                FlightPathData FirstFlightPathData = FlightPathDB.GetFlightPathEntry(true, nFlightID);
+                FlightPathData LastFlightPathData = FlightPathDB.GetFlightPathEntry(false, nFlightID);
+
+                sPlaneName = FlightData.aircraft;
+                dtStartFlight = new DateTime(FlightData.start_flight_timestamp);
+                dtEndFlight = new DateTime(LastFlightPathData.timestamp);
+
+                apFirstPointData = FlightPathDB.GetClosestAirportToLatLong(false, FirstFlightPathData.latitude, FirstFlightPathData.longitude);
+                apLastPointData = FlightPathDB.GetClosestAirportToLatLong(false, LastFlightPathData.latitude, LastFlightPathData.longitude);
+                
+                sStartIdent = apFirstPointData.ident;
+                sEndIdent = apLastPointData.ident;
+                sStartName = apFirstPointData.name;
+                sEndName = apLastPointData.name;
+                sStartCity = apFirstPointData.city;
+                sEndCity = apLastPointData.city;
+                sStartState = apFirstPointData.state;
+                sEndState = apLastPointData.state;
+            }
+
+            sFileNameTemplate = KMLFileNameTemplateTB.Text;
+
+            nStrPos = 0;
+            while ((nStrPos < sFileNameTemplate.Length) && (String.Compare(sFilename, "Filename Error") != 0))
+            {
+                if (sFileNameTemplate[nStrPos] == '{')
+                {
+                    int nEndBracketPos = 0;
+                    nEndBracketPos = sFileNameTemplate.IndexOf('}', nStrPos);
+
+                    if (nEndBracketPos < 0)
+                        sFilename = "Filename Error";
+                    else
+                    {
+                        string sTemplateElement;
+
+                        sTemplateElement = sFileNameTemplate.Substring(nStrPos + 1, nEndBracketPos - (nStrPos + 1));
+
+                        if (String.Compare(sTemplateElement, "Plane.Name", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sPlaneName;
+                        else if (String.Compare(sTemplateElement, "Loc.Start.Ident", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sStartIdent;
+                        else if (String.Compare(sTemplateElement, "Loc.End.Ident", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sEndIdent;
+                        else if (String.Compare(sTemplateElement, "Loc.Start.Name", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sStartName;
+                        else if (String.Compare(sTemplateElement, "Loc.End.Name", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sEndName;
+                        else if (String.Compare(sTemplateElement, "Loc.Start.City", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sStartCity;
+                        else if (String.Compare(sTemplateElement, "Loc.End.City", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sEndCity;
+                        else if (String.Compare(sTemplateElement, "Loc.Start.State", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sStartState;
+                        else if (String.Compare(sTemplateElement, "Loc.End.State", StringComparison.OrdinalIgnoreCase) == 0)
+                            sFilename = sFilename + sEndState;
+                        else
+                        {
+                            int nColonPos = 0;
+
+                            nColonPos = sFileNameTemplate.IndexOf(':', nStrPos);
+                            if (nColonPos >= 0)
+                            {
+                                sTemplateElement = sFileNameTemplate.Substring(nStrPos + 1, nColonPos - (nStrPos + 1));
+
+                                if (String.Compare(sTemplateElement, "Flight.Start.Timestamp", StringComparison.OrdinalIgnoreCase) == 0)
+                                {
+                                    sTemplateElement = sTemplateElement = sFileNameTemplate.Substring(nColonPos + 1, nEndBracketPos - (nColonPos + 1));
+                                    sFilename = sFilename + dtStartFlight.ToString(sTemplateElement);
+                                }
+                                else if (String.Compare(sTemplateElement, "Flight.End.Timestamp", StringComparison.OrdinalIgnoreCase) == 0)
+                                {
+                                    sTemplateElement = sTemplateElement = sFileNameTemplate.Substring(nColonPos + 1, nEndBracketPos - (nColonPos + 1));
+                                    sFilename = sFilename + dtEndFlight.ToString(sTemplateElement);
+                                }
+                            }
+                        }
+                        nStrPos = nEndBracketPos + 1;
+                    }
+                }
+                else // must be literal character
+                {
+                    sFilename = sFilename + sFileNameTemplate[nStrPos];
+                    nStrPos++;
+                }
+            }
+            return sFilename;
         }
 
         // stop logging disconnects simconnect, sets buttons correctly and reloads flight list 
@@ -589,7 +836,25 @@ namespace FS2020PlanePath
         private void StopLoggingAction()
         {
             bLoggingEnabled = false;
+
+            FlightPathData FirstFlightPathData = FlightPathDB.GetFlightPathEntry(true, nCurrentFlightID);
+            FlightPathData LastFlightPathData = FlightPathDB.GetFlightPathEntry(false, nCurrentFlightID);
+
+            AirportData apFirstPointData = FlightPathDB.GetClosestAirportToLatLong(false, FirstFlightPathData.latitude, FirstFlightPathData.longitude);
+            AirportData apLastPointData = FlightPathDB.GetClosestAirportToLatLong(false, LastFlightPathData.latitude, LastFlightPathData.longitude);
+
+            // if there are no items in the flightplan then use start airport as first waypoint if within 2 miles
+            if ((flightPlan.flight_waypoints.Count == 0) && (apFirstPointData.distance <= 2))
+                    flightPlan.flight_waypoints.Add(new FlightWaypointData(FirstFlightPathData.latitude, FirstFlightPathData.longitude, FirstFlightPathData.altitude, apFirstPointData.ident));
+
+            // if last item in the list item in the flightplan is not equal to closest and airport and it is within 1KM then write it as final waypoint
+            if (((flightPlan.flight_waypoints.Count == 0) ||
+                 (String.Compare(flightPlan.flight_waypoints.Last().gps_wp_name, apLastPointData.ident, StringComparison.OrdinalIgnoreCase) != 0)) && 
+                (apLastPointData.distance <= 2))
+                    flightPlan.flight_waypoints.Add(new FlightWaypointData(LastFlightPathData.latitude, LastFlightPathData.longitude, LastFlightPathData.altitude, apLastPointData.ident));
+
             FlightPathDB.WriteFlightPlan(nCurrentFlightID, flightPlan.flight_waypoints);
+            flightPlan.flight_waypoints.Clear();
 
             StartLoggingBtn.Enabled = true;
             PauseLoggingBtn.Enabled = false;
@@ -665,10 +930,13 @@ namespace FS2020PlanePath
                 MessageBox.Show("Please choose a flight before deleting.", "Delete a Flight");
                 return;
             }
-            if (MessageBox.Show("Deleting a flight from the database cannot be undone.  Are you sure you want to delete?", "Delete a Flight", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show("Deleting flights from the database cannot be undone.  Are you sure you want to delete?", "Delete a Flight", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                nFlightID = (int)FlightPickerLV.SelectedItems[0].Tag;
-                FlightPathDB.DeleteFlight(nFlightID);
+                foreach (int nSelectedItem in FlightPickerLV.SelectedIndices)
+                {
+                    nFlightID = (int) FlightPickerLV.Items[nSelectedItem].Tag;
+                    FlightPathDB.DeleteFlight(nFlightID);
+                }
                 LoadFlightList();
             }
         }
@@ -691,6 +959,12 @@ namespace FS2020PlanePath
             else
                 FlightPathDB.WriteTableOption("AutomaticLogging", "false");
             FlightPathDB.WriteTableOption("AutomaticLoggingThreshold", LoggingThresholdGroundVelTB.Text);
+            FlightPathDB.WriteTableOption("KMLFileNameTemplate", KMLFileNameTemplateTB.Text);
+            if (LoggingThresholdEngineOffCB.Checked == true)
+                FlightPathDB.WriteTableOption("AutomaticLoggingStopEngineOff", "true");
+            else
+                FlightPathDB.WriteTableOption("AutomaticLoggingStopEngineOff", "false");
+            CheckSimConnectionTimer.Stop();
             simConnectIntegration.CloseConnection();
         }
 
@@ -744,6 +1018,11 @@ namespace FS2020PlanePath
         private void AutomaticLoggingCB_Click(object sender, EventArgs e)
         {
             LoggingThresholdGroundVelTB.Enabled = AutomaticLoggingCB.Checked;
+        }
+
+        private void KMLFileNameTemplateTB_TextChanged(object sender, EventArgs e)
+        {
+            KMLFileNameTBRO.Text = GetFilenameFromTemplate(0);
         }
     }
 }

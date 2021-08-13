@@ -1,0 +1,1 @@
+select ident, laty AS latitude, lonx as longitude, name, city, state, num_runway_hard, num_runway_soft from airport

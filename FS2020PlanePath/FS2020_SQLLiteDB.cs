@@ -1,17 +1,43 @@
-﻿using Microsoft.SqlServer.Server;
+﻿using KBCsv;
+using System.Linq;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data.SQLite;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.IO;
+using System.Text.RegularExpressions;
+using ExtensionMethods;
+
+namespace ExtensionMethods
+{
+    public static class MyExtensions
+    {
+        public static void BindFunction(this SQLiteConnection connection, SQLiteFunction function)
+        {
+            var attributes = function.GetType().GetCustomAttributes(typeof(SQLiteFunctionAttribute), true).Cast<SQLiteFunctionAttribute>().ToArray();
+            if (attributes.Length == 0)
+            {
+                throw new InvalidOperationException("SQLiteFunction doesn't have SQLiteFunctionAttribute");
+            }
+            connection.BindFunction(attributes[0], function);
+        }
+    }
+}
 
 namespace FS2020PlanePath
 {
+    class AirportData
+    {
+        public string ident;
+        public double latitude;
+        public double longitude;
+        public string name;
+        public string city;
+        public string state;
+        public int num_runway_hard;
+        public int num_runway_soft;
+        public double distance;
+    }
+
     class FlightPathData
     {
         public double latitude;
@@ -179,6 +205,34 @@ namespace FS2020PlanePath
         private const int TblVersion_FlightSampleDetails = 3;
         private const int TblVersion_FlightWaypoints = 1;
         private const int TblVersion_FlightOptions = 1;
+        private const int TblVersion_AirportInfo = 1;
+
+        [SQLiteFunction(Name = "power", Arguments = 2, FuncType = FunctionType.Scalar)]
+        public class PowerSQLiteFunction : SQLiteFunction
+        {
+            public override object Invoke(object[] args)
+            {
+                return Math.Pow(Convert.ToDouble(args[0]), Convert.ToDouble(args[1]));
+            }
+        }
+
+        [SQLiteFunction(Name = "cos", Arguments = 1, FuncType = FunctionType.Scalar)]
+        public class CosineFunction : SQLiteFunction
+        {
+            public override object Invoke(object[] args)
+            {
+                return Math.Cos(Convert.ToDouble((double)args[0]));
+            }
+        }
+
+        [SQLiteFunction(Name = "sqrt", Arguments = 1, FuncType = FunctionType.Scalar)]
+        public class SqrtFunction : SQLiteFunction
+        {
+            public override object Invoke(object[] args)
+            {
+                return Math.Sqrt(Convert.ToDouble((double)args[0]));
+            }
+        }
 
         public FS2020_SQLLiteDB()
         {
@@ -188,7 +242,7 @@ namespace FS2020PlanePath
         void CreateConnection()
         {
             sqlite_conn = new SQLiteConnection("Data Source=FlightSimFlightsDB.db; Version = 3; New = True; Compress = True; ");
-         // Open the connection:
+            // Open the connection:
             try
             {
                 sqlite_conn.Open();
@@ -205,7 +259,7 @@ namespace FS2020PlanePath
             string sAdtlInfo = strCallerName + " " + strQueryType;
             if (sqlite_cmd != null)
             {
-                sAdtlInfo  += ": " + sqlite_cmd.CommandText.ToString();
+                sAdtlInfo += ": " + sqlite_cmd.CommandText.ToString();
                 foreach (SQLiteParameter p in sqlite_cmd.Parameters)
                 {
                     string isQuted = (p.Value is string) ? "'" : "";
@@ -324,6 +378,23 @@ namespace FS2020PlanePath
                 }
             }
 
+            if (CheckTableExists("AirportInfo") == false)
+            {
+                sqlite_cmd = sqlite_conn.CreateCommand();
+                Createsql = "CREATE TABLE AirportInfo (AirportInfoID INTEGER PRIMARY KEY, ident varchar(10) NOT NULL, latitude double NOT NULL, longitude double NOT NULL, name varchar(50) COLLATE NOCASE, ";
+                Createsql += "city varchar(50) COLLATE NOCASE, state varchar(50) COLLATE NOCASE, num_runway_hard integer NOT NULL, num_runway_soft integer NOT NULL)";
+                sqlite_cmd.CommandText = Createsql;
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+            }
+
             // Fill in Table Versions if needed
             LoadUpTableVersions();
 
@@ -386,7 +457,7 @@ namespace FS2020PlanePath
                 nNumVersionRows++;
             }
             if (nNumVersionRows == 2)
-            { 
+            {
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightSampleDetails");
                 sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightSampleDetails);
@@ -422,6 +493,22 @@ namespace FS2020PlanePath
                 sqlite_cmd.Parameters.Clear();
                 sqlite_cmd.Parameters.AddWithValue("@tblname", "FlightWaypoints");
                 sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_FlightWaypoints);
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+                nNumVersionRows++;
+            }
+            if (nNumVersionRows == 5)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@tblname", "AirportInfo");
+                sqlite_cmd.Parameters.AddWithValue("@tblversion", TblVersion_AirportInfo);
                 try
                 {
                     sqlite_cmd.ExecuteNonQuery();
@@ -728,6 +815,54 @@ namespace FS2020PlanePath
                 }
                 nNumOptionRows++;
             }
+            if (nNumOptionRows == 7)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "KMLFileNameTemplate");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "{Plane.Name}_{Flight.Start.Timestamp:M_d_yyyy h_mm_ss tt}");
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 8)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "AirportListVersion");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "0");
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+                nNumOptionRows++;
+            }
+            if (nNumOptionRows == 9)
+            {
+                sqlite_cmd.Parameters.Clear();
+                sqlite_cmd.Parameters.AddWithValue("@optionname", "AutomaticLoggingStopEngineOff");
+                sqlite_cmd.Parameters.AddWithValue("@optionvalue", "false");
+                try
+                {
+                    sqlite_cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                    throw ex;
+                }
+                nNumOptionRows++;
+            }
         }
 
         public String GetTableOption(String optionname)
@@ -937,6 +1072,12 @@ namespace FS2020PlanePath
                 sqlite_cmd.Parameters.AddWithValue("@latitude", waypoint.gps_wp_latitude);
                 sqlite_cmd.Parameters.AddWithValue("@longitude", waypoint.gps_wp_longitude);
                 sqlite_cmd.Parameters.AddWithValue("@altitude", waypoint.gps_wp_altitude);
+
+                // verify that waypoint name is a valid string
+                Regex r = new Regex(@"[^\w\.@-]");
+                if (r.IsMatch(waypoint.gps_wp_name))
+                    waypoint.gps_wp_name = Program.sInvalidWaypointName;
+
                 sqlite_cmd.Parameters.AddWithValue("@name", waypoint.gps_wp_name);
                 try
                 {
@@ -982,6 +1123,73 @@ namespace FS2020PlanePath
             }
 
             return FlightWaypoints;
+        }
+
+        // Gets either first or last entry in filght path for a given flight
+        public FlightPathData GetFlightPathEntry(bool bFirst, int pk)
+        {
+            FlightPathData data = new FlightPathData();
+            SQLiteCommand sqlite_cmd;
+            string Selectsql;
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            Selectsql = "SELECT cast(latitude as double), cast (longitude as double), altitude, sample_datetimestamp, alitutdeaboveground, engine1rpm, engine2rpm, engine3rpm, engine4rpm, lightsmask, ";
+            Selectsql += "cast (ground_velocity as double), cast (plane_pitch as double), cast (plane_bank as double), cast (plane_heading_true as double), cast (plane_heading_magnetic as double), ";
+            Selectsql += "cast (plane_airspeed_indicated as double), cast (airspeed_true as double), cast (vertical_speed as double), cast (heading_indicator as double), flaps_handle_position, ";
+            Selectsql += "spoilers_handle_position, gear_handle_position, cast (ambient_wind_velocity as double), cast (ambient_wind_direction as double), cast (ambient_temperature as double),";
+            Selectsql += "stall_warning, overspeed_warning, is_gear_retractable, spoiler_available, sim_on_ground ";
+            Selectsql += "FROM FlightSamples, FlightSampleDetails WHERE FlightSampleDetails.FlightSamplesID = FlightSamples.FlightSamplesID AND FlightSamples.FlightSamplesID = ";
+
+            if (bFirst == true)
+                Selectsql += "(select min (FlightSamples.FlightSamplesID) from FlightSamples where FlightSamples.FlightID = @FlightID)";
+            else
+                Selectsql += "(select max (FlightSamples.FlightSamplesID) from FlightSamples where FlightSamples.FlightID = @FlightID)";
+
+            sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+            try
+            {
+                SQLiteDataReader r = sqlite_cmd.ExecuteReader();
+
+                while (r.Read())
+                {
+                    data.latitude = r.GetDouble(0);
+                    data.longitude = r.GetDouble(1);
+                    data.altitude = r.GetInt32(2);
+                    data.timestamp = r.GetInt64(3);
+                    data.altitudeaboveground = r.GetInt32(4);
+                    data.Eng1Rpm = r.GetInt32(5);
+                    data.Eng2Rpm = r.GetInt32(6);
+                    data.Eng3Rpm = r.GetInt32(7);
+                    data.Eng4Rpm = r.GetInt32(8);
+                    data.LightsMask = r.GetInt32(9);
+                    data.ground_velocity = r.GetDouble(10);
+                    data.plane_pitch = r.GetDouble(11);
+                    data.plane_bank = r.GetDouble(12);
+                    data.plane_heading_true = r.GetDouble(13);
+                    data.plane_heading_magnetic = r.GetDouble(14);
+                    data.plane_airspeed_indicated = r.GetDouble(15);
+                    data.airspeed_true = r.GetDouble(16);
+                    data.vertical_speed = r.GetDouble(17);
+                    data.heading_indicator = r.GetDouble(18);
+                    data.flaps_handle_position = r.GetInt32(19);
+                    data.spoilers_handle_position = r.GetInt32(20);
+                    data.gear_handle_position = r.GetInt32(21);
+                    data.ambient_wind_velocity = r.GetDouble(22);
+                    data.ambient_wind_direction = r.GetDouble(23);
+                    data.ambient_temperature = r.GetDouble(24);
+                    data.stall_warning = r.GetInt32(25);
+                    data.overspeed_warning = r.GetInt32(26);
+                    data.is_gear_retractable = r.GetInt32(27);
+                    data.spoiler_available = r.GetInt32(28);
+                    data.sim_on_ground = r.GetInt32(29);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteReader", sqlite_cmd), ex);
+                throw ex;
+            }
+            return data;
         }
 
         public List<FlightPathData> GetFlightPathData(int pk)
@@ -1048,6 +1256,37 @@ namespace FS2020PlanePath
             return FlightPath;
         }
 
+        public FlightListData GetFlight(int nFlightID)
+        {
+            FlightListData FlightData = null;
+            SQLiteCommand sqlite_cmd;
+            string Selectsql;
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            Selectsql = "SELECT FlightID, aircraft, start_datetimestamp FROM Flights WHERE FlightID = @FlightID";
+            sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.Clear();
+            sqlite_cmd.Parameters.AddWithValue("@FlightID", nFlightID);
+
+            try
+            {
+                SQLiteDataReader r = sqlite_cmd.ExecuteReader();
+
+                while (r.Read())
+                {
+                    FlightData = new FlightListData();
+                    FlightData.FlightID = r.GetInt32(0);
+                    FlightData.aircraft = r.GetString(1);
+                    FlightData.start_flight_timestamp = r.GetInt64(2);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteReader", sqlite_cmd), ex);
+                throw ex;
+            }
+            return FlightData;
+        }
+
         public List<FlightListData> GetFlightList()
         {
             List<FlightListData> FlightList = new List<FlightListData>();
@@ -1086,7 +1325,7 @@ namespace FS2020PlanePath
 
             sqlite_cmd = sqlite_conn.CreateCommand();
             transaction = sqlite_conn.BeginTransaction();
-            
+
             Deletesql = "Delete from FlightWaypoints WHERE FlightID = @FlightID";
             sqlite_cmd.CommandText = Deletesql;
             sqlite_cmd.Parameters.Clear();
@@ -1147,6 +1386,131 @@ namespace FS2020PlanePath
 
             transaction.Commit();
         }
+
+        // Loads airport information from CSV file into database
+        public void LoadUpAirportInfo(string sFileName)
+        {
+            SQLiteCommand sqlite_cmd;
+            SQLiteTransaction transaction = null;
+            string sVersion;
+
+            sqlite_cmd = sqlite_conn.CreateCommand();
+            transaction = sqlite_conn.BeginTransaction();
+
+            // delete all airport_info rows before loading new ones
+            sqlite_cmd.CommandText = "Delete From AirportInfo";
+            try
+            {
+                sqlite_cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                throw ex;
+            }
+
+            // walk through CSV and load up all the data
+            sqlite_cmd.CommandText = "INSERT INTO AirportInfo(ident, latitude, longitude, name, city, state, num_runway_hard, num_runway_soft) VALUES(@c0, @c1, @c2, @c3, @c4, @c5, @c6, @c7)";
+
+            using (var fileStream = new FileStream(".\\" + sFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (StreamReader streamReader = new StreamReader(fileStream))
+            {
+                using (CsvReader reader = new CsvReader(streamReader))
+                {
+                    reader.ValueSeparator = ',';
+                    reader.ReadHeaderRecord();
+                    while (reader.HasMoreRecords)
+                    {
+                        DataRecord record = reader.ReadDataRecord();
+                        sqlite_cmd.Parameters.Clear();
+                        for (int i = 0; i < reader.HeaderRecord.Count; i++)
+                        {
+                            sqlite_cmd.Parameters.AddWithValue("@c" + i, record[i]);
+                        }
+                        try
+                        {
+                            sqlite_cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                            throw ex;
+                        }
+                    }
+                }
+            }
+            // Figure out what version the file was and write it to options
+            sVersion = GetAirportListVersion(sFileName);
+            WriteTableOption("AirportListVersion", sVersion);
+            transaction.Commit();
+        }
+
+        // Returns version of the AirportList file based on fact that file is always named AirportListvx where xx is version number
+        public string GetAirportListVersion(string sFileName)
+        {
+            int nStrPos;
+            int nVerEndPos;
+            string sVersion;
+
+            nStrPos = sFileName.IndexOf('v', 0);
+            nStrPos++;
+            nVerEndPos = sFileName.IndexOf('.', nStrPos);
+            sVersion = sFileName.Substring(nStrPos, nVerEndPos - nStrPos);
+
+            return sVersion;
+        }
+
+        public AirportData GetClosestAirportToLatLong(bool bHardRunwayOnly, double Orig_Latitude, double Orig_Longitude)
+        {
+            AirportData apData = new AirportData();
+            SQLiteCommand sqlite_cmd;
+            string Selectsql;
+
+            sqlite_conn.BindFunction(new SqrtFunction());
+            sqlite_conn.BindFunction(new CosineFunction());
+            sqlite_conn.BindFunction(new PowerSQLiteFunction());
+
+            sqlite_cmd = sqlite_conn.CreateCommand();
+
+            Selectsql = "select * from (select ident, latitude, longitude, name, city, state, num_runway_hard, num_runway_soft, ";
+            Selectsql += "sqrt(power(69.1 * (latitude - @Orig_Latitude), 2) + power(69.1 * ((@Orig_longitude - longitude) * cos(latitude / 57.3)), 2)) AS distance FROM AirportInfo ";
+
+            if (bHardRunwayOnly == true)
+                Selectsql += "WHERE num_runway_hard > 0 ORDER BY distance) LIMIT 1";
+            else
+                Selectsql += "ORDER BY distance) LIMIT 1";
+            sqlite_cmd.CommandText = Selectsql;
+            sqlite_cmd.Parameters.Clear();
+            sqlite_cmd.Parameters.AddWithValue("@Orig_longitude", Orig_Longitude);
+            sqlite_cmd.Parameters.AddWithValue("@Orig_Latitude", Orig_Latitude);
+
+            try
+            {
+                SQLiteDataReader r = sqlite_cmd.ExecuteReader();
+
+                while (r.Read())
+                {
+                    apData.ident = r.GetString(0);
+                    apData.latitude = r.GetDouble(1);
+                    apData.longitude = r.GetDouble(2);
+                    apData.name = r.GetString(3);
+                    apData.city = r.GetString(4);
+                    apData.state = r.GetString(5);
+                    apData.num_runway_hard = r.GetInt32(6);
+                    apData.num_runway_soft = r.GetInt32(7);
+                    apData.distance = r.GetDouble(8);
+                }
+            }
+            catch (Exception ex)
+            {
+                Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteReader", sqlite_cmd), ex);
+                throw ex;
+            }
+            sqlite_conn.UnbindAllFunctions(false);
+
+            return apData;
+        }
     }
 }
+
 
