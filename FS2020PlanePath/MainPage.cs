@@ -107,7 +107,7 @@ namespace FS2020PlanePath
             sKMLFileNameToolTip += "Loc.End.State = closest airport state at end of flight\r\n";
             sKMLFileNameToolTip += "Flight.Start.Timestamp:timeformat = computer date and time when flight started\r\n";
             sKMLFileNameToolTip += "Flight.Start.Timestamp:timeformat = computer date and time when flight ended\r\n";
-            sKMLFileNameToolTip += "timeformat details can be found by searching 'Standard date and time format strings' on the web\r\n\r\n";
+            sKMLFileNameToolTip += "timeformat details can be found by searching 'Custom date and time format strings' on the web\r\n\r\n";
             sKMLFileNameToolTip += "Non key fields (plain text or symbols) can also be placed throughout the KML File Name as well";
 
             KMLFileNameToolTip.SetToolTip(KMLFileNameTBRO, sKMLFileNameToolTip);

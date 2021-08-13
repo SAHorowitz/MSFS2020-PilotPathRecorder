@@ -159,9 +159,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="AirportListv1.csv">
+    <Content Include="AirportListv1.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="app.manifest" />
     <None Include="FS2020PlanePath_TemporaryKey.pfx" />
     <None Include="packages.config" />
