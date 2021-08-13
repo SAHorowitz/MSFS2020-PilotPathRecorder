@@ -7,7 +7,7 @@ PilotPathRecorder is a replay and flight data capture tool that allows you to se
 
 This is a stand-alone application that is run outside of Microsft Flight Simulator 2020.  Once run, this application allows the user to set various settings to control the recording and exporting experience.  A database is used to store your flights so feel free to fly during one session and export in another.
 
-![latest](docs/images/PPRv14xy.jpg)
+![latest](docs/images/PPRv14xx.jpg)
 
 
 # Version History
