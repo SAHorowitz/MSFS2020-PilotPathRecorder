@@ -7,10 +7,32 @@ PilotPathRecorder is a replay and flight data capture tool that allows you to se
 
 This is a stand-alone application that is run outside of Microsft Flight Simulator 2020.  Once run, this application allows the user to set various settings to control the recording and exporting experience.  A database is used to store your flights so feel free to fly during one session and export in another.
 
-![latest](docs/images/PPRv13x.jpg)
+![latest](docs/images/PPRv14xx.jpg)
 
 
 # Version History
+v1.4.0
+- Added automatic connect, and reconnect, to MSFS.
+- Added support for multiple flight delete from list (just use shift key to multi-select)
+- Added support for multiple flight export from list (just use shift key to multi-select)
+- Fixed issue where MSFS would sometimes return garbage characters for waypoint of a flight plan. These garbage waypoints are now renamed to "Unknown Waypoint"
+- Fixed issue with some 3rd party planes that had characters that would cause a crash on KML export
+- Added ability to use an airport within 2 miles from the start of the flight and 2 miles within the end of the flight as waypoints for flights that didn't have a flight plan created.
+- Added support for a new option for automatic logging to only stop logging if engines were turned off.
+- Added ability to customize the exported KML filename with key names. These key names must be surrounded by { }. The key names are as follows:
+Plane.Name - the name of plane used in flight
+Loc.Start.Ident - the ident of the closest airport at the start of the flight
+Loc.End.Ident - the ident of the closest airport at the end of the flight
+Loc.Start.Name - the name of the closest airport at the start of the flight
+Loc.End.Name - the name of the closest airport at the end of the flight
+Loc.Start.City - the city of the closest airport at the start of the flight
+Loc.End.City - the city of the closest airport at the end of the flight
+Loc.Start.State - the state of the closest airport at the start of the flight
+Loc.End.State - the state of the closest airport at the end of the flight
+Flight.Start.Timestamp:timeformat - the computer date/time at the start of the flight using timeformat as the format of date/time desired
+Flight.End.Timestamp:timeformat - the computer date/time at the end of the flight using timeformat as the format of date/time desired
+more details about timeformat can be found at https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings. Also, plain text and symbols can be used in the file name as well. Just type them in outside of { }
+
 v1.3.0
 - Added ability to automatically start and stop the recorder based on flight ground speed. This way you will never forget to log your flight.
 
