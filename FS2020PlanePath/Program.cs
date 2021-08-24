@@ -13,7 +13,7 @@ namespace FS2020PlanePath
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static public string sAppVersion = "1.4.0";
+        static public string sAppVersion = "1.4.1";
         static public string sInvalidWaypointName = "Unknown Waypoint";
         static public bool bLogErrorsWritten = false;
 

@@ -186,6 +186,7 @@ namespace FS2020PlanePath
                     catch (Exception ex)
                     {
                         SimConnectStatusLabel.Text = "Connection lost to SimConnect";
+                        Program.ErrorLogging("Error: Connection lost to SimConnect - any recordings occurring during this time have automatically stopped and been saved.", ex);
                         StopLoggingBtn.PerformClick();
                     }
                 }

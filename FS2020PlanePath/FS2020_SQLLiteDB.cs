@@ -100,6 +100,7 @@ namespace FS2020PlanePath
         public double gps_wp_longitude;
         public Int32 gps_wp_altitude;
         public string gps_wp_name;
+        public bool waypoint_valid;
 
         public FlightWaypointData()
         {
@@ -111,89 +112,33 @@ namespace FS2020PlanePath
             gps_wp_longitude = gps_wp_long;
             gps_wp_altitude = gps_wp_alt;
             gps_wp_name = gps_wp_id;
+
+            if ((gps_wp_altitude >= 0) &&
+                (gps_wp_latitude != 0) &&
+                (gps_wp_longitude != 0) &&
+                (gps_wp_name.Length > 0))
+                waypoint_valid = true;
+            else
+                waypoint_valid = false;
         }
     }
 
     class FlightPlan
     {
         public List<FlightWaypointData> flight_waypoints;
-        private int flightplan_index;
-        private int flightplan_count;
 
         public FlightPlan()
         {
             flight_waypoints = new List<FlightWaypointData>();
         }
 
-        public bool IsWaypointValid(FlightWaypointData waypointData)
-        {
-            if ((waypointData.gps_wp_altitude > 0) &&
-                (waypointData.gps_wp_latitude != 0) &&
-                (waypointData.gps_wp_longitude != 0) &&
-                (waypointData.gps_wp_name.Length > 0))
-                return true;
-            else
-                return false;
-        }
-
         public void AddFlightPlanWaypoint(FlightWaypointData prevWaypoint, FlightWaypointData nextWaypoint, int iflightplan_index, int iflightplan_count)
         {
-            // if there is already at least one item in the list then compare last item to see if it matches
-            if (flight_waypoints.Count > 0)
-            {
-                FlightWaypointData fwdLastWaypointinList;
-
-                fwdLastWaypointinList = flight_waypoints[flight_waypoints.Count - 1];
-
-                // if the next waypoint is not equal to last in the list then something has changed
-                if (String.Compare(fwdLastWaypointinList.gps_wp_name, nextWaypoint.gps_wp_name) != 0)
-                    // if last waypoint in list is equal to the prev waypoint then we can add next waypoint to the list
-                    // because it means user crossed the waypoint and possibly heading to next or is done with flightplan
-                    if (String.Compare(fwdLastWaypointinList.gps_wp_name, prevWaypoint.gps_wp_name) == 0)
-                    {
-                        if (IsWaypointValid(nextWaypoint) == true)
-                            flight_waypoints.Add(nextWaypoint);
-                        flightplan_index = iflightplan_index;
-                        flightplan_count = iflightplan_count;
-                    }
-                    else
-                    {
-                        FlightWaypointData fwdSecondToLastWaypointinList;
-
-                        fwdSecondToLastWaypointinList = flight_waypoints[flight_waypoints.Count - 2];
-
-                        // if second to last is same as previous then user just changed next waypoint so just replace it
-                        if (String.Compare(fwdSecondToLastWaypointinList.gps_wp_name, prevWaypoint.gps_wp_name) == 0)
-                        {
-                            flight_waypoints.RemoveAt(flight_waypoints.Count - 1);
-                            if (IsWaypointValid(nextWaypoint) == true)
-                                flight_waypoints.Add(nextWaypoint);
-                        }
-                        else
-                        {
-                            // these new waypoints don't match anything we have so user changed flightplan?
-                            flight_waypoints.Clear();
-                            if (IsWaypointValid(prevWaypoint) == true)
-                                flight_waypoints.Add(prevWaypoint);
-                            if (iflightplan_index < iflightplan_count)
-                                if (IsWaypointValid(nextWaypoint) == true)
-                                    flight_waypoints.Add(nextWaypoint);
-                        }
-                        flightplan_index = iflightplan_index;
-                        flightplan_count = iflightplan_count;
-                    }
-            }
-            else // add new items that are valid
-            {
-                if (IsWaypointValid(prevWaypoint) == true)
-                    flight_waypoints.Add(prevWaypoint);
-                // if not at end of flightplan then there should be a next waypoint
-                if (iflightplan_index < iflightplan_count)
-                    if (IsWaypointValid(nextWaypoint) == true)
-                        flight_waypoints.Add(nextWaypoint);
-                flightplan_index = iflightplan_index;
-                flightplan_count = iflightplan_count;
-            }
+            // if no waypoints yet or if last waypoint does not equal waypoint we just passed then add it to waypoint list.  Note this does not add the last waypoint of flight
+            // to the waypoint list since very last waypoint is never past but StopLoggingAction will add last waypoint if it is an airport and within 2 miles of where flight ended
+            if ((flight_waypoints.Count == 0) || 
+                ((flight_waypoints.Count > 0) && (String.Compare(flight_waypoints.Last().gps_wp_name, prevWaypoint.gps_wp_name) != 0)))
+                flight_waypoints.Add(prevWaypoint);
         }
     }
 
@@ -1067,26 +1012,29 @@ namespace FS2020PlanePath
 
             foreach (FlightWaypointData waypoint in flight_waypoints)
             {
-                sqlite_cmd.Parameters.Clear();
-                sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
-                sqlite_cmd.Parameters.AddWithValue("@latitude", waypoint.gps_wp_latitude);
-                sqlite_cmd.Parameters.AddWithValue("@longitude", waypoint.gps_wp_longitude);
-                sqlite_cmd.Parameters.AddWithValue("@altitude", waypoint.gps_wp_altitude);
-
-                // verify that waypoint name is a valid string
-                Regex r = new Regex(@"[^\w\.@-]");
-                if (r.IsMatch(waypoint.gps_wp_name))
-                    waypoint.gps_wp_name = Program.sInvalidWaypointName;
-
-                sqlite_cmd.Parameters.AddWithValue("@name", waypoint.gps_wp_name);
-                try
+                if (waypoint.waypoint_valid == true)
                 {
-                    sqlite_cmd.ExecuteNonQuery();
-                }
-                catch (Exception ex)
-                {
-                    Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
-                    throw ex;
+                    sqlite_cmd.Parameters.Clear();
+                    sqlite_cmd.Parameters.AddWithValue("@FlightID", pk);
+                    sqlite_cmd.Parameters.AddWithValue("@latitude", waypoint.gps_wp_latitude);
+                    sqlite_cmd.Parameters.AddWithValue("@longitude", waypoint.gps_wp_longitude);
+                    sqlite_cmd.Parameters.AddWithValue("@altitude", waypoint.gps_wp_altitude);
+
+                    // verify that waypoint name is a valid string
+                    Regex r = new Regex(@"[^\w\.@-]");
+                    if (r.IsMatch(waypoint.gps_wp_name))
+                        waypoint.gps_wp_name = Program.sInvalidWaypointName;
+
+                    sqlite_cmd.Parameters.AddWithValue("@name", waypoint.gps_wp_name);
+                    try
+                    {
+                        sqlite_cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        Program.ErrorLogging(GetDBQueryExtraInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, "ExecuteNonQuery", sqlite_cmd), ex);
+                        throw ex;
+                    }
                 }
             }
             transaction.Commit();
