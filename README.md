@@ -11,6 +11,11 @@ This is a stand-alone application that is run outside of Microsft Flight Simulat
 
 
 # Version History
+v1.4.1
+- Fixed issue with waypoints causing an exception if they have a zero altitude. This would cause the SimConnect to disconnect.
+- Rewrote AddWaypoint algorithm to make it much simpler and easier to understand
+- Added logger for general exceptions that would cause SimConnect to disconnect. This will make finding future issues easier.
+
 v1.4.0
 - Added automatic connect, and reconnect, to MSFS.
 - Added support for multiple flight delete from list (just use shift key to multi-select)
